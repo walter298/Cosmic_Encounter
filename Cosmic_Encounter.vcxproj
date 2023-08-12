@@ -1,0 +1,220 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{1781afc8-63af-4f60-b7bc-be9de670f5cd}</ProjectGuid>
+    <RootNamespace>CosmicEncounter</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <SourcePath>D:\Code_Libraries\Asio\asio-1.28.0\include;$(SourcePath)</SourcePath>
+    <IncludePath>D:\Code_Libraries\Asio\asio-1.28.0\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <SourcePath>D:\Code_Libraries\Asio\asio-1.28.0\include;$(SourcePath)</SourcePath>
+    <IncludePath>D:\Code_Libraries\Asio\asio-1.28.0\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>D:\Code_Libraries\Asio\asio-1.28.0\include;D:\Code_Libraries\nlohmann_json\json-develop\include;D:\Code_Libraries\SDL\SDL_2.26.5\SDL2-2.26.5\include;D:\Code_Libraries\SDL_Mixer\SDL2_mixer-2.6.3\include;D:\Code_Libraries\SDL_ttf\SDL2_ttf-2.20.2\include;D:\Code_Libraries\Boost\boost_1_82_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-D_Win32_WINNT=0x0A00 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\Code_Libraries\SDL\SDL_2.26.5\SDL2-2.26.5\lib\x64;D:\Code_Libraries\SDL_Mixer\SDL2_mixer-2.6.3\lib\x64;D:\Code_Libraries\SDL_ttf\SDL2_ttf-2.20.2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalIncludeDirectories>D:\Code_Libraries\Asio\asio-1.28.0\include;D:\Code_Libraries\nlohmann_json\json-develop\include;D:\Code_Libraries\SDL\SDL_2.26.5\SDL2-2.26.5\include;D:\Code_Libraries\SDL_Mixer\SDL2_mixer-2.6.3\include;D:\Code_Libraries\SDL_ttf\SDL2_ttf-2.20.2\include;D:\Code_Libraries\Boost\boost_1_82_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-D_WIN32_WINNT=0x0601 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\Code_Libraries\SDL\SDL_2.26.5\SDL2-2.26.5\lib\x64;D:\Code_Libraries\SDL_Mixer\SDL2_mixer-2.6.3\lib\x64;D:\Code_Libraries\SDL_ttf\SDL2_ttf-2.20.2\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SDL2main.lib;SDL2.lib;SDL2_image.lib;SDL2_mixer.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Card.cpp" />
+    <ClCompile Include="src\CardRender.cpp" />
+    <ClCompile Include="src\ClientSide.cpp" />
+    <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\novalis\Event.cpp" />
+    <ClCompile Include="src\novalis\Instance.cpp" />
+    <ClCompile Include="src\novalis\RenderTypes.cpp" />
+    <ClCompile Include="src\novalis\TextEditor.cpp" />
+    <ClCompile Include="src\WaitingRoom.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Network.cpp" />
+    <ClCompile Include="src\novalis\Button.cpp" />
+    <ClCompile Include="src\novalis\DataUtil.cpp" />
+    <ClCompile Include="src\novalis\EditorUtil.cpp" />
+    <ClCompile Include="src\novalis\HomeEditor.cpp" />
+    <ClCompile Include="src\novalis\imgui\imgui.cpp" />
+    <ClCompile Include="src\novalis\imgui\imgui_demo.cpp" />
+    <ClCompile Include="src\novalis\imgui\imgui_draw.cpp" />
+    <ClCompile Include="src\novalis\imgui\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="src\novalis\imgui\imgui_impl_sdlrenderer2.cpp" />
+    <ClCompile Include="src\novalis\imgui\imgui_tables.cpp" />
+    <ClCompile Include="src\novalis\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\novalis\ObjectEditor.cpp" />
+    <ClCompile Include="src\novalis\Rect.cpp" />
+    <ClCompile Include="src\novalis\Renderer.cpp" />
+    <ClCompile Include="src\novalis\Scene.cpp" />
+    <ClCompile Include="src\novalis\Sound.cpp" />
+    <ClCompile Include="src\Player.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Card.h" />
+    <ClInclude Include="src\CardRender.h" />
+    <ClInclude Include="src\ClientSide.h" />
+    <ClInclude Include="src\Game.h" />
+    <ClInclude Include="src\novalis\Event.h" />
+    <ClInclude Include="src\novalis\Instance.h" />
+    <ClInclude Include="src\novalis\RenderTypes.h" />
+    <ClInclude Include="src\novalis\TextEditor.h" />
+    <ClInclude Include="src\WaitingRoom.h" />
+    <ClInclude Include="src\Network.h" />
+    <ClInclude Include="src\novalis\Button.h" />
+    <ClInclude Include="src\novalis\DataUtil.h" />
+    <ClInclude Include="src\novalis\EditorUtil.h" />
+    <ClInclude Include="src\novalis\GlobalMacros.h" />
+    <ClInclude Include="src\novalis\HomeEditor.h" />
+    <ClInclude Include="src\novalis\imgui\imconfig.h" />
+    <ClInclude Include="src\novalis\imgui\imgui.h" />
+    <ClInclude Include="src\novalis\imgui\imgui_impl_sdl2.h" />
+    <ClInclude Include="src\novalis\imgui\imgui_impl_sdlrenderer2.h" />
+    <ClInclude Include="src\novalis\imgui\imgui_internal.h" />
+    <ClInclude Include="src\novalis\imgui\imstb_rectpack.h" />
+    <ClInclude Include="src\novalis\imgui\imstb_textedit.h" />
+    <ClInclude Include="src\novalis\imgui\imstb_truetype.h" />
+    <ClInclude Include="src\novalis\Init.h" />
+    <ClInclude Include="src\novalis\ObjectEditor.h" />
+    <ClInclude Include="src\novalis\Rect.h" />
+    <ClInclude Include="src\novalis\Renderer.h" />
+    <ClInclude Include="src\novalis\RenderObj.h" />
+    <ClInclude Include="src\novalis\Scene.h" />
+    <ClInclude Include="src\novalis\Sound.h" />
+    <ClInclude Include="src\Player.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="objects\cards\0_attack.txt" />
+    <Text Include="objects\cards\10_attack.txt" />
+    <Text Include="objects\cards\11_attack.txt" />
+    <Text Include="objects\cards\14_attack.txt" />
+    <Text Include="objects\cards\15_attack.txt" />
+    <Text Include="objects\cards\19_attack.txt" />
+    <Text Include="objects\cards\1_attack.txt" />
+    <Text Include="objects\cards\20_attack.txt" />
+    <Text Include="objects\cards\23_attack.txt" />
+    <Text Include="objects\cards\30_attack.txt" />
+    <Text Include="objects\cards\40_attack.txt" />
+    <Text Include="objects\cards\4_attack.txt" />
+    <Text Include="objects\cards\5_attack.txt" />
+    <Text Include="objects\cards\6_attack.txt" />
+    <Text Include="objects\cards\7_attack.txt" />
+    <Text Include="objects\cards\8_attack.txt" />
+    <Text Include="objects\cards\9_attack.txt" />
+    <Text Include="objects\cards\negotiate.txt" />
+    <Text Include="objects\connecting_text.nv_txt" />
+    <Text Include="objects\failed_to_connect.nv_txt" />
+    <Text Include="objects\start_button.nv_txt" />
+    <Text Include="scenes\card_selection.txt" />
+    <Text Include="scenes\homescreen.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="images\cone_of_destiny.png" />
+    <Image Include="images\cosmic_cover.png" />
+    <Image Include="images\pacifist.png" />
+    <Image Include="images\space.jpg" />
+    <Image Include="images\space_2.jpg" />
+    <Image Include="images\virus.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="sounds\mars.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="objects\cards\0_attack.nv_txt" />
+    <None Include="objects\cards\10_attack.nv_txt" />
+    <None Include="objects\cards\11_attack.nv_txt" />
+    <None Include="objects\cards\12_attack.nv_txt" />
+    <None Include="objects\cards\14_attack.nv_txt" />
+    <None Include="objects\cards\15_attack.nv_txt" />
+    <None Include="objects\cards\19_attack.nv_txt" />
+    <None Include="objects\cards\1_attack.nv_txt" />
+    <None Include="objects\cards\20_attack.nv_txt" />
+    <None Include="objects\cards\23_attack.nv_txt" />
+    <None Include="objects\cards\30_attack.nv_txt" />
+    <None Include="objects\cards\40_attack.nv_txt" />
+    <None Include="objects\cards\4_attack.nv_txt" />
+    <None Include="objects\cards\5_attack.nv_txt" />
+    <None Include="objects\cards\6_attack.nv_txt" />
+    <None Include="objects\cards\7_attack.nv_txt" />
+    <None Include="objects\cards\8_attack.nv_txt" />
+    <None Include="objects\cards\9_attack.nv_txt" />
+    <None Include="objects\cards\negotiate.nv_txt" />
+    <None Include="objects\waiting_for_players.nv_txt" />
+    <None Include="SDL2.dll" />
+    <None Include="SDL2_image.dll" />
+    <None Include="SDL2_mixer.dll" />
+    <None Include="SDL2_ttf.dll" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

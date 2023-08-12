@@ -1,0 +1,15 @@
+NAME {
+waiting_for_players
+}
+TEXT {
+Waiting for players...
+0_0_0_0
+500
+}
+RENDER_DIMENSIONS {
+519_103
+}
+BACKGROUND {
+-5_-3_532_113
+214_255_128_0
+}

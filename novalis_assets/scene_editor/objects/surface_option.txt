@@ -1,0 +1,23 @@
+
+
+SPRITESHEET {
+images/eidos_images/surface_op1.png
+images/eidos_images/surface_op2.png
+}
+
+end
+
+COLLISION {
+0_0_500_500_700_700_600_600
+0_1_500_500_700_700_600_600
+}
+COLLISION
+0_0_500_500_700_700_600_600
+0_1_500_500_700_700_600_600
+
+end
+DIMENSIONS
+0_0_500_500_245_80
+0_1_500_500_245_80
+
+end

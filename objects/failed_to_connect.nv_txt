@@ -1,0 +1,15 @@
+NAME {
+failed_to_connect
+}
+TEXT {
+Failed to connect 
+0_0_0_0
+259
+}
+RENDER_DIMENSIONS {
+500_100
+}
+BACKGROUND {
+-33_-11_544_125
+255_0_0_0
+}

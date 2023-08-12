@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\visual_studio\\enterprise\\vc\\tools\\msvc\\14.36.32532\\modules\\std.compat.ixx",
+        "ProvidedModule": "std.compat",
+        "Includes": [],
+        "ImportedModules": [
+            {
+                "Name": "std",
+                "BMI": "D:\\C++_Projects_V2\\Cosmic_Encounter\\Cosmic_Encounter\\x64\\Debug\\std.ixx.ifc"
+            }
+        ],
+        "ImportedHeaderUnits": []
+    }
+}

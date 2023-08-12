@@ -1,0 +1,3 @@
+BACKGROUNDS {
+images/space.jpg@0_0
+}

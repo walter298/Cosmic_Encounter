@@ -1,0 +1,15 @@
+NAME {
+start_button
+}
+TEXT {
+Press Start
+0_0_0_0
+500
+}
+RENDER_DIMENSIONS {
+500_100
+}
+BACKGROUND {
+-14_0_532_100
+185_196_194_255
+}

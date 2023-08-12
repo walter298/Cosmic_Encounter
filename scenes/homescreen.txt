@@ -1,0 +1,3 @@
+BACKGROUNDS {
+images/cosmic_cover.png@0_0
+}

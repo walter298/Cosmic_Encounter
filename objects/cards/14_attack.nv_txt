@@ -1,0 +1,15 @@
+NAME {
+14_attack
+}
+TEXT {
+14
+0_0_0_0
+500
+}
+RENDER_DIMENSIONS {
+270_54
+}
+BACKGROUND {
+-17_-186_316_425
+255_0_0_0
+}

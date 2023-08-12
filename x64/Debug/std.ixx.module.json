@@ -1,0 +1,22 @@
+{
+    "version": 1,
+    "revision": 0,
+    "rules": [
+        {
+            "primary-output": "x64\\Debug\\std.ixx.obj",
+            "outputs": [
+                "D:\\C++_Projects_V2\\Cosmic_Encounter\\Cosmic_Encounter\\x64\\Debug\\vc143.pdb",
+                "x64\\Debug\\",
+                "D:\\C++_Projects_V2\\Cosmic_Encounter\\Cosmic_Encounter\\x64\\Debug\\std.ixx.ifc"
+            ],
+            "provides": [
+                {
+                    "logical-name": "std",
+                    "source-path": "d:\\visual_studio\\enterprise\\vc\\tools\\msvc\\14.36.32532\\modules\\std.ixx",
+                    "is-interface": true
+                }
+            ],
+            "requires": []
+        }
+    ]
+}

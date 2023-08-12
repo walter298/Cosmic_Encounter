@@ -1,0 +1,811 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C33011",
+          "message": {
+            "text": "Unchecked upper bound for enum key used as index.."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                },
+                "region": {
+                  "startLine": 7813,
+                  "startColumn": 29,
+                  "endLine": 7813,
+                  "endColumn": 50
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "ImGui::GetKeyData",
+                  "decoratedName": "?GetKeyData@ImGui@@YAPEAUImGuiKeyData@@PEAUImGuiContext@@W4ImGuiKey@@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7803,
+                            "startColumn": 22
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7805,
+                            "startColumn": 19
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7805,
+                            "startColumn": 24
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7808,
+                            "startColumn": 13
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition 'key & 63488'. 'false' branch is taken"
+                        }
+                      },
+                      "kinds": [
+                        "Branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7812,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '0 <= key'. 'true' branch is taken\nEnum value 'key' is checked for lower bound."
+                        }
+                      },
+                      "kinds": [
+                        "Combination"
+                      ],
+                      "importance": "essential"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7812,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition 'key < 652'. 'false' branch is taken\nEnum value 'key' is checked for lower bound."
+                        }
+                      },
+                      "kinds": [
+                        "Combination"
+                      ],
+                      "importance": "essential"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7812,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7812,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '0'. 'false' branch is taken"
+                        }
+                      },
+                      "kinds": [
+                        "Branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7812,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7812,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7813,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7813,
+                            "startColumn": 20
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition 'result.IsLegacyKey'. 'true' branch is taken"
+                        }
+                      },
+                      "kinds": [
+                        "Branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 7813,
+                            "startColumn": 46
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "C33010",
+          "message": {
+            "text": "Unchecked lower bound for enum source used as index.."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                },
+                "region": {
+                  "startLine": 8736,
+                  "startColumn": 5,
+                  "endLine": 8736,
+                  "endColumn": 37
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "GetInputSourceName",
+                  "decoratedName": "?GetInputSourceName@@YAPEBDW4ImGuiInputSource@@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8732,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8734,
+                            "startColumn": 17
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8734,
+                            "startColumn": 40
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8735,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '1'. 'true' branch is taken"
+                        }
+                      },
+                      "kinds": [
+                        "Branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8735,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '0 <= source'. 'false' branch is taken\nEnum value 'source' is checked for upper bound."
+                        }
+                      },
+                      "kinds": [
+                        "Combination"
+                      ],
+                      "importance": "essential"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8735,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8735,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '0'. 'false' branch is taken"
+                        }
+                      },
+                      "kinds": [
+                        "Branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8735,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8735,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8736,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "C33010",
+          "message": {
+            "text": "Unchecked lower bound for enum source used as index.."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                },
+                "region": {
+                  "startLine": 8742,
+                  "startColumn": 5,
+                  "endLine": 8742,
+                  "endColumn": 37
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "GetMouseSourceName",
+                  "decoratedName": "?GetMouseSourceName@@YAPEBDW4ImGuiMouseSource@@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8738,
+                            "startColumn": 20
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8740,
+                            "startColumn": 17
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8740,
+                            "startColumn": 40
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8741,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '1'. 'true' branch is taken"
+                        }
+                      },
+                      "kinds": [
+                        "Branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8741,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '0 <= source'. 'false' branch is taken\nEnum value 'source' is checked for upper bound."
+                        }
+                      },
+                      "kinds": [
+                        "Combination"
+                      ],
+                      "importance": "essential"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8741,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8741,
+                            "startColumn": 5
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition '0'. 'false' branch is taken"
+                        }
+                      },
+                      "kinds": [
+                        "Branch"
+                      ],
+                      "importance": "important"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8741,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8741,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 8742,
+                            "startColumn": 5
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "C33010",
+          "message": {
+            "text": "Unchecked lower bound for enum key used as index.."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                },
+                "region": {
+                  "startLine": 13858,
+                  "startColumn": 95,
+                  "endLine": 13858,
+                  "endColumn": 119
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "ImGui::ShowMetricsWindow::funcs::IsLegacyNativeDupe",
+                  "decoratedName": "?IsLegacyNativeDupe@funcs@?IA@??ShowMetricsWindow@ImGui@@YAXPEA_N@Z@SA_NW4ImGuiKey@@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "codeFlows": [
+            {
+              "threadFlows": [
+                {
+                  "locations": [
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 13858,
+                            "startColumn": 40
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 13858,
+                            "startColumn": 86
+                          }
+                        },
+                        "message": {
+                          "text": "Branching based on condition 'key < 512'. 'true' branch is taken\nEnum value 'key' is checked for upper bound."
+                        }
+                      },
+                      "kinds": [
+                        "Combination"
+                      ],
+                      "importance": "essential"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 13858,
+                            "startColumn": 95
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    },
+                    {
+                      "location": {
+                        "physicalLocation": {
+                          "artifactLocation": {
+                            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+                          },
+                          "region": {
+                            "startLine": 13858,
+                            "startColumn": 115
+                          }
+                        }
+                      },
+                      "importance": "unimportant"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.35.32217.1",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imgui.cpp"
+          },
+          "roles": [
+            "analysisTarget",
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "83c1c2c44b87f47ad176b411468a1f8d0f29d855d2108783a0ab50e059935dba"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imgui.h"
+          },
+          "hashes": {
+            "sha-256": "b1b17fa2633baeadbbeab8f8f1e83952646daf81d8d21f07ee6924047a5ee35c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imconfig.h"
+          },
+          "hashes": {
+            "sha-256": "ac38247dfca7da244f821f808234d88a155503246dbc30c3d1be809ea733b5a5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imgui_internal.h"
+          },
+          "hashes": {
+            "sha-256": "b845d4e7e42bdc9eebeb5e9147f6b71aaf33c439b5f8f78c9eb6be283f4c3453"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imstb_textedit.h"
+          },
+          "hashes": {
+            "sha-256": "789e1759a06827df0894674c73cb3e40af8b11e6e1c210104155682b68d266f6"
+          }
+        }
+      ]
+    }
+  ]
+}

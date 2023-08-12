@@ -1,0 +1,497 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C26495",
+          "message": {
+            "text": "Variable 'Card::type' is uninitialized. Always initialize a member variable (type.6)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/Card.h"
+                },
+                "region": {
+                  "startLine": 36,
+                  "startColumn": 1,
+                  "endLine": 36,
+                  "endColumn": 1
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "Card::{ctor}",
+                  "decoratedName": "??0Card@@QEAA@XZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ],
+          "properties": {
+            "targetSymbol": "Card::type"
+          }
+        },
+        {
+          "ruleId": "C26819",
+          "message": {
+            "text": "Unannotated fallthrough between switch labels (es.78)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/Code_Libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/lexer.hpp"
+                },
+                "region": {
+                  "startLine": 868,
+                  "startColumn": 18,
+                  "endLine": 868,
+                  "endColumn": 18
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "nlohmann::json_abi_v3_11_2::detail::lexer<nlohmann::json_abi_v3_11_2::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::json_abi_v3_11_2::adl_serializer,std::vector<unsigned char,std::allocator<unsigned char> >,void>,nlohmann::json_abi_v3_11_2::detail::iterator_input_adapter<char const *> >::scan_comment",
+                  "decoratedName": "?scan_comment@?$lexer@V?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@json_abi_v3_11_2@nlohmann@@V?$vector@EV?$allocator@E@std@@@2@X@json_abi_v3_11_2@nlohmann@@V?$iterator_input_adapter@PEBD@detail@23@@detail@json_abi_v3_11_2@nlohmann@@AEAA_NXZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ruleId": "C26819",
+          "message": {
+            "text": "Unannotated fallthrough between switch labels (es.78)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/Code_Libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/lexer.hpp"
+                },
+                "region": {
+                  "startLine": 905,
+                  "startColumn": 17,
+                  "endLine": 905,
+                  "endColumn": 33
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "nlohmann::json_abi_v3_11_2::detail::lexer<nlohmann::json_abi_v3_11_2::basic_json<std::map,std::vector,std::basic_string<char,std::char_traits<char>,std::allocator<char> >,bool,__int64,unsigned __int64,double,std::allocator,nlohmann::json_abi_v3_11_2::adl_serializer,std::vector<unsigned char,std::allocator<unsigned char> >,void>,nlohmann::json_abi_v3_11_2::detail::iterator_input_adapter<char const *> >::scan_comment",
+                  "decoratedName": "?scan_comment@?$lexer@V?$basic_json@Vmap@std@@Vvector@2@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@2@_N_J_KNVallocator@2@Uadl_serializer@json_abi_v3_11_2@nlohmann@@V?$vector@EV?$allocator@E@std@@@2@X@json_abi_v3_11_2@nlohmann@@V?$iterator_input_adapter@PEBD@detail@23@@detail@json_abi_v3_11_2@nlohmann@@AEAA_NXZ",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.35.32217.1",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/Card.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "6e9dd2e31d9404ca3e8c6726c1b8911e6e2af01887c662d5f284ca19778ea4f5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///D:/Code_Libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/lexer.hpp"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "723a7ae568a1460da5235cd1f844db6b12b0f684b5284d5a4c7db4dbe165c980"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/card.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "07e63bb3af8516874364d2a91cba7fe31eda3ec4f4c6b39be9a5a6e9ae92e01f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/json.hpp"
+          },
+          "hashes": {
+            "sha-256": "30d91841e7f24bb63fba92165dc389a363b6e18055d7c2749dbf891e986d085c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/adl_serializer.hpp"
+          },
+          "hashes": {
+            "sha-256": "0c4ce295a3f4092cff092901c340c961b10c48ec8d555110fe3df9f619740a19"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/abi_macros.hpp"
+          },
+          "hashes": {
+            "sha-256": "702af5c60305125d8e5a4c813d271882b93bb2ba43cdfe91ee4edcef3fbeeb71"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/conversions/from_json.hpp"
+          },
+          "hashes": {
+            "sha-256": "8cad2ff4a90591110a5cc6134eef25e5a16c33f97b531e1576ed551319d16896"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/exceptions.hpp"
+          },
+          "hashes": {
+            "sha-256": "f3621e521c99f4bbfdb0da3aa7b29ff6ceef03163ca62c1ff07efaf06cf1c03c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/value_t.hpp"
+          },
+          "hashes": {
+            "sha-256": "f16e2a05c4fdfbe22fc2cee90f7adc0e6ca2c5345348fa1f8c855a8e04f263b6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/macro_scope.hpp"
+          },
+          "hashes": {
+            "sha-256": "586645c0e64aefc9aa6550f26a32938c4e272f5afc6e63de81e09c1723d2d5e6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/detected.hpp"
+          },
+          "hashes": {
+            "sha-256": "01963ca48427b32286a4bda3741c0817648af65eef673fe7cc9fc9d94cf343a8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/void_t.hpp"
+          },
+          "hashes": {
+            "sha-256": "30cf458ad751b37097da34c3e28d9e387bbb37fab29d180984baba4e67d3a831"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/thirdparty/hedley/hedley.hpp"
+          },
+          "hashes": {
+            "sha-256": "6c5cdf981e43776f4cd320dc7476309efa7332f457288c4f33051b7fa4f7611d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/string_escape.hpp"
+          },
+          "hashes": {
+            "sha-256": "16899a2c01c9aee2cd0af5b9ede0d3f579af00b58303197e2692f756310317c9"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/position_t.hpp"
+          },
+          "hashes": {
+            "sha-256": "9007ed8be12f1b0d001c292c1525fdeb1418bed8cd63bf8a00b118574f5bd5d1"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/cpp_future.hpp"
+          },
+          "hashes": {
+            "sha-256": "519285d9ceca3d6d3afa0c647c71f8790b91179da66a08b68a9f73a8218016f3"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/type_traits.hpp"
+          },
+          "hashes": {
+            "sha-256": "b13c458f9cd6a2d8577031f12e11a951e4ae7b508cce64ffadff42f248ad8b4b"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/iterators/iterator_traits.hpp"
+          },
+          "hashes": {
+            "sha-256": "78a1c32b2bad6782f97063cf642a6dc02588960b9420c1924ca5ef76fb8df9d8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/call_std/begin.hpp"
+          },
+          "hashes": {
+            "sha-256": "f79ecf122600e2e64f344dd95277910816206e37a80bed18737d22f281dbb465"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/call_std/end.hpp"
+          },
+          "hashes": {
+            "sha-256": "f0d1493594068a73102b52c47f48d3443ea589afbcaaa2672b0e71499f61d696"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/json_fwd.hpp"
+          },
+          "hashes": {
+            "sha-256": "7f50d7790bcfc96394a6f1a1e6635d4b2c8e08e48081ea2e9129df071cb871ef"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/string_concat.hpp"
+          },
+          "hashes": {
+            "sha-256": "9cc995f50f574dab3da7e98aae81ac50c3b0c2ca8eb29f95d2f7172f4865b273"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/identity_tag.hpp"
+          },
+          "hashes": {
+            "sha-256": "9a95aaad68fe15b01570b4f9efaebd1ed2e5ad703767f4b93fc2cd855142199c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/std_fs.hpp"
+          },
+          "hashes": {
+            "sha-256": "68e8e979cca53bd97bc2e85b9e8a78066b5e791a951b0c73290cd7e5c740bc6a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/conversions/to_json.hpp"
+          },
+          "hashes": {
+            "sha-256": "8d725eca0c56c3f36e64f2d98b701e900d381c6155d0ca98f75ee23173933aef"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/iterators/iteration_proxy.hpp"
+          },
+          "hashes": {
+            "sha-256": "421c70755e26fa8605ae383d8b47fc6d147c7b7ccfc36f3d92fd52ef92824bbd"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/byte_container_with_subtype.hpp"
+          },
+          "hashes": {
+            "sha-256": "b56733d3a5b84004f4c7da8ac29ff030509d6a013eeb090541bfcdc46c1a5dc0"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/hash.hpp"
+          },
+          "hashes": {
+            "sha-256": "54f7dd4f4d6cc7bd4c09fec7bda7e47992ee5799bf235104384ee70108023cff"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/binary_reader.hpp"
+          },
+          "hashes": {
+            "sha-256": "2d9cd443303da37c1f5a88b6e1358309c233e54899f82682f33bc6f42c5de97a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/input_adapters.hpp"
+          },
+          "hashes": {
+            "sha-256": "581e5a0982c01bf63449479547e555101b70641dbfc65c31078e0fc4a4e61671"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/json_sax.hpp"
+          },
+          "hashes": {
+            "sha-256": "be444c45a477d6a26e8bfbb13965e29fc91734a5d06e13b8f34e3b065cf21438"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/meta/is_sax.hpp"
+          },
+          "hashes": {
+            "sha-256": "876aaf9f4ccbed679a9340cf51b3dbe38eaf0b18122e0affe0c5e711a2f73533"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/input/parser.hpp"
+          },
+          "hashes": {
+            "sha-256": "fd687a688fc68835ee1337f4e1e7e935bea6cd17dffabb43399628a69424d669"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/iterators/internal_iterator.hpp"
+          },
+          "hashes": {
+            "sha-256": "2414d89c20b4eb1278672a21b0f09858c4861ffe878432ec942e23e4d277479a"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/iterators/primitive_iterator.hpp"
+          },
+          "hashes": {
+            "sha-256": "274ba54c5c2b2cd8e7c1e635392b09e73fd65d4183571f821ad149b3954ed818"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/iterators/iter_impl.hpp"
+          },
+          "hashes": {
+            "sha-256": "68d4b911bfdef6dfb0d14f3c6c58cc7bb1a15f7464dd784ebeb8f753991074b2"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/iterators/json_reverse_iterator.hpp"
+          },
+          "hashes": {
+            "sha-256": "3872b8f61110ff09a77c3a3dca852c0fee9defcaab5b778dc990a253883a5329"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/json_custom_base_class.hpp"
+          },
+          "hashes": {
+            "sha-256": "bd8766af0922ce350f00da817c5544b009bd3dbe701d6afd8e5809cedd6e6405"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/json_pointer.hpp"
+          },
+          "hashes": {
+            "sha-256": "89e228596dccae2f4d0f45cfd40097ad29ef2670e8bf461b1a7ee823d5a03834"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/json_ref.hpp"
+          },
+          "hashes": {
+            "sha-256": "ef04660db0236f2f3341bd36de00cbc3f494018278800294be82f85e1fcc4b7c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/output/binary_writer.hpp"
+          },
+          "hashes": {
+            "sha-256": "fa372506e0779ac7e989c5dcd57b065eb741abc260ededb7ed9fcd848cc6f6ad"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/output/output_adapters.hpp"
+          },
+          "hashes": {
+            "sha-256": "fec93f451953874aad7a30c79b921cd0c4ade1698e36e964bfe89f1a4a6a3c0f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/output/serializer.hpp"
+          },
+          "hashes": {
+            "sha-256": "ede7f1d89e8ba0b2744b5cadd60e99f2e6012abccf1c04aab7356c94a2448fcb"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/conversions/to_chars.hpp"
+          },
+          "hashes": {
+            "sha-256": "1710dc29a710e8a2121872aefcdd5667c88d3b41b3f863e793a6265106ec237c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/ordered_map.hpp"
+          },
+          "hashes": {
+            "sha-256": "9d7070944cc64da4818120698975b74d8b7e61152b5d10aff81985493d5b4f6d"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/detail/macro_unscope.hpp"
+          },
+          "hashes": {
+            "sha-256": "65bb2a65eb2935643f5b788efb7b4092f1a329d0b4fbbc9a1b7343775f58797f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/code_libraries/nlohmann_json/json-develop/include/nlohmann/thirdparty/hedley/hedley_undef.hpp"
+          },
+          "hashes": {
+            "sha-256": "2e5aff1a15cbfd8786a2776d0ec0e38e14d2ceadeea229bce5c583bafc26803c"
+          }
+        }
+      ]
+    }
+  ]
+}

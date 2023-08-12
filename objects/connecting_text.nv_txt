@@ -1,0 +1,15 @@
+NAME {
+connecting_to_game
+}
+TEXT {
+Connecting to game...
+0_0_0_0
+259
+}
+RENDER_DIMENSIONS {
+500_100
+}
+BACKGROUND {
+-19_-11_544_125
+255_149_0_0
+}

@@ -1,0 +1,113 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "C26819",
+          "message": {
+            "text": "Unannotated fallthrough between switch labels (es.78)."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imstb_truetype.h"
+                },
+                "region": {
+                  "startLine": 2148,
+                  "startColumn": 12
+                }
+              },
+              "logicalLocations": [
+                {
+                  "fullyQualifiedName": "stbtt__run_charstring",
+                  "decoratedName": "?stbtt__run_charstring@@YAHPEBUstbtt_fontinfo@@HPEAUstbtt__csctx@@@Z",
+                  "kind": "function"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.35.32217.1",
+          "informationUri": "https://aka.ms/cpp/ca"
+        }
+      },
+      "invocations": [
+        {
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///D:/C++_Projects_V2/Cosmic_Encounter/Cosmic_Encounter/src/novalis/imgui/imstb_truetype.h"
+          },
+          "roles": [
+            "resultFile"
+          ],
+          "hashes": {
+            "sha-256": "586e476246073d1cd8548f75a2b76a2642bff92f331de61672357428f72bf4e8"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imgui_draw.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ],
+          "hashes": {
+            "sha-256": "e496f78624e15bca33109405c8d91998174d50f730fe1a94377d04351e4c0b2f"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imgui.h"
+          },
+          "hashes": {
+            "sha-256": "b1b17fa2633baeadbbeab8f8f1e83952646daf81d8d21f07ee6924047a5ee35c"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imconfig.h"
+          },
+          "hashes": {
+            "sha-256": "ac38247dfca7da244f821f808234d88a155503246dbc30c3d1be809ea733b5a5"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imgui_internal.h"
+          },
+          "hashes": {
+            "sha-256": "b845d4e7e42bdc9eebeb5e9147f6b71aaf33c439b5f8f78c9eb6be283f4c3453"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imstb_textedit.h"
+          },
+          "hashes": {
+            "sha-256": "789e1759a06827df0894674c73cb3e40af8b11e6e1c210104155682b68d266f6"
+          }
+        },
+        {
+          "location": {
+            "uri": "file:///d:/c++_projects_v2/cosmic_encounter/cosmic_encounter/src/novalis/imgui/imstb_rectpack.h"
+          },
+          "hashes": {
+            "sha-256": "bb53504995e983d54b1ae06ea727f0b39647e5e205b4bf7da01343953974951c"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+NAME {
+11_attack
+}
+TEXT {
+11
+0_0_0_0
+500
+}
+RENDER_DIMENSIONS {
+281_56
+}
+BACKGROUND {
+-17_-186_316_425
+255_0_0_0
+}
