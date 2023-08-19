@@ -1,7 +1,6 @@
 #include <sstream>
 
-#include "Game.h"
-#include "ClientSide.h"
+#include "GameServer.h"
 
 #include "novalis/Instance.h"
 
@@ -9,15 +8,15 @@
 
 void host(const tcp::endpoint& endpoint, size_t pCount) {
 	asio::io_context context;
-	Game game{ context, endpoint };
+	GameServer svr{ context, endpoint };
 
 	std::error_code ec;
-	game.waitForPlayers(pCount, ec);
+	svr.waitForPlayers(pCount, ec);
 	if (ec) {
 		std::cerr << ec.message() << std::endl;
 		return;
 	}
-	game.setup();
+	svr.setup();
 }
 
 int main(int argc, char* argv[]) {

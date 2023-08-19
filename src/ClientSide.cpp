@@ -1,9 +1,5 @@
 #include "ClientSide.h"
 
-void load() {
-
-}
-
 void play(const tcp::endpoint& serverEndpoint, const std::string& name)
 {
 	nv::NovalisInstance instance{ "Cosmic Encounter" };
@@ -11,23 +7,25 @@ void play(const tcp::endpoint& serverEndpoint, const std::string& name)
 	instance.loadObjsFromDir(nv::workingDirectory() + "/objects");
 	associateCardRenders(instance);
 
-	//associateCardRenders(instance)
 	asio::io_context context;
-	
+
+	Client cli{ name, tcp::socket{ context } };
+
+	WaitingRoom waitingRoom{ instance, context, cli, serverEndpoint };
+
 	//prevent context.run() from immediately returning
 	asio::io_context::work work{ context };
-	
+
 	//joins at end of function
 	asio::thread_pool threadPool;
-	
-	asio::post(threadPool, 
+
+	asio::post(threadPool,
 		[&context] { context.run(); }
 	);
 
-	Player p{ context, name };
-
-	WaitingRoom waitingRoom{ instance, context, p, serverEndpoint };
 	waitingRoom.execute();
+
+	std::cout << "The Scene has ended\n";
 
 	if (waitingRoom.endReason() == nv::Scene::EndReason::Quit) {
 		context.stop();
@@ -35,7 +33,7 @@ void play(const tcp::endpoint& serverEndpoint, const std::string& name)
 		return;
 	}
 
-	CardSelection selection{ instance, p.hand };
+	CardSelection selection{ instance, cli.p.hand };
 	selection.execute();
 
 	context.stop();

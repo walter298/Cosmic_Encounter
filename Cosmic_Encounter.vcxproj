@@ -90,10 +90,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Card.cpp" />
     <ClCompile Include="src\CardRender.cpp" />
+    <ClCompile Include="src\Client.cpp" />
     <ClCompile Include="src\ClientSide.cpp" />
-    <ClCompile Include="src\Game.cpp" />
+    <ClCompile Include="src\GameServer.cpp" />
     <ClCompile Include="src\novalis\Event.cpp" />
     <ClCompile Include="src\novalis\Instance.cpp" />
     <ClCompile Include="src\novalis\RenderTypes.cpp" />
@@ -117,13 +117,14 @@
     <ClCompile Include="src\novalis\Renderer.cpp" />
     <ClCompile Include="src\novalis\Scene.cpp" />
     <ClCompile Include="src\novalis\Sound.cpp" />
-    <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\GameState.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Card.h" />
+    <ClInclude Include="src\Alien.h" />
     <ClInclude Include="src\CardRender.h" />
+    <ClInclude Include="src\Client.h" />
     <ClInclude Include="src\ClientSide.h" />
-    <ClInclude Include="src\Game.h" />
+    <ClInclude Include="src\GameServer.h" />
     <ClInclude Include="src\novalis\Event.h" />
     <ClInclude Include="src\novalis\Instance.h" />
     <ClInclude Include="src\novalis\RenderTypes.h" />
@@ -150,7 +151,7 @@
     <ClInclude Include="src\novalis\RenderObj.h" />
     <ClInclude Include="src\novalis\Scene.h" />
     <ClInclude Include="src\novalis\Sound.h" />
-    <ClInclude Include="src\Player.h" />
+    <ClInclude Include="src\GameState.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="objects\cards\0_attack.txt" />

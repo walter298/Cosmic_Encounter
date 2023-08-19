@@ -1,8 +1,9 @@
 ﻿  Scanning sources for module dependencies...
-  CardRender.cpp
+  Client.cpp
+  GameServer.cpp
   Generating code
-  2 of 6681 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  362 of 6584 functions ( 5.5%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    9 functions had inline decision re-evaluated but remain unchanged
+    542 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   Cosmic_Encounter.vcxproj -> D:\C++_Projects_V2\Cosmic_Encounter\x64\Release\Cosmic_Encounter.exe

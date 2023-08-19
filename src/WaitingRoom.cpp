@@ -1,6 +1,6 @@
 #include "WaitingRoom.h"
 
-WaitingRoom::WaitingRoom(nv::NovalisInstance& instance, asio::io_context& context, Player& client,
+WaitingRoom::WaitingRoom(nv::NovalisInstance& instance, asio::io_context& context, Client& client,
 	const tcp::endpoint& serverEndpoint) :
 	Scene{ nv::relativePath("scenes/homescreen.txt"), instance },
 	m_context{ context },
@@ -50,6 +50,7 @@ void WaitingRoom::connect() {
 	m_context.post(
 		[this] { 
 			auto connState = m_client.joinGame(m_context, m_serverEndpoint); 
+			//std::cout << "Hit the connect button and connected\n";
 			std::scoped_lock lk{ m_connStateMutex };
 			m_connState = std::move(connState);
 		}

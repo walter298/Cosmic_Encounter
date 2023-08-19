@@ -5,11 +5,11 @@
 #include "Novalis/Instance.h"
 #include "novalis/Scene.h"
 
-#include "Card.h"
+#include "GameState.h"
 
 void associateCardRenders(nv::NovalisInstance& instance);
 
-std::vector<nv::TextPtr> getCardRenders(const std::vector<Card>& cards);
+std::vector<nv::TextPtr> getCardRenders(const Cards& cards);
 
 void formatCards(std::vector<nv::TextPtr>& cards, int x, int x2, int y);
 

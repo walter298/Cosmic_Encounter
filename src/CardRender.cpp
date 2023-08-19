@@ -24,7 +24,7 @@ void associateCardRenders(nv::NovalisInstance& instance) {
 	}
 }
 
-std::vector<nv::TextPtr> getCardRenders(const std::vector<Card>& cards) {
+std::vector<nv::TextPtr> getCardRenders(const Cards& cards) {
 	std::vector<nv::TextPtr> ret;
 	ret.reserve(cards.size());
 	for (const auto& card : cards) {
@@ -40,7 +40,7 @@ void formatCards(std::vector<nv::TextPtr>& cards, int x, int x2, int y)
 
 	const int maxTotalCardWidth = (x2 - x) - totalPixelGap;
 	const int cardWidth  = maxTotalCardWidth / static_cast<int>(std::ssize(cards));
-	const int cardHeight = cardWidth / 5;
+	const int cardHeight = cardWidth / 4;
 	
 	for (auto& card : cards) {
 		card->setSize(cardWidth, cardHeight);

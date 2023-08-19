@@ -1,20 +1,10 @@
 #include "Network.h"
 
-MessageHandler::MessageHandler(tcp::socket&& socket)
-	: m_socket{ std::move(socket) } {}
-
-MessageHandler::MessageHandler(asio::io_context& context)
-	: m_socket{ context } {}
-
-tcp::socket* MessageHandler::operator->() {
-	return &m_socket;
-}
-
 void MessageHandler::send(json msg, std::error_code& ec) {
 	std::string serializedJson = msg.dump() + '!';
 
 	if (serializedJson.size() < maxMsgSize) {
-		asio::write(m_socket, asio::buffer(serializedJson, serializedJson.size()), ec);
+		asio::write(socket, asio::buffer(serializedJson, serializedJson.size()), ec);
 		if (ec) {
 			return;
 		} 
@@ -30,8 +20,8 @@ std::optional<json> MessageHandler::recv(std::error_code& ec)
 
 	asio::streambuf buf{ maxMsgSize };
 
-	asio::read_until(m_socket, buf, '!', ec);
-	
+	asio::read_until(socket, buf, '!', ec);
+
 	if (ec) {
 		return std::nullopt;
 	}

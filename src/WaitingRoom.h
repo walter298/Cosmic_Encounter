@@ -2,15 +2,18 @@
 
 #include <atomic>
 
+#include <asio.hpp>
+#include <asio/ip/tcp.hpp>
+
 #include "novalis/Scene.h"
 #include "novalis/Sound.h"
 
-#include "Player.h"
+#include "Client.h"
 
 class WaitingRoom : public nv::Scene {
 private:
 	asio::io_context& m_context;
-	Player& m_client;
+	Client& m_client;
 	const tcp::endpoint& m_serverEndpoint;
 
 	ConnectionState m_connState = ConnectionState::NotConnecting;
@@ -26,6 +29,6 @@ private:
 	nv::Event m_startBtnEvt;
 	nv::Button m_startBtn;
 public:
-	WaitingRoom(nv::NovalisInstance& instance, asio::io_context& context, Player& client, 
+	WaitingRoom(nv::NovalisInstance& instance, asio::io_context& context, Client& client, 
 		const tcp::endpoint& serverEndpoint);
 };

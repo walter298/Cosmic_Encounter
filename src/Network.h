@@ -20,20 +20,13 @@ enum class ConnectionState {
 	Connected
 };
 
-class MessageHandler {
-private:
+struct MessageHandler {
 	static constexpr size_t maxMsgSize = 8192;
 	static constexpr seconds maxMsgWait = 20s;
 
-	tcp::socket m_socket;
-public:
-	explicit MessageHandler(tcp::socket&& socket);
-	explicit MessageHandler(asio::io_context& context);
-
-	tcp::socket* operator->();
+	tcp::socket socket;
 
 	void send(json msg, std::error_code& ec);
-
 	std::optional<json> recv(std::error_code& ec);
 };
 
