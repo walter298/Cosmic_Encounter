@@ -1,39 +1,32 @@
 #include "WaitingRoom.h"
 
-WaitingRoom::WaitingRoom(nv::NovalisInstance& instance, asio::io_context& context, Client& client,
+WaitingRoom::WaitingRoom(nv::Instance& instance, asio::io_context& context, Client& client,
 	const tcp::endpoint& serverEndpoint) :
 	Scene{ nv::relativePath("scenes/homescreen.txt"), instance },
 	m_context{ context },
 	m_client{ client },
-	m_serverEndpoint{ serverEndpoint }
+	m_serverEndpoint{ serverEndpoint },
+	m_connectingMsg{ instance.getText("connecting_to_game") },
+	m_failedToConnectMsg{ instance.getText("failed_to_connect") },
+	m_startBtnPic{ instance.getText("start_button") },
+	m_startBtn{ &m_startBtnPic.backgroundRect() }
 {
-	const auto objectPath = nv::workingDirectory() + "/objects";
+	//set render positions of textures
+	m_connectingMsg.setRenPos(950, 750);
+	m_failedToConnectMsg.setRenPos(950, 550);
+	m_startBtnPic.setRenPos(950, 750);
 
-	//initialize connection messages
-	m_connectingMsg      = instance.getObj<nv::Text>("connecting_to_game");
-	m_failedToConnectMsg = instance.getObj<nv::Text>("failed_to_connect");
+	render(&m_startBtnPic, 1);
 	
-	m_connectingMsg->setRenPos(950, 750);
-	m_failedToConnectMsg->setRenPos(950, 550);
-
-	//create start button texture
-	m_startBtnPic = instance.getObj<nv::Text>("start_button");
-	m_startBtnPic->setRenPos(950, 750);
-	addObj(m_startBtnPic);
-
-	m_startBtn = &m_startBtnPic->backgroundRect();
-	m_startBtn.onHovered(
-		[this] {
-			m_startBtnPic->backgroundRect().setRenderColor(107, 250, 8, 255);
+	m_startBtn.onHovered([this] {
+			m_startBtnPic.backgroundRect().setRenderColor(107, 250, 8, 255);
 		}
 	);
-	m_startBtn.onUnhovered(
-		[this] {
-			m_startBtnPic->backgroundRect().setRenderColor(185, 196, 194, 255);
+	m_startBtn.onUnhovered([this] {
+			m_startBtnPic.backgroundRect().setRenderColor(185, 196, 194, 255);
 		}
 	);
-	m_startBtn.onLeftClick(
-		[this] {
+	m_startBtn.onLeftClick([this] {
 			connect();
 		}
 	);
@@ -44,13 +37,13 @@ WaitingRoom::WaitingRoom(nv::NovalisInstance& instance, asio::io_context& contex
 
 void WaitingRoom::connect() {
 	removeButton(m_startBtn.getID());
-	m_renderer.removeObj(m_startBtnPic->getID());
-	m_renderer.addObj(m_connectingMsg);
+	stopRendering(m_startBtnPic.getID());
+	removeButton(m_startBtn.getID());
+	render(&m_connectingMsg, 1);
 
 	m_context.post(
 		[this] { 
 			auto connState = m_client.joinGame(m_context, m_serverEndpoint); 
-			//std::cout << "Hit the connect button and connected\n";
 			std::scoped_lock lk{ m_connStateMutex };
 			m_connState = std::move(connState);
 		}
@@ -62,9 +55,9 @@ void WaitingRoom::checkConnection() {
 	switch (m_connState) {
 	case ConnectionState::FailedToConnect:
 		m_connState = ConnectionState::NotConnecting;
-		m_renderer.removeObj(m_connectingMsg->getID());
-		m_renderer.addObj(m_failedToConnectMsg);
-		m_renderer.addObj(m_startBtnPic);
+		stopRendering(m_connectingMsg.getID());
+		render(&m_failedToConnectMsg, 1);
+		render(&m_startBtnPic, 1);
 		addButton(&m_startBtn);
 		break;
 	case ConnectionState::Connected:
@@ -72,4 +65,3 @@ void WaitingRoom::checkConnection() {
 		break;
 	}
 }
-

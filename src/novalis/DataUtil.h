@@ -1,6 +1,7 @@
 #ifndef DATA_UTIL_H
 #define DATA_UTIL_H
 
+#include <assert.h>
 #include <filesystem>
 #include <fstream>
 #include <functional>
@@ -8,28 +9,38 @@
 #include <map>
 #include <numeric>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
 #include <SDL.h>
+
+#include "Rect.h"
 
 #include "GlobalMacros.h"
 
+
+void to_json(nlohmann::json& j, const SDL_Color& c);
+void from_json(const nlohmann::json& j, SDL_Color& c);
+
+void to_json(nlohmann::json& j, const SDL_Rect& c);
+void from_json(const nlohmann::json& j, SDL_Rect& c);
+
 namespace nv {
-	template<typename Map, typename KeyType>
-	void checkKeyValidity(const Map& map, const KeyType& invalidKey) {
-		if (!map.contains(invalidKey)) {
-			using namespace std::literals;
-			throw std::runtime_error("Error: invalid key accessed for "s + typeid(map).name());
-		}
-	}
+	using nlohmann::json;
+	using namespace std::literals;
+
+	void to_json(json& j, const Rect& r);
+	void from_json(const json& j, Rect& r);
 
 	template<std::integral... Nums>
 	void parseUnderscoredNums(const std::string& line, Nums&... nums)
 	{
 		size_t index = 0;
-		
+
 		auto numify = [&](auto& x) {
 			size_t iIndex = index; //initial index
 
@@ -47,73 +58,8 @@ namespace nv {
 		(numify(nums), ...);
 	}
 
-	template<std::integral... Nums> 
-	std::string writeNums(Nums... nums) {
-		std::string ret;
-
-		int argCount = sizeof...(nums);
-
-		auto add = [&](auto num) {
-			argCount--;
-			if (argCount == 0) {
-				ret.append(std::to_string(num));
-			} else {
-				ret.append(std::to_string(num) + "_");
-			}
-		};
-
-		((add(nums)), ...);
-
-		return ret;
-	}
-
 	const std::string& workingDirectory();
-
-	template<typename FileStream>
-	void checkFileValidity(FileStream& file, std::string path) {
-		if (!file.is_open()) {
-			throw std::runtime_error("Error: could not open " + path);
-		}
-	}
-
-	class FileData {
-	private:
-		class DataSection;
-		using DataSectionPtr           = std::unique_ptr<DataSection>;
-		using OptionalDataSection      = std::optional<DataSection*>;
-		using OptionalMultiDataSection = std::optional<std::vector<DataSection*>>;
-		using DataMap                  = std::multimap<std::string, DataSectionPtr>;
-
-		class DataSection {
-		private:
-			DataMap m_nestedData;
-			std::vector<std::string> m_data;
-		public:
-			DataSection(std::vector<std::string> data);
-
-			std::vector<std::string>& data() noexcept;
-			std::string& operator[](size_t idx) noexcept;
-
-			OptionalDataSection getNestedData(std::string title) noexcept;
-			OptionalMultiDataSection getNestedDataOccurrences(std::string title) noexcept;
-		};
-
-		using It = std::vector<std::string>::iterator;
-		static It matchingClosingBrace(It begin, It end); //assumes there are matching braces
-
-		DataMap m_data;
-
-		static OptionalMultiDataSection
-			getDataOccurences(const DataMap& mMap, std::string title) noexcept;
-	public:
-		FileData(std::string absPath);
-
-		OptionalMultiDataSection getMultipleDataSections(std::string string);
-		OptionalDataSection      getDataSection(std::string);
-	};
-
-	std::tuple<std::string, int, int> staticObjectData(std::string& line);
-
+	
 	inline std::string objectPath(std::string relativePath) {
 		return workingDirectory() + std::string("static_objects/") + relativePath;
 	}
@@ -146,6 +92,9 @@ namespace nv {
 		((std::cout << std::forward<Args>(args) << " "), ...);
 		std::cout << std::endl;
 	}
-}
+
+	template<typename Derived, typename Base>
+	concept DerivedFrom = std::is_base_of_v<Base, Derived>;
+};
 
 #endif

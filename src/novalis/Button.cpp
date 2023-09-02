@@ -1,25 +1,17 @@
 #include "Button.h"
 
-int nv::Button::IDCount = 0;
-
-nv::Button::Button() noexcept {
-	IDCount++;
-	m_ID = IDCount;
-}
-
 nv::Button::Button(Rect* rect) noexcept
-	: Button()
 {
 	m_rect = rect;
 }
 
-int nv::Button::getID() const noexcept {
+nv::ID<nv::Button> nv::Button::getID() const noexcept {
 	return m_ID;
 }
 
 void nv::Button::onHovered(EventFunc&& func) {
 	m_queuedEvents.emplace_back(
-		[func = std::move(func), this]() mutable { func(); m_previouslyHovered = true; } ,
+		[func = std::move(func), this]() mutable { func(); m_previouslyHovered = true; },
 		[this]() {
 			auto [mx, my] = InputHandler::getInstance().mouse();
 			return m_rect->isCoordContained(mx, my);
@@ -29,7 +21,7 @@ void nv::Button::onHovered(EventFunc&& func) {
 
 void nv::Button::onUnhovered(EventFunc&& func) {
 	m_queuedEvents.emplace_back(
-		[func = std::move(func), this]() mutable { func(); m_previouslyHovered = false; } ,
+		[func = std::move(func), this]() mutable { func(); m_previouslyHovered = false; },
 		[this]() {
 			auto [mx, my] = InputHandler::getInstance().mouse();
 			return !m_rect->isCoordContained(mx, my) && m_previouslyHovered;

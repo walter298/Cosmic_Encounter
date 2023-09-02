@@ -10,7 +10,6 @@ using asio::ip::tcp;
 struct Client {
 	std::string name;
 	MessageHandler handler;
-
 	Player p;
 
 	ConnectionState joinGame(asio::io_context& context, const tcp::endpoint& serverEndpoint);

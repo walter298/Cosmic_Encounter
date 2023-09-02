@@ -7,8 +7,6 @@
 #include <SDL_render.h>
 #include <SDL_rect.h>
 
-#include "DataUtil.h"
-
 namespace nv {
 	struct Rect {
 		SDL_Rect rect{ 0, 0, 0, 0 };
@@ -17,7 +15,7 @@ namespace nv {
 		Rect() = default;
 		Rect(int x, int y, int w, int h, Uint8 r = 0, Uint8 g = 0, Uint8 b = 0, Uint8 a = 0);
 
-		bool isCoordContained(const int& mX, const int& mY);
+		bool isCoordContained(const int& mX, const int& mY) const noexcept;
 
 		void move(int dx, int dy);
 

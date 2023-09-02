@@ -42,9 +42,6 @@
     <ClCompile Include="src\novalis\HomeEditor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\novalis\ObjectEditor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\novalis\Rect.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,6 +96,15 @@
     <ClCompile Include="src\ClientSide.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Destiny.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Alien.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\novalis\SpriteEditor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\GameServer.h">
@@ -129,9 +135,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\novalis\Init.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\novalis\ObjectEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\novalis\Rect.h">
@@ -195,6 +198,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\ClientSide.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Destiny.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RenderLayout.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\novalis\ID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\novalis\SpriteEditor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -273,5 +288,7 @@
     <None Include="objects\cards\40_attack.nv_txt" />
     <None Include="objects\cards\negotiate.nv_txt" />
     <None Include="objects\cards\12_attack.nv_txt" />
+    <None Include="objects\aliens\virus.nv_sprite" />
+    <None Include="objects\aliens\pacifist.nv_sprite" />
   </ItemGroup>
 </Project>

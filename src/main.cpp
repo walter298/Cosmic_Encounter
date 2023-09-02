@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 
-	std::jthread serverThread { host, endpoint, 1 };
+	std::jthread serverThread{ host, endpoint, 1 };
 
 	std::cout << "Enter your name: ";
 	std::string name;

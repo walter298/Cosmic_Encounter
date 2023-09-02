@@ -9,7 +9,7 @@
 
 namespace nv {
 	class Music {
-		Mix_Chunk* m_music  = nullptr;
+		Mix_Chunk* m_music = nullptr;
 		bool m_valid = false;
 	public:
 		explicit Music(std::string absPath) noexcept;

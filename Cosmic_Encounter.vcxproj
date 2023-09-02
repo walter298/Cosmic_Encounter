@@ -93,10 +93,13 @@
     <ClCompile Include="src\CardRender.cpp" />
     <ClCompile Include="src\Client.cpp" />
     <ClCompile Include="src\ClientSide.cpp" />
+    <ClCompile Include="src\Destiny.cpp" />
     <ClCompile Include="src\GameServer.cpp" />
+    <ClCompile Include="src\Alien.cpp" />
     <ClCompile Include="src\novalis\Event.cpp" />
     <ClCompile Include="src\novalis\Instance.cpp" />
     <ClCompile Include="src\novalis\RenderTypes.cpp" />
+    <ClCompile Include="src\novalis\SpriteEditor.cpp" />
     <ClCompile Include="src\novalis\TextEditor.cpp" />
     <ClCompile Include="src\WaitingRoom.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -112,7 +115,6 @@
     <ClCompile Include="src\novalis\imgui\imgui_impl_sdlrenderer2.cpp" />
     <ClCompile Include="src\novalis\imgui\imgui_tables.cpp" />
     <ClCompile Include="src\novalis\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="src\novalis\ObjectEditor.cpp" />
     <ClCompile Include="src\novalis\Rect.cpp" />
     <ClCompile Include="src\novalis\Renderer.cpp" />
     <ClCompile Include="src\novalis\Scene.cpp" />
@@ -124,11 +126,15 @@
     <ClInclude Include="src\CardRender.h" />
     <ClInclude Include="src\Client.h" />
     <ClInclude Include="src\ClientSide.h" />
+    <ClInclude Include="src\Destiny.h" />
     <ClInclude Include="src\GameServer.h" />
     <ClInclude Include="src\novalis\Event.h" />
+    <ClInclude Include="src\novalis\ID.h" />
     <ClInclude Include="src\novalis\Instance.h" />
     <ClInclude Include="src\novalis\RenderTypes.h" />
+    <ClInclude Include="src\novalis\SpriteEditor.h" />
     <ClInclude Include="src\novalis\TextEditor.h" />
+    <ClInclude Include="src\RenderLayout.h" />
     <ClInclude Include="src\WaitingRoom.h" />
     <ClInclude Include="src\Network.h" />
     <ClInclude Include="src\novalis\Button.h" />
@@ -145,7 +151,6 @@
     <ClInclude Include="src\novalis\imgui\imstb_textedit.h" />
     <ClInclude Include="src\novalis\imgui\imstb_truetype.h" />
     <ClInclude Include="src\novalis\Init.h" />
-    <ClInclude Include="src\novalis\ObjectEditor.h" />
     <ClInclude Include="src\novalis\Rect.h" />
     <ClInclude Include="src\novalis\Renderer.h" />
     <ClInclude Include="src\novalis\RenderObj.h" />
@@ -190,6 +195,8 @@
     <Media Include="sounds\mars.wav" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="objects\aliens\pacifist.nv_sprite" />
+    <None Include="objects\aliens\virus.nv_sprite" />
     <None Include="objects\cards\0_attack.nv_txt" />
     <None Include="objects\cards\10_attack.nv_txt" />
     <None Include="objects\cards\11_attack.nv_txt" />

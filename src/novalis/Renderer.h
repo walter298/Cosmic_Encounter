@@ -19,7 +19,7 @@ namespace nv {
 	private:
 		SDL_Renderer* m_renderer;
 
-		std::vector<RenderObj*> m_objects;
+		std::vector<std::pair<int, RenderObj*>> m_objects;
 	public:
 		Renderer(SDL_Renderer* renderer); 
 		Renderer(const Renderer&) = delete;
@@ -31,8 +31,8 @@ namespace nv {
 
 		void clear() noexcept;
 
-		void addObj(RenderObj* obj) noexcept;
-		void removeObj(int ID);
+		void addObj(RenderObj* obj, int layer) noexcept;
+		void removeObj(ID<RenderObj> ID);
 
 		void render() noexcept; 
 		void renderImgui(ImGuiIO& io);

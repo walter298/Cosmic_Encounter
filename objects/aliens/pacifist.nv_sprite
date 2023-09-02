@@ -1,0 +1,19 @@
+{
+   "image_paths": [
+      "D:\\C++_Projects_V2\\Cosmic_Encounter\\Cosmic_Encounter\\images\\pacifist.png"
+   ],
+   "ren": {
+      "color": [
+         0,
+         0,
+         0,
+         0
+      ],
+      "sdl_rect": [
+         200,
+         200,
+         326,
+         469
+      ]
+   }
+}

@@ -3,8 +3,10 @@
 
 #include <array>
 #include <functional>
-#include <string>
+#include <locale>
 #include <memory>
+#include <string>
+
 
 #include <Windows.h>
 #include <ShlObj.h>
@@ -22,22 +24,41 @@ namespace nv {
 
 			ImGuiIO& initIO();
 		public:
-			ImGuiInstance(SDL_Window* window, Renderer& renderer);
+			ImGuiInstance(SDL_Window* window, SDL_Renderer* renderer);
 			~ImGuiInstance();
 
 			ImGuiIO& getIO();
 		};
 
-		void runEditor(ImGuiIO& io, Renderer& renderer, std::function<void(bool&)> showGui);
+		class Editor {
+		private:
+			ImGuiIO& m_io;
+		protected:
+			Renderer m_renderer;
+		public:
+			Editor(ImGuiIO& io, SDL_Renderer* renderer);
 
-		void editRect(Rect& rect);
+			void execute();
+			virtual void showGui(bool&) = 0;
+			virtual void customRender() {}
+		};
+
+		enum class EditorDest {
+			None,
+			Scene,
+			Sprite,
+			Text
+		};
+
+		void editRect(Rect& rect, bool editingColor = false);
 
 		std::optional<std::string> openFilePath();
+		std::optional<std::vector<std::string>> openFilePaths();
 		std::optional<std::string> saveFile(std::wstring openMessage);
 
 		template<typename T>
 		constexpr auto centerPos(T l1, T l2) {
-			return (l1 / 2) - (l2 / 2);
+			return (l1 - l2) / 2;
 		}
 
 		using RectRef = std::reference_wrapper<nv::Rect>;

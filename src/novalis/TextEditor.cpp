@@ -1,38 +1,11 @@
 #include "TextEditor.h"
 
-void nv::editor::runTextEditor(Text& text, nv::Renderer& renderer, bool& running)
+nv::editor::TextEditor::TextEditor(ImGuiIO& io, SDL_Renderer* renderer)
+	: Editor(io, renderer) {}
+
+void nv::editor::TextEditor::showGui(bool& running)
 {
-	constexpr float editPanelX = 200.0f;
-	constexpr float editPanelY = 500.0f;
-	constexpr float editPanelW = 300.0f;
-	constexpr float editPanelH = 125.0f;
-
-	constexpr ImVec2 editPanelPos{ editPanelX, editPanelY };
-	constexpr ImVec2 editPanelSize{ editPanelW, editPanelH };
-	
-	constexpr ImVec2 fontPanelPos{ editPanelX, editPanelY + editPanelH + 10.0f };
-	constexpr ImVec2 fontPanelSize{ 300.0f, 100.0f };
-
-	constexpr ImVec2 rectPanelSize{ 300.0f, 100.0f };
-	constexpr ImVec2 rectPanelPos{ editPanelX, fontPanelPos.y + fontPanelSize.y + 10.0f };
-
-	constexpr ImVec2 saveExitPanelPos{ rectPanelPos.x, rectPanelPos.y + rectPanelSize.y + 10.0f };
-	constexpr ImVec2 saveExitPanelSize{ editPanelW, 100.0f };
-
-	constexpr ImVec2 buttonSize{ 100.0f, 30.0f };
-
-	static int fontSize = 500;
-	static int fontWrapLength = 500;
-	static std::array<float, 3> rgb;
-
-	constexpr size_t maxMessageLength = 1024;
-	static std::array<char, maxMessageLength> inputText;
-
-	static DragCheck backgroundRectDrag = [&text] {
-		DragCheck drag;
-		drag.add(text.backgroundRect());
-		return drag;
-	}();
+	Text text;
 
 	backgroundRectDrag.drag();
 
@@ -40,23 +13,23 @@ void nv::editor::runTextEditor(Text& text, nv::Renderer& renderer, bool& running
 	ImGui::SetNextWindowSize(editPanelSize);
 	ImGui::Begin("Text Properties");
 
-	if (ImGui::InputText("Text", inputText.data(), maxMessageLength)) {
-		text.setSize(fontSize, fontSize / 5);
-		text.setText(renderer.get(), inputText.data());
+	if (ImGui::InputText("Text", m_inputText.data(), maxMessageLength)) {
+		text.setSize(m_fontSize, m_fontSize / 5);
+		text.setText(m_renderer.get(), m_inputText.data());
 	}
-	if (ImGui::SliderInt("Font Size", &fontSize, 10, 1000)) {
-		text.setSize(fontSize, fontSize / 5);
+	if (ImGui::SliderInt("Font Size", &m_fontSize, 10, 1000)) {
+		text.setSize(m_fontSize, m_fontSize / 5);
 	} 
-	if (ImGui::SliderInt("Wrap Length", &fontWrapLength, 10, 1000)) {
-		text.setWrapLength(renderer.get(), static_cast<Uint32>(fontWrapLength));
+	if (ImGui::SliderInt("Wrap Length", &m_fontWrapLength, 10, 1000)) {
+		text.setWrapLength(m_renderer.get(), static_cast<Uint32>(m_fontWrapLength));
 	} 
 	
-	if (ImGui::ColorEdit3("Text Color", rgb.data())) {
-		text.setColor(renderer.get(),
+	if (ImGui::ColorEdit3("Text Color", m_rgb.data())) {
+		text.setColor(m_renderer.get(),
 			SDL_Color{
-				static_cast<Uint8>(rgb[0] * 255),
-				static_cast<Uint8>(rgb[1] * 255),
-				static_cast<Uint8>(rgb[2] * 255)
+				static_cast<Uint8>(m_rgb[0] * 255),
+				static_cast<Uint8>(m_rgb[1] * 255),
+				static_cast<Uint8>(m_rgb[2] * 255)
 			}
 		);
 	}
@@ -67,10 +40,10 @@ void nv::editor::runTextEditor(Text& text, nv::Renderer& renderer, bool& running
 	ImGui::Begin("Font");
 
 	if (ImGui::Button("Libertine", buttonSize)) {
-		text.setFont(renderer.get(), FontType::Libertine);
+		text.setFont(m_renderer.get(), FontType::Libertine);
 	}
 	if (ImGui::Button("Work Sans", buttonSize)) {
-		text.setFont(renderer.get(), FontType::WorkSans);
+		text.setFont(m_renderer.get(), FontType::WorkSans);
 	}
 
 	ImGui::End();
@@ -90,9 +63,10 @@ void nv::editor::runTextEditor(Text& text, nv::Renderer& renderer, bool& running
 		auto filePath = openFilePath();
 		if (filePath) {
 			try {
-				Text loaded{ renderer.get(), filePath.value() };
+				Text loaded{ m_renderer.get(), filePath.value() };
 				text = std::move(loaded);
 				text.setRenPos(600, 500);
+				std::ranges::copy(text.text(), m_inputText.begin());
 			} catch (std::runtime_error& e) {
 				std::cerr << e.what() << std::endl;
 			}

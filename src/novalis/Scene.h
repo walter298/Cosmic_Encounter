@@ -10,6 +10,8 @@
 #include <ranges>
 #include <memory>
 
+#include <nlohmann/json.hpp>
+
 #include "Event.h"
 #include "Instance.h"
 #include "Button.h"
@@ -24,39 +26,45 @@ namespace nv {
 			NextScene
 		};
 	private:
-		EndReason m_endReason;
+		EndReason m_endReason = EndReason::Quit;
 
-		std::vector<std::function<void()>> m_objectPositionSetters;
-
-		std::vector<RenderObjPtr> m_owningObjects; //only the objects specific to the scene
-		std::vector<RenderObj*> m_objects; //all the objects in the scene
-
+		std::vector<Sprite> m_sprites;
+		std::vector<Text> m_texts;
+		Background m_background;
+		
 		std::vector<Event> m_events;
-		std::vector<Button*> m_buttons;
+		std::vector<Button> m_buttons;
+		std::vector<Event*> m_nonOwningEvents;
+		std::vector<Button*> m_nonOwningButtons;
 
 		bool m_running = false;
 
 		std::vector<RectPtr> m_collisionBoxes;
 
-		void setObjectPositions();
-	protected:
-		Renderer& m_renderer;
-
-		void endScene(EndReason end) noexcept;
+		Renderer m_renderer;
 	public:
-		Scene(std::string path, NovalisInstance& instance);
+		Scene(std::string path, Instance& instance);
 		Scene() = default;
 
 		EndReason endReason() const noexcept;
 
-		void addObj(RenderObjPtr obj);
-		void addObj(RenderObj* obj);
-		
-		void addEvent(Event evt);
-		void cancelEvent(int ID);
+		void endScene(EndReason end) noexcept;
 
-		void addButton(Button* btn);
-		void removeButton(int ID);
+		void addObj(Sprite&& obj, int layer) noexcept;
+		void addObj(Text&& obj, int layer) noexcept;
+
+		//obj must be non-owning
+		void render(RenderObj* obj, int layer) noexcept;
+
+		void stopRendering(ID<RenderObj> ID) noexcept;
+
+		void addEvent(Event&& evt) noexcept;
+		void addEvent(Event* evt) noexcept; //evt must be non-owning
+		void cancelEvent(ID<Event> ID) noexcept;
+
+		void addButton(Button&& btn) noexcept;
+		void addButton(Button* btn) noexcept; //btn must be non-owning
+		void removeButton(ID<Button> ID) noexcept;
 
 		void camMove(int dx, int dy);
 

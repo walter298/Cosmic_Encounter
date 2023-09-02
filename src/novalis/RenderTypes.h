@@ -1,12 +1,13 @@
 #ifndef Sprite_H
 #define Sprite_H
 
-#include <vector>
-#include <string>
 #include <fstream>
 #include <filesystem>
 #include <iostream>
 #include <memory>
+#include <ranges>
+#include <string>
+#include <vector>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -14,47 +15,45 @@
 
 #include "Rect.h"
 #include "DataUtil.h"
+#include "ID.h"
 
 namespace nv {
-	template<typename Obj>
-	std::unique_ptr<Obj> copyRenderObj(const Obj* other);
-
 	class RenderObj {
+	private:
+		ID<RenderObj> m_ID;
 	protected:
-		static int IDCount;
-
 		std::string m_name;
-		int m_ID = 0;
-		int m_layer = 0;
-
-		RenderObj() noexcept;
 	public:
 		const std::string& getName() const noexcept;
 
-		int getID() const noexcept;
-		int getLayer() const noexcept;
+		ID<RenderObj> getID() const noexcept;
 
-		virtual void render(SDL_Renderer* renderer) = 0;
-		virtual void move(int dx, int dy) = 0;
-
-		template<typename Obj>
-		friend std::unique_ptr<Obj> copyRenderObj(const Obj* other);
+		virtual void render(SDL_Renderer* renderer) noexcept = 0;
 	};
+
+	template<DerivedFrom<RenderObj> T>
+	bool operator==(const T& t, const T& u) noexcept {
+		return t.getID() == u.getID();
+	}
 
 	using RenderObjPtr = std::unique_ptr<RenderObj>;
 
 	struct Texture {
 		SDL_Texture* raw = nullptr;
-	
+
 		explicit Texture(SDL_Texture* texture) noexcept;
-		Texture(const Texture&) = delete;
+
+		Texture(const Texture&)            = delete;
+		Texture& operator=(const Texture&) = delete;
+
+		Texture(Texture&&) noexcept            = default;
+		Texture& operator=(Texture&&) noexcept = default;
+
 		~Texture() noexcept;
 	};
 
 	using TexturePtr = std::shared_ptr<Texture>;
-
-	inline constexpr int BACKGROUND_LAYER = 0;
-
+	
 	class Sprite final : public RenderObj {
 	private:
 		std::vector<TexturePtr> m_spriteSheet;
@@ -67,15 +66,13 @@ namespace nv {
 		using RenderBoxes    = std::vector<Rect>;
 
 		CollisionBoxes m_collisionBoxes;
-		RenderBoxes    m_renderBoxes;
+		std::vector<Rect> m_renderBoxes;
 
 		Rect m_ren, m_world;
-
-		int m_layer = 0; //layer of screen rendering
 	public:
-		Sprite(SDL_Renderer* Renderer, std::string path);
-		Sprite(const Sprite&) = delete; //prevent slicing
-
+		Sprite() = default;
+		Sprite(SDL_Renderer* renderer, std::string path);
+		
 		inline SDL_Texture* getSprite() {
 			return m_currentSprite;
 		}
@@ -88,40 +85,41 @@ namespace nv {
 			return m_world;
 		}
 
-		inline void renMove(int dx, int dy) {
+		inline void renMove(int dx, int dy) noexcept {
 			m_ren.move(dx, dy);
 		}
 
-		inline void worldMove(int dx, int dy) {
+		inline void worldMove(int dx, int dy) noexcept {
 			m_world.move(dx, dy);
 		}
 
-		inline void move(int dx, int dy) {
-			renMove(dx, dy);
-			worldMove(dx, dy);
-		}
+		void move(int dx, int dy) noexcept;
 
-		inline void setRenPos(int x, int y) {
+		inline void setRenPos(int x, int y) noexcept {
 			m_ren.setPos(x, y);
 		}
 
-		inline void setWorldPos(int x, int y) {
+		inline void setWorldPos(int x, int y) noexcept {
 			m_world.setPos(x, y);
 		}
 
-		inline void renScale(int dw, int dh) {
+		inline void renScale(int dw, int dh) noexcept {
 			m_ren.scale(dw, dh);
 		}
 
-		inline void worldScale(int dw, int dh) {
+		inline void worldScale(int dw, int dh) noexcept {
 			m_world.scale(dw, dh);
 		}
 
-		inline void setSize(int w, int h) {
+		inline void setRenSize(int w, int h) noexcept {
 			m_ren.setSize(w, h);
 		}
 
-		inline void scale(int dw, int dh) {
+		inline void setWorldSize(int w, int h) noexcept {
+			m_world.setSize(w, h);
+		}
+
+		inline void scale(int dw, int dh) noexcept {
 			renScale(dw, dh);
 			worldScale(dw, dh);
 		}
@@ -131,22 +129,23 @@ namespace nv {
 			m_ren = m_renderBoxes[idx];
 		}
 
-		inline virtual void render(SDL_Renderer* renderer) noexcept override {
-			SDL_RenderCopy(renderer, m_currentSprite, nullptr, &m_ren.rect);
-		}
+		void render(SDL_Renderer* renderer) noexcept override;
 	};
 
 	struct Background final : public RenderObj {
 	private:
-		TexturePtr m_tex;
-		Rect m_ren;
+		std::vector<nv::Rect> m_rens;
+		std::vector<TexturePtr> m_backgrounds;
 	public:
-		Background(SDL_Renderer* renderer, std::string data);
-		virtual void render(SDL_Renderer* renderer) override;
-		virtual void move(int dx, int dy) override;
+		Background() = default;
+		Background(SDL_Renderer* renderer, std::string absFilePath);
+
+		void render(SDL_Renderer* renderer) noexcept override;
+
+		void renMove(int dx, int dy) noexcept;
 	};
 
-	using SpritePtr  = std::unique_ptr<Sprite>;
+	using SpritePtr = std::unique_ptr<Sprite>;
 
 	enum class FontType {
 		WorkSans,
@@ -157,7 +156,7 @@ namespace nv {
 
 	template<typename Stream>
 	Stream& operator<<(Stream& stream, const Text& text);
-	
+
 	class Text final : public RenderObj {
 	private:
 		TexturePtr m_tex;
@@ -177,14 +176,15 @@ namespace nv {
 		static void loadFonts();
 		static void closeFonts();
 
+		Text() = default;
 		Text(SDL_Renderer* renderer, std::string absPath);
 		Text(SDL_Renderer* renderer, std::string text, FontType font, SDL_Color color, Uint32 wrapLength);
-		
-		inline Rect& backgroundRect() {
+
+		inline Rect& backgroundRect() noexcept {
 			return m_background;
 		}
 
-		inline const std::string& text() {
+		inline const std::string& text() const noexcept {
 			return m_text;
 		}
 
@@ -192,8 +192,7 @@ namespace nv {
 
 		void setRenPos(int x, int y);
 		void setSize(int w, int h);
-		virtual void move(int dx, int dh) override;
-
+		
 		void setText(SDL_Renderer* renderer, std::string text);
 		void setFont(SDL_Renderer* renderer, FontType font);
 		void setColor(SDL_Renderer* rendererer, SDL_Color color);
@@ -205,34 +204,28 @@ namespace nv {
 
 	using TextPtr = std::unique_ptr<Text>;
 
-	template<typename Stream>
+	template<typename Stream> 
 	Stream& operator<<(Stream& stream, const Text& text) {
-		writeSection(stream, "TEXT", text.m_text, 
-			writeNums(text.m_color.r, text.m_color.g, text.m_color.b, text.m_color.a), text.m_wrapLength);
-
-		const Rect& ren = text.m_ren, background = text.m_background;
-
-		writeSection(stream, "RENDER_DIMENSIONS", writeNums(ren.rect.w, ren.rect.h));
-
-		writeSection(stream, "BACKGROUND",
-			writeNums(background.rect.x - ren.rect.x , background.rect.y - ren.rect.y, background.rect.w, background.rect.h),
-			writeNums(background.color.r, background.color.g, background.color.b, background.color.a)
-		);
-		
+		json j;
+		j["type"]        = "text"s;
+		j["name"]        = text.m_name;
+		j["text"]        = text.m_text;
+		j["color"]       = text.m_color;
+		j["wrap_length"] = text.m_wrapLength;
+		j["background"]  = text.m_background;
+		j["ren"]         = text.m_ren;
+		stream << j.dump(2);
 		return stream;
 	}
+}
 
-	template<typename Obj> 
-	std::unique_ptr<Obj> copyRenderObj(const Obj* other) 
-		//requires(std::is_base_of_v<RenderObj, Obj>) 
-	{
-		auto ret = std::make_unique<Obj>(*other);
-		
-		RenderObj::IDCount++;
-		ret->m_ID = RenderObj::IDCount;
-
-		return ret;
-	}
+namespace std {
+	template<nv::DerivedFrom<nv::RenderObj> T>
+	struct hash<T> {
+		std::size_t operator()(const T& obj) const {
+			return std::hash<int>{}(obj.getID().raw());
+		}
+	};
 }
 
 #endif

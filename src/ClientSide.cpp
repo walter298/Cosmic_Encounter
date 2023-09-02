@@ -2,40 +2,38 @@
 
 void play(const tcp::endpoint& serverEndpoint, const std::string& name)
 {
-	nv::NovalisInstance instance{ "Cosmic Encounter" };
+	nv::Instance instance{ "Cosmic Encounter" };
 
 	instance.loadObjsFromDir(nv::workingDirectory() + "/objects");
 	associateCardRenders(instance);
+	std::println("Associated Card Renders\n");
+	//asio::io_context context;
 
-	asio::io_context context;
+	//Client cli{ name, tcp::socket{ context } };
 
-	Client cli{ name, tcp::socket{ context } };
+	//WaitingRoom waitingRoom{ instance, context, cli, serverEndpoint };
 
-	WaitingRoom waitingRoom{ instance, context, cli, serverEndpoint };
+	////prevent context.run() from immediately returning
+	//asio::io_context::work work{ context };
 
-	//prevent context.run() from immediately returning
-	asio::io_context::work work{ context };
+	////joins at end of function
+	//asio::thread_pool threadPool;
 
-	//joins at end of function
-	asio::thread_pool threadPool;
+	//asio::post(threadPool,
+	//	[&context] { context.run(); }
+	//);
 
-	asio::post(threadPool,
-		[&context] { context.run(); }
-	);
+	//waitingRoom.execute();
 
-	waitingRoom.execute();
+	//if (waitingRoom.endReason() == nv::Scene::EndReason::Quit) {
+	//	context.stop();
+	//	threadPool.join();
+	//	return;
+	//}
 
-	std::cout << "The Scene has ended\n";
+	//CardSelection selection{ instance, cli.p.hand };
+	//selection.execute();
 
-	if (waitingRoom.endReason() == nv::Scene::EndReason::Quit) {
-		context.stop();
-		threadPool.join();
-		return;
-	}
-
-	CardSelection selection{ instance, cli.p.hand };
-	selection.execute();
-
-	context.stop();
-	threadPool.join();
+	//context.stop();
+	//threadPool.join();
 }

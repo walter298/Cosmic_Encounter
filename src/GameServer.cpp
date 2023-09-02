@@ -30,8 +30,11 @@ void GameServer::setup() {
 
 	//give each player a hand
 	for (auto& [color, cli] : m_players) {
-		moveTopContentsOut(cli.p.hand, m_deck, 8);
+		moveTopContentsOut(cli.p.hand, m_deck, 8); //give player cards from the deck
 		std::error_code ec;
+		json json;
+		json["cards"] = cli.p.hand;
+		//json["alien"] = 
 		cli.handler.send(cli.p.hand, ec);
 		if (ec) {
 			std::cerr << cli.name << " disconnected.\n";

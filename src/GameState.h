@@ -78,3 +78,8 @@ struct Player {
 	int shipCount = 20;
 	Color color = Color::Red;
 };
+
+struct GameState {
+	std::map<Color, Player> players; 
+	Cards m_deck, m_discardPile;
+};

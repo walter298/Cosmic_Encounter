@@ -1,9 +1,8 @@
 #include "CardRender.h"
 
-using CardRenderBimap = boost::bimap<Card, nv::Text*>;
-CardRenderBimap cardRenders;
+std::map<Card, nv::Text> cardRenders;
 
-void associateCardRenders(nv::NovalisInstance& instance) {
+void associateCardRenders(nv::Instance& instance) {
 	Cards deck = makeDeck();
 	deck.erase(std::unique(deck.begin(), deck.end()), deck.end()); //remove duplicates
 
@@ -20,15 +19,15 @@ void associateCardRenders(nv::NovalisInstance& instance) {
 			name = std::to_string(card.value) + "_reinforcement";
 			break;
 		}
-		cardRenders.insert(CardRenderBimap::value_type(card, instance.getObj<nv::Text>(name)));
+		cardRenders.emplace(card, instance.getText(name));
 	}
 }
 
-std::vector<nv::TextPtr> getCardRenders(const Cards& cards) {
-	std::vector<nv::TextPtr> ret;
+std::vector<nv::Text> copyCardRenders(const Cards& cards) {
+	std::vector<nv::Text> ret;
 	ret.reserve(cards.size());
 	for (const auto& card : cards) {
-		ret.push_back(nv::copyRenderObj(cardRenders.left.at(card)));
+		ret.push_back(cardRenders.at(card));
 	}
 	return ret;
 }
@@ -53,25 +52,28 @@ void CardSelection::checkSelectedCard()
 {
 	if (nv::InputHandler::getInstance().leftMouseClicked()) {
 		auto [mx, my] = nv::InputHandler::getInstance().mouse();
-		for (const auto& card : m_cards) {
-			if (card->backgroundRect().isCoordContained(mx, my)) {
-				//m_selectedCard = cardRenders.right.at(card.get());
-				//endScene(EndReason::NextScene);
-			}
+		for (const auto& [cardRender, card] : m_cardMap) {
+			/*if (cardRender.getBackgroundRect().isCoordContained(mx, my)) {
+				m_selectedCard = card;
+				endScene(EndReason::NextScene);
+			}*/
 		}
 	}
 }
 
-CardSelection::CardSelection(nv::NovalisInstance& instance, Cards& cards)
-	: Scene(nv::workingDirectory() + "/scenes/card_selection.txt", instance)
+CardSelection::CardSelection(nv::Instance& instance, const Cards& cards)
+	: Scene(nv::workingDirectory() + "/scenes/card_selection.txt", instance), 
+	m_cardRenders(copyCardRenders(cards))
 {
-	m_cards = getCardRenders(cards);
-	if (cards.size() > 0) {
-		formatCards(m_cards, 325, 1200, 1000);
+	auto setCardPos = [this, x = 0](nv::Text& cardRender) mutable {
+		cardRender.setRenPos(x, 700);
+		x += (cardRender.backgroundRect().rect.w + 20);
+		render(&cardRender, 1);
+	};
+	for (auto [idx, cardRender] : std::views::enumerate(m_cardRenders)) {
+		m_cardMap[idx] = cards[idx];
+		setCardPos(cardRender);
 	}
-
-	for (const auto& card : m_cards) {
-		addObj(card.get());
-	}
+	
 	addEvent([this] { checkSelectedCard(); });
 }

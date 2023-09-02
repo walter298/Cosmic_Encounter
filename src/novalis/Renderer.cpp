@@ -9,21 +9,27 @@ void nv::Renderer::clear() noexcept {
 	m_objects.clear();
 }
 
-void nv::Renderer::addObj(RenderObj* obj) noexcept {
-	auto objPos = std::ranges::upper_bound(m_objects, obj,
-		[](const auto& a, const auto& b) { return a->getLayer() < b->getLayer(); }
+void nv::Renderer::addObj(RenderObj* obj, int layer) noexcept {
+	auto objPos = std::ranges::lower_bound(m_objects, std::pair{ layer, obj },
+		[](const auto& a, const auto& b) { 
+			return a.first < b.first;
+		}
 	);
-	m_objects.insert(objPos, obj);
+	m_objects.insert(objPos, { layer, obj });
 }
 
-void nv::Renderer::removeObj(int ID) {
-	std::erase_if(m_objects, [&ID](const auto& obj) { return obj->getID() == ID; });
+void nv::Renderer::removeObj(ID<RenderObj> ID) {
+	std::erase_if(m_objects, 
+		[&ID](const auto& pos) { 
+			return pos.second->getID() == ID; 
+		}
+	);
 }
 
 void nv::Renderer::render() noexcept {
 	SDL_RenderClear(m_renderer);
 
-	for (const auto& obj : m_objects) {
+	for (auto& [layer, obj] : m_objects) {
 		obj->render(m_renderer);
 	}
 
@@ -42,7 +48,7 @@ void nv::Renderer::renderImgui(ImGuiIO& io) {
 	SDL_RenderClear(m_renderer);
 	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
 
-	for (const auto& obj : m_objects) {
+	for (auto& [layer, obj] : m_objects) {
 		obj->render(m_renderer);
 	}
 

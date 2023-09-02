@@ -22,13 +22,12 @@ private:
 	void connect();
 	void checkConnection();
 
-	nv::Text* m_startBtnPic;
-	nv::Text* m_connectingMsg;
-	nv::Text* m_failedToConnectMsg;
+	nv::Text m_startBtnPic;
+	nv::Text m_connectingMsg;
+	nv::Text m_failedToConnectMsg;
 
-	nv::Event m_startBtnEvt;
 	nv::Button m_startBtn;
 public:
-	WaitingRoom(nv::NovalisInstance& instance, asio::io_context& context, Client& client, 
+	WaitingRoom(nv::Instance& instance, asio::io_context& context, Client& client, 
 		const tcp::endpoint& serverEndpoint);
 };

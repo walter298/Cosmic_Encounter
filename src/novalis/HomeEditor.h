@@ -5,11 +5,13 @@
 
 namespace nv {
 	namespace editor {
-		enum class EditorDest {
-			None,
-			Scene,
-			Object,
-			Text
+		class HomeEditor : public Editor {
+		private:
+			EditorDest m_dest = EditorDest::None;
+		public:
+			HomeEditor(ImGuiIO& io, SDL_Renderer* renderer);
+			EditorDest getDestination() const noexcept;
+			void showGui(bool& running) override;
 		};
 
 		void runHomeEditor(EditorDest& dest, bool& running);

@@ -16,6 +16,7 @@
 
 #include "DataUtil.h"
 #include "GlobalMacros.h"
+#include "ID.h"
 
 namespace nv {
 	using EventFunc = std::move_only_function<void()>;
@@ -87,21 +88,13 @@ namespace nv {
 
 	struct Event {
 	private:
-		static int IDCount;
-
-		int m_ID = 0;
-
+		ID<Event> m_ID;
 		EventFunc m_func = [] {};
 
 		system_clock::time_point m_time = system_clock::now();
 	public:
-		Event() {
-			IDCount++;
-			m_ID = IDCount;
-		}
-
 		template<typename FuncType>
-		Event(FuncType&& func, milliseconds delay = 0ms) : Event()
+		Event(FuncType&& func, milliseconds delay = 0ms)
 		{
 			//if a non-zero delay value is passed in, make function have a delay counter
 			if (delay != 0ms) {
@@ -127,9 +120,7 @@ namespace nv {
 			)
 		{}
 
-		inline int getID() const noexcept {
-			return m_ID;
-		}
+		ID<Event> getID() const noexcept;
 
 		void operator()();
 	};

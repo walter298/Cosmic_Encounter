@@ -1,24 +1,24 @@
 #include "Instance.h"
 
-void nv::NovalisInstance::quit() {
-	m_objMap.clear();
-	m_renderer.clear();
+void nv::Instance::quit() {
+	m_spriteMap.clear();
+	m_textMap.clear();
+	m_backgroundMap.clear();
 
 	Text::closeFonts();
-	TTF_Quit();
 
+	TTF_Quit();
 	IMG_Quit();
 	Mix_Quit();
 
 	SDL_DestroyRenderer(m_SDLRenderer);
-	SDL_DestroyWindow(m_window);
+	SDL_DestroyWindow(m_SDLWindow);
 	SDL_Quit();
 }
 
-nv::NovalisInstance::NovalisInstance(std::string windowTitle) 
-	: m_window{ m_window = SDL_CreateWindow(windowTitle.c_str(), 0, 0, NV_SCREEN_WIDTH, NV_SCREEN_HEIGHT, SDL_WINDOW_OPENGL) }, 
-	m_SDLRenderer{ SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED) }, 
-	m_renderer{ m_SDLRenderer }
+nv::Instance::Instance(std::string windowTitle)
+	: m_SDLWindow{ SDL_CreateWindow(windowTitle.c_str(), 0, 0, NV_SCREEN_WIDTH, NV_SCREEN_HEIGHT, SDL_WINDOW_OPENGL) },
+	m_SDLRenderer{ SDL_CreateRenderer(m_SDLWindow, -1, SDL_RENDERER_ACCELERATED) }
 {
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0 ||
 		Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0 ||
@@ -31,32 +31,31 @@ nv::NovalisInstance::NovalisInstance(std::string windowTitle)
 	Text::loadFonts();
 }
 
-nv::NovalisInstance::~NovalisInstance() {
+nv::Instance::~Instance() {
 	quit();
 }
 
-void nv::NovalisInstance::loadObj(std::string absFilePath) {
-	using namespace std::filesystem;
-	if (!exists(absFilePath)) {
-		throw std::runtime_error("Error: " + absFilePath + " does not exist.\n");
-	}
-	auto fileExtensionRes = fileExtension(absFilePath);
-
-	RenderObjPtr obj;
-
-	if (fileExtensionRes.value() == ".nv_sprite") {
-		obj = std::make_unique<Sprite>(m_renderer.get(), absFilePath);
-	} 
-	else if (fileExtensionRes.value() == ".nv_txt") {
-		obj = std::make_unique<Text>(m_renderer.get(), absFilePath);
-	}
-	else {
-		throw std::runtime_error("Error: " + absFilePath + " does not have a valid file extension\n");
-	}
-	m_objMap.emplace(obj->getName(), std::move(obj));
+SDL_Window* nv::Instance::getRawWindow() noexcept {
+	return m_SDLWindow;
 }
 
-void nv::NovalisInstance::loadObjsFromDir(std::string absDirPath) {
+SDL_Renderer* nv::Instance::getRawRenderer() noexcept {
+	return m_SDLRenderer;
+}
+
+nv::Sprite nv::Instance::getSprite(std::string name) const {
+	return m_spriteMap.at(name);
+}
+
+nv::Background nv::Instance::getBackground(std::string name) const {
+	return m_backgroundMap.at(name);
+}
+
+nv::Text nv::Instance::getText(std::string name) const {
+	return m_textMap.at(name);
+}
+
+void nv::Instance::loadObjsFromDir(std::string absDirPath) {
 	using namespace std::filesystem;
 	if (!exists(absDirPath)) {
 		throw std::runtime_error("Error: " + absDirPath + " does not exist.\n");
@@ -69,7 +68,20 @@ void nv::NovalisInstance::loadObjsFromDir(std::string absDirPath) {
 		std::replace(currentPath.begin(), currentPath.end(), '\\', '/');
 
 		if (!entry.is_directory()) {
-			loadObj(currentPath);
+			auto fileExt = fileExtension(currentPath);
+			if (fileExt.has_value()) {
+				auto& ext = fileExt.value();
+				if (ext == "nv_sprite") {
+					Sprite sprite{ m_SDLRenderer, currentPath };
+					m_spriteMap[sprite.getName()] = std::move(sprite);
+				} else if (ext == "nv_text") {
+					Text text{ m_SDLRenderer, currentPath };
+					m_textMap[text.getName()] = std::move(text);
+				} else if (ext == "nv_background") {
+					Background background{ m_SDLRenderer, currentPath };
+					m_backgroundMap[background.getName()] = std::move(background);
+				}
+			}
 		} else {
 			subDirectoryPaths.push_back(std::move(currentPath));
 		}
@@ -78,8 +90,4 @@ void nv::NovalisInstance::loadObjsFromDir(std::string absDirPath) {
 	for (const auto& nestedPath : subDirectoryPaths) {
 		loadObjsFromDir(nestedPath);
 	}
-}
-
-void nv::NovalisInstance::removeObj(std::string name) {
-	m_objMap.erase(name);
 }

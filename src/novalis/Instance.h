@@ -6,40 +6,29 @@
 #include "Sound.h"
 
 namespace nv {
-	struct NovalisInstance {
+	class Instance {
 	private:
-		SDL_Window* m_window;
+		SDL_Window* m_SDLWindow;
 		SDL_Renderer* m_SDLRenderer;
 
-		std::map<std::string, RenderObjPtr> m_objMap;
-
-		Renderer m_renderer;
+		std::map<std::string, Sprite> m_spriteMap;
+		std::map<std::string, Background> m_backgroundMap;
+		std::map<std::string, Text> m_textMap;
 
 		void quit();
 
-		NovalisInstance() = default;
+		Instance() = default;
 	public:
-		NovalisInstance(std::string windowTitle);
-		~NovalisInstance();
+		Instance(std::string windowTitle);
+		~Instance();
 
-		inline SDL_Window* window() noexcept {
-			return m_window;
-		}
+		SDL_Window* getRawWindow() noexcept;
+		SDL_Renderer* getRawRenderer() noexcept;
 
-		inline Renderer& renderer() noexcept {
-			return m_renderer;
-		}
+		Sprite getSprite(std::string name) const;
+		Background getBackground(std::string name) const;
+		Text getText(std::string name) const;
 
-		template<typename Obj>
-		Obj* getObj(std::string name) 
-			requires(std::is_base_of_v<RenderObj, Obj>) 
-		{
-			return dynamic_cast<Obj*>(m_objMap.at(name).get());
-		}
-
-		void loadObj(std::string absFilePath);
 		void loadObjsFromDir(std::string absDirPath);
-
-		void removeObj(std::string name);
 	};
 }

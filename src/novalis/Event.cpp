@@ -75,7 +75,9 @@ void nv::InputHandler::useImGui() {
 	m_usingImGui = true;
 }
 
-int nv::Event::IDCount = 0;
+nv::ID<nv::Event> nv::Event::getID() const noexcept {
+	return m_ID;
+}
 
 void nv::Event::operator()() {
 	m_func();

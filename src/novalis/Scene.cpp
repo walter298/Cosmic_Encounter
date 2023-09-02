@@ -1,97 +1,68 @@
 #include "Scene.h"
 
-void nv::Scene::setObjectPositions() {
-	for (const auto& positionSetter : m_objectPositionSetters) {
-		positionSetter();
+nv::Scene::Scene(std::string absFilePath, Instance& instance) : m_renderer(instance.getRawRenderer()) {
+	std::ifstream sceneFile{ absFilePath };
+	assert(sceneFile.is_open());
+
+	auto jsonData = json::parse(sceneFile);
+
+	m_background = instance.getBackground(jsonData["background"].get<std::string>());
+
+	auto objectNames = jsonData["sprites"].get<std::vector<std::string>>();
+	for (const auto& name : objectNames) {
+		auto sprite = instance.getSprite(name);
+
+		auto ren = jsonData["sprites"][name]["ren"].get<Rect>();
+		sprite.setRenPos(ren.rect.x, ren.rect.y);
+		sprite.setRenSize(ren.rect.w, ren.rect.h);
+
+		auto world = jsonData["sprites"][name]["world"].get<Rect>();
+		sprite.setWorldPos(world.rect.x, world.rect.y);
+		sprite.setWorldSize(world.rect.w, world.rect.h);
 	}
+	sceneFile.close();
 }
 
-nv::Scene::Scene(std::string absPath, NovalisInstance& instance) : m_renderer(instance.renderer()) {
-	FileData sceneData{ absPath };
-
-	using namespace std::literals;
-
-	auto backgroundData = sceneData.getDataSection("BACKGROUNDS {"s);
-
-	//end program if no backgrounds/background image paths were specified 
-	if (!backgroundData.has_value()) {
-		throw std::runtime_error("Error: no background data specified in " + absPath);
-	}
-	if (backgroundData.value()->data().size() == 0) { //optional is never empty
-		throw std::runtime_error("Error: no background image paths specified in " + absPath);
-	}
-
-	//add backgrounds to scene
-	const auto& backgrounds = backgroundData.value()->data();
-
-	for (const auto& backgroundDatum : backgrounds) {
-		addObj(std::make_unique<Background>(instance.renderer().get(), backgroundDatum));
-	}
-
-	auto objData = sceneData.getMultipleDataSections("OBJECT {"s);
-	if (objData.has_value()) {
-		const auto& objectsData = objData.value();
-		for (const auto& nestedObjData : objectsData) {
-			auto name = nestedObjData->getNestedData("NAME {");
-
-			if (!name.has_value()) {
-				throw std::runtime_error("Error: no name data for object was specified in " + absPath);
-			} else if (name.value()->data().size() != 1) {
-				throw std::runtime_error("Error: incorrect name data format for object in " + absPath);
-			}
-
-			const auto& nameVal = name.value()->data().front(); //optional is never empty
-			auto newObj = instance.getObj<Sprite>(nameVal);
-			addObj(newObj);
-			if (nestedObjData->getNestedData("POSITION {").has_value()) {
-				auto coordData = nestedObjData->getNestedData("POSITION {");
-				const auto& coords = coordData.value()->data().front();
-				int rx, ry, wx, wy;
-				parseUnderscoredNums(coords, rx, ry, wx, wy);
-				m_objectPositionSetters.push_back(
-					[movedObj = std::move(newObj), rx, ry, wx, wy] {
-						movedObj->setRenPos(rx, ry);
-						movedObj->setWorldPos(wx, wy);
-					}
-				);
-			}
-		}
-	}
+void nv::Scene::addObj(Sprite&& obj, int layer) noexcept {
+	m_sprites.push_back(std::move(obj));
+	m_renderer.addObj(&m_sprites.back(), layer);
 }
 
-void nv::Scene::addObj(RenderObjPtr obj) {
-	m_objects.push_back(obj.get());
-	m_owningObjects.push_back(std::move(obj)); 
+void nv::Scene::addObj(Text&& obj, int layer) noexcept {
+	m_texts.push_back(std::move(obj));
+	m_renderer.addObj(&m_sprites.back(), layer);
 }
 
-void nv::Scene::addObj(RenderObj* obj) {
-	m_objects.push_back(obj);
+void nv::Scene::render(RenderObj* obj, int layer) noexcept {
+	m_renderer.addObj(obj, layer);
 }
 
-void nv::Scene::addEvent(Event evt) {
+void nv::Scene::stopRendering(ID<RenderObj> ID) noexcept {
+	m_renderer.removeObj(ID);
+}
+
+void nv::Scene::addEvent(Event&& evt) noexcept {
 	m_events.push_back(std::move(evt));
 }
 
-void nv::Scene::cancelEvent(int ID) {
-	auto evtPos = std::ranges::find_if(m_events,
-		[&ID](const auto& evt) { return evt.getID() == ID; }
-	);
-	if (evtPos != m_events.end()) {
-		m_events.erase(evtPos);
-	}
+void nv::Scene::addEvent(Event* evt) noexcept {
+	m_nonOwningEvents.push_back(evt);
 }
 
-void nv::Scene::addButton(Button* btn) {
-	m_buttons.push_back(btn);
+void nv::Scene::cancelEvent(ID<Event> ID) noexcept {
+	removeIfHasID(m_nonOwningEvents, ID);
 }
 
-void nv::Scene::removeButton(int ID) {
-	auto btnPos = std::ranges::find_if(m_buttons,
-		[&ID](const auto& evt) { return evt->getID() == ID; }
-	);
-	if (btnPos != m_buttons.end()) {
-		m_buttons.erase(btnPos);
-	}
+void nv::Scene::addButton(Button&& btn) noexcept {
+	m_buttons.push_back(std::move(btn));
+}
+
+void nv::Scene::addButton(Button* btn) noexcept {
+	m_nonOwningButtons.push_back(btn);
+}
+
+void nv::Scene::removeButton(ID<Button> ID) noexcept {
+	removeIfHasID(m_nonOwningButtons, ID);
 }
 
 void nv::Scene::endScene(Scene::EndReason endReason) noexcept {
@@ -109,13 +80,8 @@ void nv::Scene::camMove(int dx, int dy) {
 }
 
 void nv::Scene::execute() {
-	setObjectPositions();
-
-	for (const auto& obj : m_objects) {
-		m_renderer.addObj(obj);
-	}
-
 	m_running = true;
+
 	Event quitEvt{ [this] { m_running = false; },
 		[] { return InputHandler::getInstance().eventStates(SDL_QUIT); } };
 
@@ -131,7 +97,13 @@ void nv::Scene::execute() {
 		for (auto& evt : m_events) {
 			evt();
 		}
-		for (const auto& btn : m_buttons) {
+		for (auto& evt : m_nonOwningEvents) {
+			(*evt)();
+		}
+		for (auto& btn : m_buttons) {
+			btn();
+		}
+		for (auto& btn : m_nonOwningButtons) {
 			(*btn)();
 		}
 		

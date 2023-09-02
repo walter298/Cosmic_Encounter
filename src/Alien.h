@@ -1,11 +1,11 @@
 #pragma once
 
-#include "novalis/RenderTypes.h"
+#include "novalis/Instance.h"
 
-
+#include "GameState.h"
 
 struct Alien {
 	nv::SpritePtr sprite;
-	std::function<void(Game&)> power;
-	GamePhase powerPhase;
+	void(*power)(GameState&);
 };
+

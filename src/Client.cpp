@@ -18,7 +18,7 @@ ConnectionState Client::joinGame(asio::io_context& context, const tcp::endpoint&
 		return ConnectionState::FailedToConnect;
 	}
 
-	//tell server our name is m_name
+	//tell the server our name
 	handler.send(name, ec);
 	if (ec) {
 		std::cerr << "Error sending name data: " << ec.message() << std::endl;
@@ -32,15 +32,8 @@ ConnectionState Client::joinGame(asio::io_context& context, const tcp::endpoint&
 		return ConnectionState::FailedToConnect;
 	}
 
-	std::cout << "Getting Cards\n";
-	json parsedJson = playerRes.value();
-	try {
-		p.hand = parsedJson;
-	} catch (std::exception& e) {
-		std::cerr << e.what() << std::endl;
-	}
-	std::cout << "Returning connected\n";
-
+	p.hand = playerRes.value();
+	
 	return ConnectionState::Connected;
 }
 

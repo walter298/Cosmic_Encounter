@@ -8,12 +8,12 @@ ImGuiIO& ImGuiInstance::initIO() {
 	return ImGui::GetIO();
 }
 
-ImGuiInstance::ImGuiInstance(SDL_Window* window, Renderer& renderer) : m_io(initIO()) {
+ImGuiInstance::ImGuiInstance(SDL_Window* window, SDL_Renderer* renderer) : m_io(initIO()) {
 	(void)m_io;
 	m_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	ImGui::StyleColorsDark();
-	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer.get());
-	ImGui_ImplSDLRenderer2_Init(renderer.get());
+	ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+	ImGui_ImplSDLRenderer2_Init(renderer);
 }
 
 ImGuiInstance::~ImGuiInstance() {
@@ -26,11 +26,16 @@ ImGuiIO& ImGuiInstance::getIO() {
 	return m_io;
 }
 
-void nv::editor::runEditor(ImGuiIO& io, Renderer& renderer, std::function<void(bool&)> showGui) {
+using nv::editor::Editor;
+
+Editor::Editor(ImGuiIO& io, SDL_Renderer* renderer)
+	: m_io{ io }, m_renderer{ renderer } {}
+
+void Editor::execute() {
 	bool running = true;
 
 	InputHandler::getInstance().useImGui();
-	
+
 	Event quitEvt{
 		[&running] { running = false; },
 		[] { return InputHandler::getInstance().eventStates(SDL_QUIT); }
@@ -39,7 +44,7 @@ void nv::editor::runEditor(ImGuiIO& io, Renderer& renderer, std::function<void(b
 	while (running) {
 		auto waitTime = 1000ms / NV_FPS;
 		auto endTime = system_clock::now() + waitTime;
-		
+
 		InputHandler::getInstance().run();
 
 		quitEvt();
@@ -55,27 +60,42 @@ void nv::editor::runEditor(ImGuiIO& io, Renderer& renderer, std::function<void(b
 		//checks frames, render
 		if (now < endTime) {
 			std::this_thread::sleep_for(endTime - now);
-		} 
-		renderer.renderImgui(io);
+		}
+		ImVec4 color{ 0.45f, 0.55f, 0.60f, 1.00f };
+
+		ImGui::Render();
+		SDL_RenderSetScale(m_renderer.get(), m_io.DisplayFramebufferScale.x, m_io.DisplayFramebufferScale.y);
+		SDL_SetRenderDrawColor(m_renderer.get(),
+			//unfortunately SDL uses ints for screen pixels and ImGui uses floats 
+			static_cast<Uint8>(color.x * 255), static_cast<Uint8>(color.y * 255),
+			static_cast<Uint8>(color.z * 255), static_cast<Uint8>(color.w * 255));
+		SDL_RenderClear(m_renderer.get());
+		ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+
+		customRender();
+
+		SDL_RenderPresent(m_renderer.get());
 	}
 }
 
-void nv::editor::editRect(Rect& rect) {
-	static std::array<float, 4> rgba = { 0, 0, 0, 0 };
-
-	if (ImGui::ColorEdit4("Color", rgba.data())) {
-		rect.setRenderColor(
-			static_cast<Uint8>(rgba[0] * 255),
-			static_cast<Uint8>(rgba[1] * 255),
-			static_cast<Uint8>(rgba[2] * 255),
-			static_cast<Uint8>(rgba[3] * 255)
-		);
-	}
-
+void nv::editor::editRect(Rect& rect, bool editingColor) {
 	static std::array<int, 2> size = { 0, 0 };
 
 	if (ImGui::SliderInt2("Size", size.data(), 0, 1000)) {
 		rect.setSize(size[0], size[1]);
+	}
+
+	static std::array<float, 4> rgba = { 0, 0, 0, 0 };
+
+	if (editingColor) {
+		if (ImGui::ColorEdit4("Color", rgba.data())) {
+			rect.setRenderColor(
+				static_cast<Uint8>(rgba[0] * 255),
+				static_cast<Uint8>(rgba[1] * 255),
+				static_cast<Uint8>(rgba[2] * 255),
+				static_cast<Uint8>(rgba[3] * 255)
+			);
+		}
 	}
 }
 
@@ -89,9 +109,45 @@ std::optional<std::string> nv::editor::openFilePath() {
 
 	if (GetOpenFileName(&ofn)) {
 		std::wstring wpath = ofn.lpstrFile; //store path in wstring so we can convert it to a normal std::string
-		std::string path(wpath.begin(), wpath.end()); //convert wstring to std::string
-		std::replace(path.begin(), path.end(), '\\', '/'); //replace the windows backslashes with normal backslashes
-		return path;
+		std::ranges::replace(wpath, L'\\', L'/');
+		return std::string{ wpath.begin(), wpath.end() };
+	} else {
+		return std::nullopt;
+	}
+}
+
+std::optional<std::vector<std::string>> nv::editor::openFilePaths() {
+	std::vector<std::string> ret;
+
+	OPENFILENAME ofn;
+	wchar_t szFile[MAX_PATH * 100]; // Buffer for file names
+
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = nullptr;
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = L"All Files (*.*)\0*.*\0";
+	ofn.nFilterIndex = 1;
+	ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY |
+		OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT;
+
+	if (GetOpenFileName(&ofn)) {
+		std::wstring wdirectory = ofn.lpstrFile;
+
+		//get each file path
+		wchar_t* filePart = ofn.lpstrFile + wdirectory.size() + 1;
+		if (*filePart == L'\0') {
+			ret.push_back({ wdirectory.begin(), wdirectory.end() });
+		} else {
+			while (*filePart != L'\0') {
+				std::wstring wpath = wdirectory + L"\\" + filePart;
+				ret.push_back({ wpath.begin(), wpath.end() });
+				filePart += wcslen(filePart) + 1;
+			}
+		}
+		return ret;
 	} else {
 		return std::nullopt;
 	}
@@ -101,7 +157,7 @@ std::optional<std::string> nv::editor::saveFile(std::wstring openMessage) {
 	HWND hwnd = GetActiveWindow();
 	OPENFILENAME ofn;
 	WCHAR szFile[MAX_PATH] = { 0 };
-	WCHAR* szInitialFileName = openMessage.data(); // Default initial file name
+	WCHAR* szInitialFileName = openMessage.data(); 
 
 	// Initialize OPENFILENAME
 	ZeroMemory(&ofn, sizeof(ofn));
@@ -124,8 +180,8 @@ std::optional<std::string> nv::editor::saveFile(std::wstring openMessage) {
 			WriteFile(hFile, dataToSave, strlen(dataToSave), &dwBytesWritten, NULL);
 			CloseHandle(hFile);
 			std::wstring wpath = szFile;
-			std::string path{ wpath.begin(), wpath.end() }; //convert wstring to normal std::string
-			return path;
+			std::ranges::replace(wpath, L'\\', L'/');
+			return std::string{ wpath.begin(), wpath.end() };
 		} 
 	}
 	return std::nullopt;
