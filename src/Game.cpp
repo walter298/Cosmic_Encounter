@@ -13,14 +13,23 @@ static Integral randomNum(Integral from, Integral to) {
 	return dist(gen());
 }
 
-static Player& getDefensivePlayer(Player& turnTaker, GameState& gameState) {
+struct Defense {
+
+};
+
+static Player& getDefensivePlayer(const Player& turnTaker, GameState& gameState, Server& svr) {
 	while (true) {
 		auto colorDrawn = gameState.destinyDeck.discardTop();
 		if (colorDrawn != turnTaker.color) {
 			return gameState.players[colorDrawn];
-		} else {
+		} else { //if player drew his own color
 			//check if there are ships occupying home system
-
+			if (std::ranges::any_of(turnTaker.colonies, 
+				[](const auto& colony) { return colony.hasEnemyShips; })) 
+			{
+				svr.sendToClients(writeMsg(OWN_SYSTEM), turnTaker.cli);
+				
+			}
 		}
 	}
 }

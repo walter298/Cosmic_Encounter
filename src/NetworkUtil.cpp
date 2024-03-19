@@ -20,6 +20,23 @@ asio::awaitable<void> Server::reconnectPlayer(Client& cli) {
 	co_return;
 }
 
+asio::awaitable<void> Server::sendToClient(const std::string& msg, Client& cli) {
+	while (true) { //keep resending message until player doesn't disconnect
+		try {
+			cli.msgBeingSent = msg;
+			boost::system::error_code ec;
+			co_await asio::async_write(cli.sock, asio::buffer(cli.msgBeingSent), asio::use_awaitable);
+			std::array<char, 1> ack;
+			co_await asio::async_read(cli.sock, asio::buffer(ack), asio::use_awaitable);
+			break; //ideally this loop should be run once, with no disconnect
+		}
+		catch (std::exception& e) {
+			std::cerr << e.what() << '\n';
+			//co_await reconnectPlayer(cli);
+		}
+	}
+}
+
 asio::awaitable<void> Server::acceptConnection() {
 	while (true) {
 		try {

@@ -138,35 +138,25 @@ private:
 
 	asio::awaitable<void> reconnectPlayer(Client& player);
 	asio::awaitable<void> acceptConnection();
+
+	asio::awaitable<void> sendToClient(const std::string& msg, Client& cli);
 public:
 	Server(tcp::endpoint&& endpoint);
 	void acceptConnections(int connC);
 
 	Client& getClient(size_t idx);
 
-	template<std::invocable<Client&> MessageGenerator>
-	asio::awaitable<void> sendToPlayer(Client& cli, MessageGenerator msgGen) {
-		while (true) { //keep resending message until player doesn't disconnect
-			try {
-				cli.msgBeingSent = writeMsg(msgGen(cli));
-				boost::system::error_code ec;
-				co_await asio::async_write(cli.sock, asio::buffer(cli.msgBeingSent), asio::use_awaitable);
-				std::array<char, 1> ack;
-				co_await asio::async_read(cli.sock, asio::buffer(ack), asio::use_awaitable);
-				break; //ideally this loop should be run once, with no disconnect
-			}
-			catch (std::exception& e) {
-				std::cerr << e.what() << '\n';
-				co_await reconnectPlayer(cli);
-			}
-		}
+	template<std::same_as<Client>... Clients> 
+	void sendToClients(const std::string& msg, Clients&... clients) {
+		((asio::co_spawn(m_context, msg, asio::detached), ...);
+		m_context.run();
 	}
 
 	template<std::invocable<Client&> MessageGenerator>
 	void sendToPlayers(MessageGenerator msgGen) {
 		boost::system::error_code ec;
 		for (auto& cli : m_clients) {
-			asio::co_spawn(m_context, sendToPlayer(cli, msgGen), asio::detached);
+			asio::co_spawn(m_context, sendToClient(cli, msgGen), asio::detached);
 		}
 		m_context.run();
 	}

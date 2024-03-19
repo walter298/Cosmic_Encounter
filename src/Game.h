@@ -114,8 +114,13 @@ constexpr inline size_t COLOR_C = 5;
 struct Colony {
 	using ShipCounts = std::array<int, COLOR_C>;
 	ShipCounts ships{ 0, 0, 0, 0, 0 };
+	bool hasEnemyShips = false;
 };
-using Systems = std::array<std::vector<Colony>, COLOR_C>;
+using Colonies = std::vector<Colony>;
+
+//offer messages for destiny stage
+constexpr inline char OWN_SYSTEM = 'a';
+constexpr inline char OTHER_SYSTEM = 'b';
 
 //used to index into Planet::ships and Game::Systems
 enum Color : size_t {
@@ -130,13 +135,12 @@ struct Player {
 	Client& cli;
 	std::vector<Card> hand;
 	Color color;
+	std::vector<Colony> colonies;
 };
 
 using Players = std::vector<Player>;
 
 struct GameState {
-	Systems systems;
-
 	Players players;
 
 	Deck<Card> deck{ "cosmic_deck.csv", 40 };
