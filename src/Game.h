@@ -5,8 +5,6 @@
 #include <random>
 #include <string_view>
 
-#include <csv.h>
-
 #include "NetworkUtil.h"
 
 struct Card {
@@ -78,7 +76,7 @@ public:
 	}
 
 	void shuffleDiscardBackIn() {
-		std::ranges::shuffle(std::ranges::subrange(m_firstCard, m_cards.end()));
+		//std::ranges::shuffle(std::ranges::subrange(m_firstCard, m_cards.end()));
 		m_discardPileBorder = m_cards.end();
 		m_discardPileEnd = m_cards.end();
 	}

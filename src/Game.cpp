@@ -14,24 +14,35 @@ static Integral randomNum(Integral from, Integral to) {
 }
 
 struct Defense {
-
+	Player* player;
+	size_t colonyIdx = 0;
 };
 
-static Player& getDefensivePlayer(const Player& turnTaker, GameState& gameState, Server& svr) {
+static Defense getDefense(Player& turnTaker, GameState& gameState, Server& svr) {
+	Player* defensivePlayer = nullptr;
+	size_t colonyIdx = 0;
+	
 	while (true) {
 		auto colorDrawn = gameState.destinyDeck.discardTop();
+		svr.broadcast(writeMsg(colorDrawn));
+		
 		if (colorDrawn != turnTaker.color) {
-			return gameState.players[colorDrawn];
-		} else { //if player drew his own color
-			//check if there are ships occupying home system
-			if (std::ranges::any_of(turnTaker.colonies, 
-				[](const auto& colony) { return colony.hasEnemyShips; })) 
-			{
-				svr.sendToClients(writeMsg(OWN_SYSTEM), turnTaker.cli);
-				
+			defensivePlayer = &gameState.players[colorDrawn];
+			turnTaker.cli.send(writeMsg(defensivePlayer->color));
+			turnTaker.cli.read(colonyIdx);
+			break;
+		} else if (std::ranges::any_of(turnTaker.colonies, 
+			[](const auto& colony) { return colony.hasEnemyShips; })) {
+			bool accepted{};
+			Color color{};
+			turnTaker.cli.read(accepted, color, colonyIdx);
+			if (accepted) {
+				defensivePlayer = &gameState.players[color];
+				break;
 			}
 		}
 	}
+	return { defensivePlayer, colonyIdx };
 }
 
 void play(size_t pCount, tcp::endpoint&& endpoint) {
@@ -51,6 +62,6 @@ void play(size_t pCount, tcp::endpoint&& endpoint) {
 	//game loop
 	while (true) {
 		auto& turnTaker = players[turnTakerIdx];
-		auto& defensivePlayer = getDefensivePlayer(turnTaker, gameState);
+		auto defense = getDefense(turnTaker, gameState, svr);
 	}
 }

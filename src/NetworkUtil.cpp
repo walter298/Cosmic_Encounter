@@ -7,32 +7,48 @@ std::string nextDatum(StringIt& begin, StringIt end) {
 	return ret;
 }
 
-asio::awaitable<void> Server::reconnectPlayer(Client& cli) {
-	/*try {
-		tcp::socket sock{ m_context };
-		co_await asio::async_connect(sock, cli.endpoint, asio::use_awaitable);
-		cli.sock = std::move(sock);
+void Client::reconnect() {
+	sys::error_code ec;
+	while (true) {
+		asio::connect(m_sock, m_endpoint, ec);
+		if (!ec) {
+			break;
+		}
 	}
-	catch (std::exception& e) {
-		std::cerr << e.what() << '\n';
-	}*/
-
-	co_return;
+}
+asio::awaitable<void> Client::asyncReconnect() {
+	sys::error_code ec;
+	while (true) {
+		co_await asio::async_connect(m_sock, m_endpoint, asio::redirect_error(asio::use_awaitable, ec));
+		if (!ec) {
+			break;
+		}
+	}
 }
 
-asio::awaitable<void> Server::sendToClient(const std::string& msg, Client& cli) {
-	while (true) { //keep resending message until player doesn't disconnect
-		try {
-			cli.msgBeingSent = msg;
-			boost::system::error_code ec;
-			co_await asio::async_write(cli.sock, asio::buffer(cli.msgBeingSent), asio::use_awaitable);
-			std::array<char, 1> ack;
-			co_await asio::async_read(cli.sock, asio::buffer(ack), asio::use_awaitable);
-			break; //ideally this loop should be run once, with no disconnect
+void Client::send(const std::string& msg) {
+	m_msgBeingRcvd = msg;
+	sys::error_code ec;
+	while (true) {
+		asio::write(m_sock, asio::buffer(m_msgBeingRcvd), ec);
+		if (ec) {
+			reconnect();
+		} else {
+			break;
 		}
-		catch (std::exception& e) {
-			std::cerr << e.what() << '\n';
-			//co_await reconnectPlayer(cli);
+	}
+}
+
+asio::awaitable<void> Client::asyncSend(const std::string& msg) {
+	m_msgBeingRcvd = msg;
+	sys::error_code ec;
+	while (true) {
+		co_await asio::async_write(m_sock, asio::buffer(m_msgBeingRcvd), 
+			asio::redirect_error(asio::use_awaitable, ec));
+		if (ec) {
+			reconnect();
+		} else {
+			break;
 		}
 	}
 }
@@ -68,27 +84,23 @@ Server::Server(tcp::endpoint&& endpoint)
 	: m_strand{ m_context }, m_acceptor{ m_context, std::move(endpoint) }
 {
 	m_acceptor.listen();
-
-	//waitForPlayersToJoin(pCount);
-
-	//sendToPlayers(
-	//	[color = 0, this](Player& player) mutable {
-	//		m_gameState.deck.draw(player.hand, 8); //give player 8 cards
-	//		auto msg = writeMsg(color, player.hand); //send player their color (idx) and hand
-	//		color++;
-	//		return msg;
-	//	}
-	//);
 }
 
 Client& Server::getClient(size_t idx) {
 	return m_clients[idx];
 }
 
-void Server::acceptConnections(int connC) {
-	m_clients.reserve(static_cast<size_t>(connC));
-	for (int i = 0; i < connC; i++) {
+void Server::acceptConnections(size_t connC) {
+	m_clients.reserve(connC);
+	for (size_t i = 0; i < connC; i++) {
 		asio::co_spawn(m_context, acceptConnection(), asio::detached);
+	}
+	m_context.run();
+}
+
+void Server::broadcast(const std::string& msg) {
+	for (auto& client : m_clients) {
+		asio::co_spawn(m_context, client.asyncSend(msg), asio::detached);
 	}
 	m_context.run();
 }

@@ -17,6 +17,7 @@ namespace asio = boost::asio;
 namespace ip = asio::ip;
 using ip::tcp;
 namespace pfr = boost::pfr;
+namespace sys = boost::system;
 
 constexpr inline std::string_view MSG_END_DELIM{ "###" };
 constexpr inline std::string_view MSG_ERROR{ "ERROR" };
@@ -30,15 +31,17 @@ std::string nextDatum(StringIt& begin, StringIt end);
 template<typename T>
 concept Aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
 
-template<Aggregate T, size_t... MemberIdxs>
-void parseEachMember(std::string& data, T& aggr, std::index_sequence<MemberIdxs...> seq) {
-	auto begin = data.begin();
-	((parseValueFromString(nextDatum(begin, data.end()), pfr::get<MemberIdxs>(aggr))), ...);
+namespace detail {
+	template<Aggregate T, size_t... MemberIdxs>
+	void parseEachMember(std::string& data, T& aggr, std::index_sequence<MemberIdxs...> seq) {
+		auto begin = data.begin();
+		((parseValueFromString(nextDatum(begin, data.end()), pfr::get<MemberIdxs>(aggr))), ...);
+	}
 }
 
 template<Aggregate T> 
 void parseValueFromString(std::string& str, T& aggr) {
-	parseEachMember(str, aggr, std::make_index_sequence<pfr::tuple_size_v<T>>());
+	detail::parseEachMember(str, aggr, std::make_index_sequence<pfr::tuple_size_v<T>>());
 }
 
 namespace detail {
@@ -72,6 +75,9 @@ void parseValueFromString(std::string& str, Range& range) {
 	}
 }
 
+template<typename Buffer>
+void readMsg(Buffer&) = delete; //you have to pass in at least one argument
+
 template<std::ranges::viewable_range Buffer, typename... Args>
 bool readMsg(Buffer& buffer, Args&... args) {
 	auto buffBegin = std::begin(buffer);
@@ -88,7 +94,7 @@ bool readMsg(Buffer& buffer, Args&... args) {
 		
 		auto nextBuffBegin = std::next(msgEnd);
 		std::string str{ std::make_move_iterator(buffBegin), std::make_move_iterator(msgEnd) };
-		//parseValueFromString(str, arg);
+		parseValueFromString(str, arg);
 		buffBegin = nextBuffBegin;
 
 		return true;
@@ -102,7 +108,7 @@ std::string toString(Num num) {
 	return std::to_string(num);
 }
 template<std::convertible_to<std::string> String>
-decltype(auto) toString(String&& str) {
+decltype(auto) toString(String&& str) { //no need to parse string
 	return std::forward<String>(str);
 }
 template<std::ranges::viewable_range Range>
@@ -122,11 +128,86 @@ auto writeMsg(Args&&... args) {
 	return buffer;
 }
 
-struct Client {
-	tcp::socket sock;
-	tcp::endpoint endpoint;
-	std::string msgBeingSent;
-	std::string msgBeingRcvd;
+template<typename T>
+struct FunctionTraits { //primary template assumes function call operator
+	using args = FunctionTraits<decltype(&T::operator())>::args;
+};
+
+template<typename R, typename... Args>
+struct FunctionTraits<R(Args...)> { //specialization for functions that haven't decayed
+	using args = std::tuple<Args...>;
+};
+
+template<typename R, typename... Args>
+struct FunctionTraits<R(*)(Args...)> { //specialization for function pointers
+	using args = std::tuple<Args...>;
+};
+
+template<typename C, typename R, typename... Args>
+struct FunctionTraits<R(C::*)(Args...) const> { //specialization for const member functions
+	using args = std::tuple<Args...>;
+};
+
+template<typename C, typename R, typename... Args>
+struct FunctionTraits<R(C::*)(Args...)> { //specialization for mutable member functions
+	using args = std::tuple<Args...>;
+};
+
+template<template<typename> typename Trait>
+struct ApplyTrait {
+	template<typename T>
+	struct Apply;
+
+	template<typename... Ts>
+	struct Apply<std::tuple<Ts...>> {
+		using type = typename std::tuple<typename Trait<Ts>::type...>;
+	};
+};
+
+class Client {
+private:
+	tcp::socket m_sock;
+	tcp::endpoint m_endpoint;
+	std::string m_msgBeingSent;
+	std::string m_msgBeingRcvd;
+
+	void reconnect();
+	asio::awaitable<void> asyncReconnect();
+public:
+	template<typename... Args>
+	void read(Args&... args) {
+		while (true) {
+			std::error_code ec;
+			while (true) {
+				m_msgBeingRcvd.clear();
+				asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, ec);
+				if (ec) {
+					reconnect();
+				} else {
+					break;
+				}
+			}
+		}
+		readMsg(m_msgBeingRcvd, args...);
+	}
+	template<typename... Args>
+	asio::awaitable<void> asyncRead(Args&... args) {
+		sys::error_code ec;
+		while (true) {
+			m_msgBeingRcvd.clear();
+			co_await asio::async_read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM,
+				asio::redirect_error(asio::use_awaitable, ec));
+			if (ec) {
+				co_await asyncReconnect();
+			} else {
+				break;
+			}
+		}
+		readMsg(m_msgBeingRcvd, args...);
+	}
+	
+	void send(const std::string& msg);
+	asio::awaitable<void> asyncSend(const std::string& msg);
 };
 
 class Server {
@@ -136,27 +217,32 @@ private:
 	tcp::acceptor m_acceptor;
 	std::vector<Client> m_clients;
 
-	asio::awaitable<void> reconnectPlayer(Client& player);
 	asio::awaitable<void> acceptConnection();
 
-	asio::awaitable<void> sendToClient(const std::string& msg, Client& cli);
+	template<typename Func>
+	asio::awaitable<void> recvFromClient(Func argsFunc, Client& cli) {
+		using Args = ApplyTrait<std::remove_cvref>::Apply<typename FunctionTraits<Func>::args>::type;
+		Args args;
+		co_await cli.readMsg(args...);
+		argsFunc(args...);
+	}
 public:
 	Server(tcp::endpoint&& endpoint);
-	void acceptConnections(int connC);
+	void acceptConnections(size_t connC);
 
 	Client& getClient(size_t idx);
 
-	template<std::same_as<Client>... Clients> 
-	void sendToClients(const std::string& msg, Clients&... clients) {
-		((asio::co_spawn(m_context, msg, asio::detached), ...);
+	void broadcast(const std::string& msg);
+
+	template<typename Func, std::same_as<Client>... Clients>
+	void asyncRecvFromClients(Func f, Clients&... clients) requires(sizeof...(Clients) > 1) {
+		(asio::co_spawn(m_context, recvFromClient(f, clients), asio::detached), ...);
 		m_context.run();
 	}
-
-	template<std::invocable<Client&> MessageGenerator>
-	void sendToPlayers(MessageGenerator msgGen) {
-		boost::system::error_code ec;
-		for (auto& cli : m_clients) {
-			asio::co_spawn(m_context, sendToClient(cli, msgGen), asio::detached);
+	template<typename Func>
+	void asyncRecvFromAllClients(Func c) {
+		for (auto& client : m_clients) {
+			asio::co_spawn(m_context, recvFromClient(f, client), asio::detached);
 		}
 		m_context.run();
 	}

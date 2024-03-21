@@ -2,6 +2,8 @@
 
 #include "Game.h"
 
+using namespace std;
+
 /*
 * if argv[1] == run_server 
 * argv[2] = player count
