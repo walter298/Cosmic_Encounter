@@ -6,6 +6,7 @@
 #include <locale>
 #include <memory>
 #include <string>
+#include <thread>
 
 #include <Windows.h>
 #include <ShlObj.h>

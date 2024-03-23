@@ -33,8 +33,8 @@ static Defense getDefense(Player& turnTaker, GameState& gameState, Server& svr) 
 	return { defensivePlayer, colonyIdx };
 }
 
-void host(size_t pCount, tcp::endpoint&& endpoint) {
-	Server svr{ std::move(endpoint) };
+void host(size_t pCount, const tcp::endpoint& endpoint) {
+	Server svr{ endpoint };
 	svr.acceptConnections(pCount);
 
 	GameState gameState;

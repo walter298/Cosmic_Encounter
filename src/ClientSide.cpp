@@ -1,15 +1,17 @@
 #include "ClientSide.h"
 
-void play() {
-	std::string ipAddr;
-	ip::port_type port = 0;
-
-	std::cout << "Enter host IP address: ";
-	std::cin >> ipAddr;
-	std::cout << "Enter host port: ";
-	std::cin >> port;
-
+void play(const tcp::endpoint& endpoint) {
 	asio::io_context context;
 	Socket cli{ context };
+	
+	std::cout << "Connecting to server...\n";
 
+	try {
+		cli.connect(endpoint);
+	} catch (std::exception& e) {
+		std::cerr << e.what();
+		return;
+	}
+
+	
 }

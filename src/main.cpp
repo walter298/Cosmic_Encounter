@@ -2,21 +2,20 @@
 #include "ServerSide.h"
 
 /*
-* if argv[1] == run_server 
-* argv[2] = player count
-* argv[3] = ipv6 address
-* argv[4] = port
-* else if argv[1] == play_game
+* argv[1] = port 
 * argv[2] = ipv6 address
-* argv[3] = port
+* argv[3] = run_server or play
+* argv[4] = if argv[2] == run_server, then player count
 */
 int main(int argc, char** argv) {
-	if (strcmp(argv[1], "run_server ")) {
-		host(std::atoi(argv[2]), 
-			tcp::endpoint{ 
-				ip::address_v4::from_string(argv[3]), 
-				static_cast<ip::port_type>(std::stoi(argv[4])) 
-			}
-		);
+	tcp::endpoint endpoint{
+		ip::address_v4::from_string(argv[1]),
+		static_cast<ip::port_type>(std::stoi(argv[2]))
+	};
+
+	if (strcmp(argv[3], "run_server")) {
+		host(std::atoi(argv[4]), endpoint);
+	} else {
+		play(std::move(endpoint));
 	}
 }

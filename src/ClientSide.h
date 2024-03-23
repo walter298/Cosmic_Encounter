@@ -5,4 +5,4 @@
 #include "Game.h"
 #include "NetworkUtil.h"
 
-void play();
+void play(const tcp::endpoint& endpoint);

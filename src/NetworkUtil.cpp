@@ -2,21 +2,39 @@
 
 std::string nextDatum(StringIt& begin, StringIt end) {
 	auto datumBreak = std::ranges::find(begin, end, DATUM_BREAK_CHR);
-	std::string ret{ std::make_move_iterator(begin), std::make_move_iterator(datumBreak) };
+	std::string ret{ begin, end };
 	begin = std::next(datumBreak);
 	return ret;
 }
 
-Socket::Socket(asio::io_context& context, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDisconnected) 
-	: m_sock{ context }, m_whenDisconnected{ std::move(whenDisconnected) }, 
-	m_asyncWhenDisconnected{ std::move(asyncWhenDisconnected) } 
+Socket::Socket(asio::io_context& context) 
+	: m_sock { context }
 {
-};
-
-Socket::Socket(tcp::socket&& sock, tcp::endpoint&& endpoint, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDisconnected)
-	: m_sock{ std::move(sock) }, m_endpoint{ std::move(endpoint) },
+}
+Socket::Socket(tcp::socket&& sock) : m_sock{ std::move(sock) }
+{
+}
+Socket::Socket(tcp::socket&& sock, ReconnCB&& whenDisconnected, ReconnCB&& asyncWhenDisconnected)
+	: m_sock { std::move(sock) },
 	m_whenDisconnected{ std::move(whenDisconnected) }, m_asyncWhenDisconnected{ std::move(asyncWhenDisconnected) }
 {
+}
+
+void Socket::onDisconnected(ReconnCB&& cb) {
+	m_whenDisconnected = std::move(cb);
+}
+void Socket::onAsyncDisconnected(ReconnCB&& cb) {
+	m_asyncWhenDisconnected = std::move(cb);
+}
+
+void Socket::connect(const tcp::endpoint& endpoint) {
+	tcp::resolver res{ m_sock.get_executor() };
+	auto result = res.resolve(endpoint);
+	asio::connect(m_sock, result);
+}
+
+void Socket::disconnect() {
+	m_sock.close();
 }
 
 void Socket::send(const std::string& msg) {
@@ -49,7 +67,7 @@ asio::awaitable<void> Socket::asyncSend(const std::string& msg) {
 void Server::reconnect(sys::error_code ec, tcp::socket& socket) {
 	while (true) {
 		auto newSock = m_acceptor.accept(ec);
-		if (newSock.remote_endpoint() == socket.local_endpoint()) {
+		if (newSock.remote_endpoint() == socket.remote_endpoint()) {
 			socket = std::move(newSock);
 			break;
 		}
@@ -69,17 +87,16 @@ asio::awaitable<void> Server::acceptConnection() {
 	}
 	m_strand.post(
 		[mSock = std::move(sock), this]() mutable {
-			auto cliEndpoint = mSock.remote_endpoint(); //store endpoint because we move from mSock next
-			m_clients.emplace_back(std::move(mSock), cliEndpoint,
-				[](auto ec, auto& sock) { reconnect(ec, sock); },
-				[](auto ec, auto& sock) { asyncReconnect(ec, sock); }
+			m_clients.emplace_back(std::move(mSock),
+				[this](auto ec, auto& sock) { reconnect(ec, sock); },
+				[this](auto ec, auto& sock) { asyncReconnect(ec, sock); }
 			);
 		}
 	);
 }
 
-Server::Server(tcp::endpoint&& endpoint)
-	: m_strand{ m_context }, m_acceptor{ m_context, std::move(endpoint) }
+Server::Server(const tcp::endpoint& endpoint)
+	: m_strand{ m_context }, m_acceptor{ m_context, endpoint }
 {
 	m_acceptor.listen();
 }

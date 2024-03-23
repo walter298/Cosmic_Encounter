@@ -3,4 +3,4 @@
 #include "Game.h"
 #include "NetworkUtil.h"
 
-void host(size_t pCount, tcp::endpoint&& endpoint);
+void host(size_t pCount, const tcp::endpoint& endpoint);

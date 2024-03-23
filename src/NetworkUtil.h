@@ -26,7 +26,7 @@ constexpr inline char DATUM_END_CHR = '!';
 constexpr inline char DATUM_BREAK_CHR = '$';
 constexpr inline char DATUM_ELEM_BREAK_CHR = '&';
 
-using StringIt = std::string::iterator;
+using StringIt = std::string::const_iterator;
 std::string nextDatum(StringIt& begin, StringIt end);
 
 template<typename T>
@@ -59,12 +59,12 @@ decltype(auto) aggregateApply(Callable&& callable, T&& aggr) {
 }
 
 template<std::integral Integral>
-void parseValueFromString(std::string& str, Integral integral) {
-	return boost::lexical_cast<Integral>(str);
+void parseValueFromString(const std::string& str, Integral& integral) {
+	integral = boost::lexical_cast<Integral>(str);
 }
 
 template<std::ranges::viewable_range Range>
-void parseValueFromString(std::string& str, Range& range) {
+void parseValueFromString(const std::string& str, Range& range) {
 	auto begin = str.begin();
 	while (true) {
 		auto nextElemBreak = std::ranges::find(begin, str.end());
@@ -74,6 +74,17 @@ void parseValueFromString(std::string& str, Range& range) {
 		typename Range::element_type elem{};
 		range.insert(range.end(), parseValueFromString(str, elem));
 	}
+}
+
+template<typename T>
+concept Enum = std::is_enum_v<std::remove_cvref_t<T>>;
+
+template<Enum Enm>
+void parseValueFromString(const std::string& str, Enm& enm) {
+	using UnderylingType = std::underlying_type_t<Enm>;
+	UnderylingType num{};
+	parseValueFromString(str, num);
+	enm = static_cast<Enm>(num);
 }
 
 template<typename Buffer>
@@ -119,6 +130,12 @@ auto toString(const Range& range) {
 		ret.append(toString(elem) + '!');
 	}
 	return ret;
+}
+
+template<Enum Enm>
+auto toString(Enm enm) {
+	using UnderlyingType = std::underlying_type_t<Enm>;
+	return toString(static_cast<UnderlyingType>(enm));
 }
 
 template<typename... Args>
@@ -168,22 +185,28 @@ struct ApplyTrait {
 class Socket {
 private:
 	tcp::socket m_sock;
-	tcp::endpoint m_endpoint;
 	std::string m_msgBeingSent;
 	std::string m_msgBeingRcvd;
 	
 	using ReconnCB = std::move_only_function<void(sys::error_code ec, tcp::socket&)>;
-	using AsyncReconnCB = std::move_only_function<asio::awaitable<void>(sys::error_code ec, tcp::socket&)>;
-	ReconnCB m_whenDisconnected;
-	AsyncReconnCB m_asyncWhenDisconnected;
+
+	ReconnCB m_whenDisconnected{ [](auto ec, auto& sock) { std::cerr << ec << '\n'; } };
+	ReconnCB m_asyncWhenDisconnected{ [](auto ec, auto& sock) { std::cerr << ec << '\n'; } };
 public:
-	Socket(asio::io_context& context, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDsiconnected);
-	Socket(tcp::socket&& sock, tcp::endpoint&& endpoint, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDsiconnected);
+	explicit Socket(asio::io_context& context);
+	explicit Socket(tcp::socket&& sock);
+	Socket(tcp::socket&& sock, ReconnCB&& whenDisconnected, ReconnCB&& asyncWhenDsiconnected);
+
+	void onDisconnected(ReconnCB&& cb);
+	void onAsyncDisconnected(ReconnCB&& cb);
+
+	void connect(const tcp::endpoint& endpoint);
+	void disconnect();
 
 	template<typename... Args>
 	void read(Args&... args) {
 		while (true) {
-			std::error_code ec;
+			sys::error_code ec;
 			while (true) {
 				m_msgBeingRcvd.clear();
 				asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, ec);
@@ -232,11 +255,11 @@ private:
 	asio::awaitable<void> asyncRecvFromClient(Func argsFunc, Socket& cli) {
 		using Args = ApplyTrait<std::remove_cvref>::Apply<typename FunctionTraits<Func>::args>::type;
 		Args args;
-		co_await std::apply(&Socket::asyncReadMsg, cli, args);
+		co_await std::apply(&Socket::asyncRead, cli, args);
 		std::apply(argsFunc, args);
 	}
 public:
-	Server(tcp::endpoint&& endpoint);
+	Server(const tcp::endpoint& endpoint);
 	
 	void acceptConnections(size_t connC);
 
