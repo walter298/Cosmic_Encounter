@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <ranges>
 #include <string>
@@ -164,16 +165,21 @@ struct ApplyTrait {
 	};
 };
 
-class Client {
+class Socket {
 private:
 	tcp::socket m_sock;
 	tcp::endpoint m_endpoint;
 	std::string m_msgBeingSent;
 	std::string m_msgBeingRcvd;
-
-	void reconnect();
-	asio::awaitable<void> asyncReconnect();
+	
+	using ReconnCB = std::move_only_function<void(sys::error_code ec, tcp::socket&)>;
+	using AsyncReconnCB = std::move_only_function<asio::awaitable<void>(sys::error_code ec, tcp::socket&)>;
+	ReconnCB m_whenDisconnected;
+	AsyncReconnCB m_asyncWhenDisconnected;
 public:
+	Socket(asio::io_context& context, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDsiconnected);
+	Socket(tcp::socket&& sock, tcp::endpoint&& endpoint, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDsiconnected);
+
 	template<typename... Args>
 	void read(Args&... args) {
 		while (true) {
@@ -182,7 +188,7 @@ public:
 				m_msgBeingRcvd.clear();
 				asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, ec);
 				if (ec) {
-					reconnect();
+					m_whenDisconnected(ec, m_sock);
 				} else {
 					break;
 				}
@@ -198,7 +204,7 @@ public:
 			co_await asio::async_read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM,
 				asio::redirect_error(asio::use_awaitable, ec));
 			if (ec) {
-				co_await asyncReconnect();
+				co_await m_asyncWhenDisconnected(ec, m_sock);
 			} else {
 				break;
 			}
@@ -215,34 +221,33 @@ private:
 	asio::io_context m_context;
 	asio::io_context::strand m_strand;
 	tcp::acceptor m_acceptor;
-	std::vector<Client> m_clients;
+	std::vector<Socket> m_clients;
+
+	void reconnect(sys::error_code ec, tcp::socket& socket);
+	void asyncReconnect(sys::error_code ec, tcp::socket& sock);
 
 	asio::awaitable<void> acceptConnection();
 
 	template<typename Func>
-	asio::awaitable<void> recvFromClient(Func argsFunc, Client& cli) {
+	asio::awaitable<void> asyncRecvFromClient(Func argsFunc, Socket& cli) {
 		using Args = ApplyTrait<std::remove_cvref>::Apply<typename FunctionTraits<Func>::args>::type;
 		Args args;
-		co_await cli.readMsg(args...);
-		argsFunc(args...);
+		co_await std::apply(&Socket::asyncReadMsg, cli, args);
+		std::apply(argsFunc, args);
 	}
 public:
 	Server(tcp::endpoint&& endpoint);
+	
 	void acceptConnections(size_t connC);
 
-	Client& getClient(size_t idx);
+	Socket& getClient(size_t idx);
 
 	void broadcast(const std::string& msg);
 
-	template<typename Func, std::same_as<Client>... Clients>
-	void asyncRecvFromClients(Func f, Clients&... clients) requires(sizeof...(Clients) > 1) {
-		(asio::co_spawn(m_context, recvFromClient(f, clients), asio::detached), ...);
-		m_context.run();
-	}
 	template<typename Func>
-	void asyncRecvFromAllClients(Func c) {
+	void readFromAll(Func f) {
 		for (auto& client : m_clients) {
-			asio::co_spawn(m_context, recvFromClient(f, client), asio::detached);
+			asio::co_spawn(m_context, asyncRecvFromClient(f, client), asio::detached);
 		}
 		m_context.run();
 	}

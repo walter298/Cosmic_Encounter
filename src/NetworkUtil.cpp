@@ -7,77 +7,75 @@ std::string nextDatum(StringIt& begin, StringIt end) {
 	return ret;
 }
 
-void Client::reconnect() {
-	sys::error_code ec;
-	while (true) {
-		asio::connect(m_sock, m_endpoint, ec);
-		if (!ec) {
-			break;
-		}
-	}
-}
-asio::awaitable<void> Client::asyncReconnect() {
-	sys::error_code ec;
-	while (true) {
-		co_await asio::async_connect(m_sock, m_endpoint, asio::redirect_error(asio::use_awaitable, ec));
-		if (!ec) {
-			break;
-		}
-	}
+Socket::Socket(asio::io_context& context, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDisconnected) 
+	: m_sock{ context }, m_whenDisconnected{ std::move(whenDisconnected) }, 
+	m_asyncWhenDisconnected{ std::move(asyncWhenDisconnected) } 
+{
+};
+
+Socket::Socket(tcp::socket&& sock, tcp::endpoint&& endpoint, ReconnCB&& whenDisconnected, AsyncReconnCB&& asyncWhenDisconnected)
+	: m_sock{ std::move(sock) }, m_endpoint{ std::move(endpoint) },
+	m_whenDisconnected{ std::move(whenDisconnected) }, m_asyncWhenDisconnected{ std::move(asyncWhenDisconnected) }
+{
 }
 
-void Client::send(const std::string& msg) {
+void Socket::send(const std::string& msg) {
 	m_msgBeingRcvd = msg;
 	sys::error_code ec;
 	while (true) {
 		asio::write(m_sock, asio::buffer(m_msgBeingRcvd), ec);
 		if (ec) {
-			reconnect();
+			m_whenDisconnected(ec, m_sock);
 		} else {
 			break;
 		}
 	}
 }
 
-asio::awaitable<void> Client::asyncSend(const std::string& msg) {
+asio::awaitable<void> Socket::asyncSend(const std::string& msg) {
 	m_msgBeingRcvd = msg;
 	sys::error_code ec;
 	while (true) {
 		co_await asio::async_write(m_sock, asio::buffer(m_msgBeingRcvd), 
 			asio::redirect_error(asio::use_awaitable, ec));
 		if (ec) {
-			reconnect();
+			m_asyncWhenDisconnected(ec, m_sock);
 		} else {
 			break;
 		}
 	}
 }
 
-asio::awaitable<void> Server::acceptConnection() {
+void Server::reconnect(sys::error_code ec, tcp::socket& socket) {
 	while (true) {
-		try {
-			std::string buff;
-			std::string name;
-
-			auto sock = co_await m_acceptor.async_accept(asio::use_awaitable);
-			
-			co_await asio::async_read_until(sock, asio::dynamic_buffer(buff), MSG_END_DELIM, asio::use_awaitable);
-
-			readMsg(buff, name);
-			m_strand.post(
-				[mSock = std::move(sock), mName = std::move(name), this]() mutable {
-					auto cliEndpoint = mSock.remote_endpoint(); //store endpoint because we move from mSock next
-					m_clients.emplace_back(std::move(mSock), cliEndpoint);
-				}
-			);
+		auto newSock = m_acceptor.accept(ec);
+		if (newSock.remote_endpoint() == socket.local_endpoint()) {
+			socket = std::move(newSock);
 			break;
 		}
-		catch (std::exception& e) {
-			std::cerr << e.what() << '\n';
-		}
 	}
+}
 
-	co_return;
+void Server::asyncReconnect(sys::error_code ec, tcp::socket& sock) {
+	m_strand.dispatch([&, this] { reconnect(ec, sock); });
+}
+
+asio::awaitable<void> Server::acceptConnection() {
+	sys::error_code ec;
+
+	auto sock = co_await m_acceptor.async_accept(asio::redirect_error(asio::use_awaitable, ec));
+	if (ec) {
+		std::cerr << ec << '\n';
+	}
+	m_strand.post(
+		[mSock = std::move(sock), this]() mutable {
+			auto cliEndpoint = mSock.remote_endpoint(); //store endpoint because we move from mSock next
+			m_clients.emplace_back(std::move(mSock), cliEndpoint,
+				[](auto ec, auto& sock) { reconnect(ec, sock); },
+				[](auto ec, auto& sock) { asyncReconnect(ec, sock); }
+			);
+		}
+	);
 }
 
 Server::Server(tcp::endpoint&& endpoint)
@@ -86,7 +84,7 @@ Server::Server(tcp::endpoint&& endpoint)
 	m_acceptor.listen();
 }
 
-Client& Server::getClient(size_t idx) {
+Socket& Server::getClient(size_t idx) {
 	return m_clients[idx];
 }
 

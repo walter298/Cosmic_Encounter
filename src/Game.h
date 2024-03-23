@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <fstream>
 #include <random>
 #include <string_view>
@@ -130,7 +129,7 @@ enum Color : size_t {
 };
 
 struct Player {
-	Client& cli;
+	Socket& cli;
 	std::vector<Card> hand;
 	Color color;
 	std::vector<Colony> colonies;
@@ -145,4 +144,11 @@ struct GameState {
 	Deck<Color> destinyDeck{ "destiny_deck.csv", 15 };
 };
 
-void play(size_t pCount, tcp::endpoint&& endpoint);
+//[from, to] is inclusive
+template<std::integral Integral>
+static Integral randomNum(Integral from, Integral to) {
+	thread_local static std::random_device dev;
+	thread_local static std::mt19937 gen{ dev };
+	std::uniform_int_distribution dist{ from, to };
+	return dist(gen());
+}

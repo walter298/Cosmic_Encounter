@@ -1,8 +1,5 @@
-#include <iostream>
-
-#include "Game.h"
-
-using namespace std;
+#include "ClientSide.h"
+#include "ServerSide.h"
 
 /*
 * if argv[1] == run_server 
@@ -15,7 +12,7 @@ using namespace std;
 */
 int main(int argc, char** argv) {
 	if (strcmp(argv[1], "run_server ")) {
-		play(std::atoi(argv[2]), 
+		host(std::atoi(argv[2]), 
 			tcp::endpoint{ 
 				ip::address_v4::from_string(argv[3]), 
 				static_cast<ip::port_type>(std::stoi(argv[4])) 
