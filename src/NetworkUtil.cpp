@@ -27,10 +27,16 @@ void Socket::onAsyncDisconnected(ReconnCB&& cb) {
 	m_asyncWhenDisconnected = std::move(cb);
 }
 
-void Socket::connect(const tcp::endpoint& endpoint) {
+bool Socket::connect(const tcp::endpoint& endpoint, sys::error_code& ec) {
 	tcp::resolver res{ m_sock.get_executor() };
-	auto result = res.resolve(endpoint);
-	asio::connect(m_sock, result);
+	auto result = res.resolve(endpoint, ec);
+	if (ec) { return false; }
+	asio::connect(m_sock, result, ec);
+	if (ec) { 
+		return true; 
+	} else {
+		return false;
+	}
 }
 
 void Socket::disconnect() {

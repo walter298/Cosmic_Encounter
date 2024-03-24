@@ -3,15 +3,9 @@
 void play(const tcp::endpoint& endpoint) {
 	asio::io_context context;
 	Socket cli{ context };
+
+	nv::Instance instance{ "Cosmic Encounter" };
 	
-	std::cout << "Connecting to server...\n";
-
-	try {
-		cli.connect(endpoint);
-	} catch (std::exception& e) {
-		std::cerr << e.what();
-		return;
-	}
-
+	nv::Scene scene{ instance };
 	
 }

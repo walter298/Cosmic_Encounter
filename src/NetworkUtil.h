@@ -200,7 +200,7 @@ public:
 	void onDisconnected(ReconnCB&& cb);
 	void onAsyncDisconnected(ReconnCB&& cb);
 
-	void connect(const tcp::endpoint& endpoint);
+	bool connect(const tcp::endpoint& endpoint, sys::error_code& ec);
 	void disconnect();
 
 	template<typename... Args>

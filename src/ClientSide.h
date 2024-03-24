@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "novalis/Scene.h"
+
 #include "Game.h"
 #include "NetworkUtil.h"
 
