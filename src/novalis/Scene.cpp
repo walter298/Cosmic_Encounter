@@ -1,7 +1,7 @@
 #include "Scene.h"
 
 nv::Scene::Scene(nv::Instance& instance) 
-	: renderer{instance.getRawRenderer() } {
+	: renderer{ instance.getRawRenderer() } {
 }
 
 nv::Scene::Scene(const std::string& absFilePath, Instance& instance) : renderer{ instance.getRawRenderer() } {
@@ -31,7 +31,7 @@ nv::Scene::Scene(const std::string& absFilePath, Instance& instance) : renderer{
 }
 
 nv::Sprite& nv::Scene::sprite(const std::string& name) {
-	return m_sprites.at(name).front();
+	return *m_sprites.at(name).begin();
 }
 
 nv::Sprites& nv::Scene::spriteClones(const std::string& name) {

@@ -10,6 +10,11 @@
 #include <string>
 #include <vector>
 
+#undef min
+#undef max
+
+#include <plf_hive.h>
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
@@ -35,7 +40,7 @@ namespace nv {
 	};
 
 	using TexturePtr = std::shared_ptr<Texture>;
-	
+	using TexturePtrs = std::vector<TexturePtr>;
 	//class RenderObj {
 	//protected:
 	//	std::string m_name;
@@ -188,22 +193,34 @@ namespace nv {
 		Vertical
 	};
 
+	//friend classes
 	namespace editor {
-		class SpriteEditor;
+		class SceneEditor; //friend of Sprite and Background
+		class SpriteEditor; //friend of Sprite
+		class BackgroundEditor; //friend of Background
+	}
+
+	enum class SpriteType {
+		Sprite,
+		Background
+	};
+
+	namespace detail {
+		void parseImages(nlohmann::json& j, SDL_Renderer* renderer, TexturePtrs& textures);
 	}
 
 	class Sprite {
 	private:
-		std::vector<TexturePtr> m_textures;
+		TexturePtrs m_textures;
 		ID m_ID;
 		std::string m_name;
-		size_t m_currTexIdx = 0;
+		size_t m_currTexGroupIdx = 0;
 		double m_angle = 0.0;
 		SDL_Point m_rotationPoint{ 0, 0 };
-		SDL_RendererFlip m_flip;
+		SDL_RendererFlip m_flip = SDL_FLIP_NONE;
 	public:
 		Sprite() = default;
-		Sprite(SDL_Renderer* renderer, const std::string& path);
+		Sprite(SDL_Renderer* renderer, const std::string& path, const std::string& name = "");
 		
 		Rect ren;
 		Rect world;
@@ -214,12 +231,35 @@ namespace nv {
 		void changeTexture(size_t texIdx) noexcept;
 		void flip(SDL_RendererFlip flip);
 		void rotate(double angle, int x, int y) noexcept;
-		void render(SDL_Renderer* renderer) noexcept;
+		void render(SDL_Renderer* renderer) const noexcept;
 
+		friend class editor::SceneEditor;
 		friend class editor::SpriteEditor;
 	};
 
-	using Sprites = std::vector<Sprite>;
+	using Sprites = plf::hive<Sprite>;
+
+	class Background;
+
+	class Background {
+	private:
+		TexturePtrs m_textures;
+		int m_x = 0;
+		int m_y = 0;
+		int m_width = 0;
+		int m_height = 0;
+
+		int m_horizTexC = 1;
+	public:
+		nv::Rect ren{ 0, 0, 0, 0 };
+
+		Background() = default;
+		Background(SDL_Renderer* renderer, const std::string& path);
+		void render(SDL_Renderer* renderer) const noexcept;
+
+		friend class editor::BackgroundEditor;
+		friend class editor::SceneEditor;
+	};
 
 	/*using TextPtr = std::unique_ptr<Text>;
 

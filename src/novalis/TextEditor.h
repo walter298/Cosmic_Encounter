@@ -31,12 +31,12 @@ namespace nv {
 			static constexpr size_t maxMessageLength = 4096;
 
 			//Text m_text;
-			std::array<char, maxMessageLength> m_textBuf;
-			DragCheck backgroundRectDrag = [this] {
-				DragCheck drag;
-				//drag.add(m_text.m_background);
-				return drag;
-			}();
+			//std::array<char, maxMessageLength> m_textBuf;
+			//DragCheck backgroundRectDrag = [this] {
+			//	DragCheck drag;
+			//	//drag.add(m_text.m_background);
+			//	return drag;
+			//}();
 
 			void showGui(bool& running);
 		public:

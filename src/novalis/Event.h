@@ -90,16 +90,20 @@ namespace nv {
 		std::vector<Event> m_quitEvents;
 
 		template<typename Func>
-		auto& getEventVec() {
+		constexpr auto& getEventVec() noexcept {
 			if constexpr (std::invocable<Func>) {
 				return m_periodicEvents;
-			} else if constexpr (std::invocable<Func, MouseWheelEvent>) {
+			}
+			else if constexpr (std::invocable<Func, MouseWheelEvent>) {
 				return m_mouseWheelEvents;
-			} else if constexpr (std::invocable<Func, MouseButtonEvent>) {
+			}
+			else if constexpr (std::invocable<Func, MouseButtonEvent>) {
 				return m_mouseButtonEvents;
-			} else if constexpr (std::invocable<Func, MouseMotionEvent>) {
+			}
+			else if constexpr (std::invocable<Func, MouseMotionEvent>) {
 				return m_mouseMotionEvents;
-			} else {
+			}
+			else {
 				return m_keyboardEvents;
 			}
 		}
@@ -115,7 +119,7 @@ namespace nv {
 		void addQuitEvent(Func&& func) {
 			m_quitEvents.emplace_back(std::forward<Func>(func));
 		}
-		
+
 		template<typename... EventData>
 		void eraseEvent(const detail::Event<EventData...>& evt) {
 			auto& eventVec = getEventVec<detail::Event<EventData...>>();

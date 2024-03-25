@@ -29,13 +29,19 @@ namespace nv {
 			
 			Texture m_xBtn;
 			Sprite m_sprite;
+			RectEditor m_spriteRectEditor;
+
+			TexturePtrs& m_textures = m_sprite.m_textures;
+			
 			std::vector<std::string> m_texturePaths;
 
-			void showSpriteOptions(Renderer& renderer);
-			void selectSprite(Renderer& renderer);
+			void writeImagePathsAndSaveToFile(const std::string& savedPath, nlohmann::json& j);
+
+			void showSpriteOptions(EditorRenderer& renderer);
+			void selectSprite(EditorRenderer& renderer);
 		public:
-			SpriteEditor(Renderer& renderer) noexcept;
-			EditorDest operator()(Renderer& renderer);
+			SpriteEditor(EditorRenderer& renderer) noexcept;
+			EditorDest operator()(EditorRenderer& renderer);
 		};
 	}
 }

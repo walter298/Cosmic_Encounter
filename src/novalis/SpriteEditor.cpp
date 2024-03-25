@@ -2,51 +2,50 @@
 
 using nv::editor::SpriteEditor;
 
-void SpriteEditor::showSpriteOptions(Renderer& renderer) {
-	static constexpr ImVec2 spriteOptionsPos{ spriteBoxPos.x, spriteBoxPos.y + spriteBoxSize.y + 20.0f };
+void SpriteEditor::writeImagePathsAndSaveToFile(const std::string& savedPath, nlohmann::json& j) {
+	j["texture_paths"] = std::vector<std::string>();
+	for (auto& path : m_texturePaths) {
+		std::ranges::replace(path, '\\', '/');
+		j.at("texture_paths").push_back(path);
+	}
+
+	std::ofstream spriteFile{ savedPath };
+	assert(spriteFile.is_open());
+	spriteFile << j.dump(2);
+	spriteFile.close();
+}
+
+void SpriteEditor::showSpriteOptions(EditorRenderer& renderer) {
+	static constexpr ImVec2 spriteOptionsPos{ spriteBoxPos.x, spriteBoxPos.y + spriteBoxSize.y - 70.0f };
 	static constexpr ImVec2 spriteOptionsSize{ 300.0f, 250.0f };
 	static constexpr ImVec2 btnSize{ 270.0f, 50.0f };
 	
 	ImGui::SetNextWindowPos(spriteOptionsPos);
 	ImGui::SetNextWindowSize(spriteOptionsSize);
 	ImGui::Begin("Sprite Options");
-	editRect(m_sprite.ren);
+	m_spriteRectEditor.edit(false);
 	if (ImGui::Button("Save Sprite", btnSize)) {
 		auto savedPath = saveFile(L"Save Sprite");
 		if (savedPath) {
 			json j;
-			j["image_paths"] = std::vector<std::string>();
-			j.at("image_paths").get<std::vector<std::string>>().reserve(m_sprite.m_textures.size());
-			for (const auto& path : m_texturePaths) {
-				j.at("image_paths").push_back(path);
-			}
 			j["ren"] = m_sprite.ren;
-			std::ofstream spriteFile{ savedPath.value() };
-			assert(spriteFile.is_open());
-			spriteFile << j.dump(2);
-			spriteFile.close();
+			writeImagePathsAndSaveToFile(*savedPath, j);
 		}
 	}
 
 	const bool prevNoSprites = m_sprite.m_textures.empty();
-	if (ImGui::Button("Upload Sprite(s)", btnSize)) {
-		auto spritePaths = openFilePaths();
-		if (spritePaths) {
-			for (const auto& path : *spritePaths) {
-				m_sprite.m_textures.emplace_back(
-					std::make_shared<Texture>(IMG_LoadTexture(renderer.get(), path.c_str()))
-				);
-				m_texturePaths.push_back(path);
-			}
-		}
+
+	if (ImGui::Button("Upload Image(s)", btnSize)) {
+		loadImages(m_texturePaths, m_textures, renderer);
 	}
+	
 	if (prevNoSprites && !m_sprite.m_textures.empty()) {
 		renderer.addObj(&m_sprite, 0);
 	}
 	ImGui::End();
 }
 
-void SpriteEditor::selectSprite(Renderer& renderer) {
+void SpriteEditor::selectSprite(EditorRenderer& renderer) {
 	static constexpr ImVec2 btnSize{ 270.0f, 50.0f };
 
 	ImGui::SetNextWindowPos(spriteSwitchPos);
@@ -54,40 +53,49 @@ void SpriteEditor::selectSprite(Renderer& renderer) {
 	ImGui::Begin("Sprite Sheet");
 
 	bool deleteSpriteInput = false;
-	auto doomedSpriteIt = m_sprite.m_textures.begin();
-	for (auto it = m_sprite.m_textures.begin(); it != m_sprite.m_textures.end(); it++) {
-		ImGui::PushID(static_cast<int>(std::distance(m_sprite.m_textures.begin(), it)));
+
+	size_t doomedTexIdx = 0;
+
+	for (const auto [idx, texture] : std::views::enumerate(m_textures)) {
+		ImGui::PushID(idx);
+
 		if (ImGui::ImageButton(ImTextureID(m_xBtn.raw), xBtnSize)) {
 			deleteSpriteInput = true;
-			doomedSpriteIt = it;
+			doomedTexIdx = idx;
 		}
+		ImGui::PopID();
+
+		auto texID = m_textures[idx]->raw;
+		ImGui::PushID(texID);
+
 		ImGui::SameLine(70.0f); //show textures on the same line as the x-button
 
-		if (ImGui::ImageButton(ImTextureID(it->get()->raw), spriteBtnSize) && !deleteSpriteInput) {
-			m_sprite.changeTexture(std::distance(m_sprite.m_textures.begin(), it));
+		if (ImGui::ImageButton(ImTextureID(texID), spriteBtnSize) && !deleteSpriteInput) {
+			m_sprite.changeTexture(idx);
 		}
 		ImGui::PopID();
 	}
+	
 	const bool prevHadSprites = !m_sprite.m_textures.empty();
 	if (deleteSpriteInput) {
-		m_sprite.m_textures.erase(doomedSpriteIt);
-		if (m_sprite.m_currTexIdx > 0) {
-			m_sprite.m_currTexIdx--;
+		m_textures.erase(m_textures.begin() + doomedTexIdx);
+		if (m_textures.empty() && prevHadSprites) {
+			renderer.removeObj(m_sprite.getID(), 0);
+		} else if (m_sprite.m_currTexGroupIdx == m_textures.size()) {
+			m_sprite.m_currTexGroupIdx--;
 		}
-	}
-	if (m_sprite.m_textures.empty() && prevHadSprites) {
-		renderer.removeObj(m_sprite.getID(), 0);
 	}
 	
 	ImGui::End();
 }
 
-nv::editor::SpriteEditor::SpriteEditor(Renderer& renderer) noexcept 
-	: m_xBtn{ IMG_LoadTexture(renderer.get(), relativePath("/assets/x_btn.png").c_str()) }
+nv::editor::SpriteEditor::SpriteEditor(EditorRenderer& renderer) noexcept 
+	: m_xBtn{ IMG_LoadTexture(renderer.get(), relativePath("Cosmic_Encounter/src/novalis/assets/x_btn.png").c_str()) }
 {
+	m_spriteRectEditor.rect = &m_sprite.ren;
 }
 
-nv::editor::EditorDest SpriteEditor::operator()(Renderer& renderer) {
+nv::editor::EditorDest SpriteEditor::operator()(EditorRenderer& renderer) {
 	showSpriteOptions(renderer);
 	selectSprite(renderer);
 	return EditorDest::None;

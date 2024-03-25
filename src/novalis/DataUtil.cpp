@@ -17,8 +17,6 @@ void to_json(nlohmann::json& j, const SDL_Rect& r) {
 
 void from_json(const nlohmann::json& j, SDL_Rect& r) {
 	std::tie(r.x, r.y, r.w, r.h) = j.get<Quad<int>>();
-	std::cout << "Loaded: ";
-	nv::println(r.x, r.y, r.w, r.h);
 }
 
 void nv::to_json(json& j, const Rect& r) {
@@ -46,4 +44,10 @@ std::optional<std::string> nv::fileExtension(const std::string& fileName) {
 		return std::nullopt;
 	}
 	return std::accumulate(dotPos, fileName.end(), ""s);
+}
+
+std::string nv::fileName(const std::string& filePath) {
+	auto dotIdx = filePath.find_last_of('.');
+	assert(dotIdx != std::string::npos && dotIdx + 1 < filePath.size());
+	return filePath.substr(dotIdx + 1);
 }

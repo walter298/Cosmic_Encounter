@@ -17,6 +17,8 @@
 #include <variant>
 #include <vector>
 
+#include <plf_hive.h>
+
 #include <boost/container/flat_map.hpp>
 
 #include <nlohmann/json.hpp>
@@ -27,13 +29,24 @@
 
 #include "GlobalMacros.h"
 
-
 void to_json(nlohmann::json& j, const SDL_Color& c);
 void from_json(const nlohmann::json& j, SDL_Color& c);
 
 void to_json(nlohmann::json& j, const SDL_Rect& c);
 void from_json(const nlohmann::json& j, SDL_Rect& c);
 
+namespace std {
+	namespace chrono {
+		template<typename Rep, typename Period>
+		void from_json(const nlohmann::json& j, duration<Rep, Period>& time) {
+			time = duration<Rep, Period>{ j.at("time").get<Rep>() };
+		}
+		template<typename Rep, typename Period>
+		void to_json(nlohmann::json& j, const duration<Rep, Period>& time) {
+			j["time"] = time.count();
+		}
+	}
+}
 namespace nv {
 	using nlohmann::json;
 	using namespace std::literals;
@@ -81,6 +94,7 @@ namespace nv {
 	template<typename Stream>
 	Stream& operator<<(Stream& stream, const SDL_Rect& rect) {
 		stream << rect.x << "_" << rect.y << "_" << rect.w << "_" << rect.h << std::endl;
+		return stream;
 	}
 
 	template<typename Stream, typename... Args>
@@ -91,6 +105,7 @@ namespace nv {
 	}
 
 	std::optional<std::string> fileExtension(const std::string& fileName);
+	std::string fileName(const std::string& filePath);
 
 	template<typename... Args>
 	void println(Args&&... args) {
@@ -100,6 +115,46 @@ namespace nv {
 
 	template<typename T, typename U>
 	using FlatOrderedMap = boost::container::flat_map<T, U>;
+
+	//template<typename 
+	//template<typename T>
+	//class ArrayQueue {
+	//private:
+	//	std::vector<T> m_buff;
+	//	size_t m_frontIdx = 0;
+	//	size_t m_backIdx = 1;
+
+	//	void reallocIfFull() {
+	//		if (m_backIdx == m_frontIdx) {
+	//			m_buff.resize(m_buff.size() * 2);
+	//		}
+	//	}
+	//public:
+	//	void pop() {
+	//		m_frontIdx = (m_frontIdx + 1) % m_buff.size();
+	//	}
+	//	template<typename... Args>
+	//	void emplace(Args&&... args)
+	//		noexcept(std::is_nothrow_constructible_v<T, Args...>)
+	//		//requires(std::is_copy_constructible_from_v<T, Args...>)
+	//	{
+	//		reallocIfFull();
+	//		m_buff[m_backIdx] = T{ std::forward<Args>(args...) };
+	//	}
+	//	void push(const T& t) noexcept(std::is_nothrow_copy_assignable_v<T>) {
+	//		reallocIfFull();
+	//		m_buff[m_backIdx] = t;
+	//	}
+	//	void push(T&& t) noexcept(std::is_nothrow_move_assignable_v<T>) {
+	//		reallocIfFull();
+	//		m_buff[m_backIdx] = std::move(t);
+	//	}
+	//};
+
+	template<typename T>
+	decltype(auto) getBack(T& container) {
+		return *(std::prev(container.end()));
+	}
 };
 
 #endif

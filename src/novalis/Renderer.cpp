@@ -5,8 +5,21 @@ nv::Renderer::Renderer(SDL_Renderer* renderer)
 {
 }
 
+void nv::Renderer::move(int dx, int dy) noexcept {
+	m_background->ren.move(dx, dy);
+	for (auto& [layer, sprites] : m_objects) {
+		for (auto& sprite : sprites) {
+			sprite->ren.move(dx, dy);
+		}
+	}
+}
+
 void nv::Renderer::clear() noexcept {
 	m_objects.clear();
+}
+
+void nv::Renderer::setBackground(Background* background) noexcept {
+	m_background = background;
 }
 
 void nv::Renderer::addObj(Sprite* sprite, int layer) {
@@ -23,24 +36,7 @@ void nv::Renderer::removeObj(const ID& ID, int layer) {
 
 void nv::Renderer::render() noexcept {
 	SDL_RenderClear(m_renderer);
-	for (auto& [layer, objs] : m_objects) {
-		for (auto& obj : objs) {
-			obj->render(m_renderer);
-		}
-	}
-	SDL_RenderPresent(m_renderer);
-}
-
-void nv::Renderer::render(ImGuiIO& io) {
-	ImVec4 color{ 0.45f, 0.55f, 0.60f, 1.00f };
-	ImGui::Render();
-	SDL_RenderSetScale(m_renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-	SDL_SetRenderDrawColor(m_renderer,
-		//unfortunately SDL uses ints for screen pixels and ImGui uses floats 
-		static_cast<Uint8>(color.x * 255), static_cast<Uint8>(color.y * 255),
-		static_cast<Uint8>(color.z * 255), static_cast<Uint8>(color.w * 255));
-	SDL_RenderClear(m_renderer);
-	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+	m_background->render(m_renderer);
 	for (auto& [layer, objs] : m_objects) {
 		for (auto& obj : objs) {
 			obj->render(m_renderer);

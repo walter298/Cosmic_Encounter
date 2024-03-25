@@ -13,22 +13,32 @@ void nv::editor::runEditors() {
 	ImGui_ImplSDLRenderer2_Init(instance.getRawRenderer());
 
 	bool running = true;
-	Renderer renderer{ instance.getRawRenderer() };
-	EditorDest currDest = runEditor(io, renderer, runHomeEditor);
+	EditorRenderer renderer{ instance.getRawRenderer() };
+	EditorDest currDest = EditorDest::Home;
+
 	while (running) {
 		if (currDest == EditorDest::None) {
 			continue;
 		}
 		switch (currDest) {
+		case EditorDest::Home:
+			currDest = runEditor(io, renderer, runHomeEditor);
+			break;
 		case EditorDest::Sprite:
 		{ 
 			SpriteEditor spriteEditor{ renderer };
 			currDest = runEditor(io, renderer, spriteEditor);
 			break;
 		}
+		case EditorDest::Background:
+		{
+			BackgroundEditor backgroundEditor{ renderer };
+			currDest = runEditor(io, renderer, backgroundEditor);
+			break;
+		}
 		case EditorDest::Scene:
 		{
-			SceneEditor sceneEditor;
+			SceneEditor sceneEditor{ renderer };
 			currDest = runEditor(io, renderer, sceneEditor);
 			break;
 		}

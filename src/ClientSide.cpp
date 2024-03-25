@@ -7,5 +7,4 @@ void play(const tcp::endpoint& endpoint) {
 	nv::Instance instance{ "Cosmic Encounter" };
 	
 	nv::Scene scene{ instance };
-	
 }

@@ -14,7 +14,7 @@
 int main(int argc, char** argv) {
 	nv::editor::runEditors();
 
-	tcp::endpoint endpoint{
+	/*tcp::endpoint endpoint{
 		ip::address_v4::from_string(argv[1]),
 		static_cast<ip::port_type>(std::stoi(argv[2]))
 	};
@@ -23,5 +23,5 @@ int main(int argc, char** argv) {
 		host(std::atoi(argv[4]), endpoint);
 	} else {
 		play(std::move(endpoint));
-	}
+	}*/
 }

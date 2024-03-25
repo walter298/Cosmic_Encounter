@@ -1,23 +1,44 @@
 #include "EditorUtil.h"
 
-void nv::editor::editRect(Rect& rect, bool editingColor) {
-	static std::array<int, 2> size = { 0, 0 };
+using nv::editor::EditorRenderer;
 
-	if (ImGui::SliderInt2("Size", size.data(), 0, 1000)) {
-		rect.setSize(size[0], size[1]);
+void EditorRenderer::resetBackground() noexcept {
+	m_background = nullptr;
+}
+
+void EditorRenderer::addRect(Rect* rect) {
+	m_rects.insert(rect);
+}
+
+void EditorRenderer::render(ImGuiIO& io) noexcept {
+	ImVec4 color{ 0.45f, 0.55f, 0.60f, 1.00f };
+	ImGui::Render();
+	SDL_RenderSetScale(m_renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+	SDL_SetRenderDrawColor(m_renderer,
+		//unfortunately SDL uses ints for screen pixels and ImGui uses floats 
+		static_cast<Uint8>(color.x * 255), static_cast<Uint8>(color.y * 255),
+		static_cast<Uint8>(color.z * 255), static_cast<Uint8>(color.w * 255));
+	SDL_RenderClear(m_renderer);
+
+	if (m_background != nullptr) {
+		m_background->render(m_renderer);
 	}
-
-	static std::array<float, 4> rgba = { 0, 0, 0, 0 };
-
-	if (editingColor) {
-		if (ImGui::ColorEdit4("Color", rgba.data())) {
-			rect.setRenderColor(
-				static_cast<Uint8>(rgba[0] * 255),
-				static_cast<Uint8>(rgba[1] * 255),
-				static_cast<Uint8>(rgba[2] * 255),
-				static_cast<Uint8>(rgba[3] * 255)
-			);
+	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
+	for (const auto& [layer, sprites] : m_objects) {
+		for (const auto& obj : sprites) {
+			obj->render(m_renderer);
 		}
+	}
+	for (const auto& rect : m_rects) {
+		rect->render(m_renderer);
+	}
+	
+	SDL_RenderPresent(m_renderer);
+}
+
+void EditorRenderer::moveRects(int dx, int dy) noexcept {
+	for (auto& rect : m_rects) {
+		rect->move(dx, dy);
 	}
 }
 
@@ -25,7 +46,7 @@ std::optional<std::string> nv::editor::openFilePath() {
 	WCHAR buffer[MAX_PATH];
 	OPENFILENAME ofn = {};
 	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFilter = TEXT("texture files\0*.txt\0");
+	//ofn.lpstrFilter = TEXT("texture files\0*.txt\0");
 	ofn.lpstrFile = buffer, ofn.nMaxFile = MAX_PATH, * buffer = '\0';
 	ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
@@ -110,27 +131,55 @@ std::optional<std::string> nv::editor::saveFile(std::wstring openMessage) {
 	return std::nullopt;
 }
 
-using nv::editor::DragCheck;
+void nv::editor::loadImages(std::vector<std::string>& imagePaths, TexturePtrs& textures, Renderer& renderer) {
+	auto spritePaths = openFilePaths();
+	if (spritePaths) {
+		auto spritesToAddC = spritePaths->size();
 
-void DragCheck::add(nv::Rect& rect)
-{
-	m_rects.push_back(std::ref(rect));
+		if (textures.capacity() < spritesToAddC) {
+			textures.reserve(spritesToAddC);
+		}
+		
+		for (const auto& path : *spritePaths) {
+			textures.push_back(
+				std::make_shared<Texture>(IMG_LoadTexture(renderer.get(), path.c_str()))
+			);
+			imagePaths.push_back(path);
+		}
+	}
 }
 
-void DragCheck::drag() {
-	/*auto [mx, my] = InputHandler::getInstance().mouse();
-	auto [dx, dy] = InputHandler::getInstance().mouseChange();*/
+void nv::editor::RectEditor::drag(const Coord& mousePos) {
+	auto [dmx, dmy] = ImGui::GetMouseDragDelta();
+	if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) &&
+		rect->isCoordContained(
+			static_cast<int>(mousePos.x),
+			static_cast<int>(mousePos.y)))
+	{ //drag selected texture
+		m_dragging = true;
+	}
+	else if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+		m_dragging = false;
+	}
+	if (m_dragging) {
+		rect->move(static_cast<int>(dmx), static_cast<int>(dmy));
+		ImGui::ResetMouseDragDelta();
+	}
+}
 
-	/*bool isHovered = false;
-	for (const auto& rect : m_rects) {
-		if (rect.get().isCoordContained(mx, my)) {
-			isHovered = true;
-			break;
-		}
-	}*/
-	/*if (isHovered && InputHandler::getInstance().leftMouseHeld()) {
-		for (auto& rect : m_rects) {
-			rect.get().move(dx, dy);
-		}
-	}*/
+void nv::editor::RectEditor::edit(bool showingColor) {
+	if (rect == nullptr) {
+		return;
+	}
+	ImGui::SliderInt("Width", &rect->rect.w, 0, NV_SCREEN_WIDTH);
+	ImGui::SliderInt("Height", &rect->rect.h, 0, NV_SCREEN_HEIGHT);
+
+	if (showingColor && ImGui::ColorEdit4("Color", m_floatColors.data())) {
+		rect->setRenderColor(
+			static_cast<Uint8>(m_floatColors[0] * 255),
+			static_cast<Uint8>(m_floatColors[1] * 255),
+			static_cast<Uint8>(m_floatColors[2] * 255),
+			static_cast<Uint8>(m_floatColors[3] * 255)
+		);
+	}
 }

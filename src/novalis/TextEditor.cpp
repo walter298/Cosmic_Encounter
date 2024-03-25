@@ -12,15 +12,15 @@ TextEditor::TextEditor(ImGuiIO& io, SDL_Renderer* renderer)
 
 void nv::editor::TextEditor::showGui(bool& running)
 {
-	backgroundRectDrag.drag();
+	//backgroundRectDrag.drag();
 
-	ImGui::SetNextWindowPos(editPanelPos);
-	ImGui::SetNextWindowSize(editPanelSize);
-	ImGui::Begin("Text Properties");
+	//ImGui::SetNextWindowPos(editPanelPos);
+	//ImGui::SetNextWindowSize(editPanelSize);
+	//ImGui::Begin("Text Properties");
 
-	if (ImGui::InputText("Text", m_textBuf.data(), maxMessageLength)) {
-		//m_text.changeText(m_renderer.get(), m_textBuf.data());
-	}
+	//if (ImGui::InputText("Text", m_textBuf.data(), maxMessageLength)) {
+	//	//m_text.changeText(m_renderer.get(), m_textBuf.data());
+	//}
 
 	//if (ImGui::SliderInt("Font Size", &m_text.m_fontSize, 10, 1000)) {
 	//	//m_text.setFontSize(m_renderer.get(), m_text.m_fontSize);

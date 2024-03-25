@@ -42,11 +42,13 @@ void nv::EventHandler::operator()() noexcept {
 
 	runEvents(m_periodicEvents);
 
-	while (SDL_PollEvent(&m_SDLEvt)) {
-		/*switch (m_SDLEvt.type) {
+	while (true) {
+		bool stop = false;
+		SDL_PollEvent(&m_SDLEvt);
+
+		switch (m_SDLEvt.type) {
 		case SDL_KEYDOWN || SDL_KEYUP:
-			auto& keyEvt = m_SDLEvt.key;
-			m_keymap[keyEvt.keysym.scancode] = static_cast<bool>(keyEvt.state);
+			m_keymap[m_SDLEvt.key.keysym.scancode] = static_cast<bool>(m_SDLEvt.key.state);
 			break;
 		case SDL_MOUSEWHEEL:
 			runEvents(m_mouseWheelEvents, static_cast<int>(m_SDLEvt.wheel.y));
@@ -60,7 +62,7 @@ void nv::EventHandler::operator()() noexcept {
 		case SDL_MOUSEMOTION:
 			runEvents(m_mouseMotionEvents, m_SDLEvt.motion);
 			break;
-		}*/
+		}
 	}
 	runEvents(m_keyboardEvents, m_keymap);
 }
