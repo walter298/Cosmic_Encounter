@@ -5,7 +5,7 @@
 
 namespace nv {
 	namespace editor {
-		EditorDest runHomeEditor(EditorRenderer& renderer);
+		EditorDest runHomeEditor(Renderer& renderer);
 	}
 }
 

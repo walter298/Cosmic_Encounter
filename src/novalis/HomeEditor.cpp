@@ -1,6 +1,6 @@
 #include "HomeEditor.h"
 
-nv::editor::EditorDest nv::editor::runHomeEditor(EditorRenderer& renderer) {
+nv::editor::EditorDest nv::editor::runHomeEditor(Renderer& renderer) {
 	static constexpr ImVec2 winPos{ NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2 };
 	static constexpr ImVec2 btnSize{ 183.0f, 80.0f };
 	static constexpr ImVec2 winSize = buttonList(btnSize, 3);
@@ -14,9 +14,6 @@ nv::editor::EditorDest nv::editor::runHomeEditor(EditorRenderer& renderer) {
 	}
 	if (ImGui::Button("Scene Editor", btnSize)) {
 		return EditorDest::Scene;
-	}
-	if (ImGui::Button("Background Editor", btnSize)) {
-		return EditorDest::Background;
 	}
 	return EditorDest::None;
 }

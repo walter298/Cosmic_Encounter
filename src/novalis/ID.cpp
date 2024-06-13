@@ -15,3 +15,7 @@ nv::ID& nv::ID::operator=(ID&& other) noexcept {
 bool nv::ID::operator==(const ID& other) const noexcept {
 	return (m_ID == other.m_ID);
 }
+
+const nv::ID& nv::IDObj::getID() const {
+	return m_ID;
+}

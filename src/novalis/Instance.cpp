@@ -7,7 +7,7 @@ void nv::Instance::quit() {
 
 	Text::closeFonts();*/
 
-	TTF_Quit();
+	//TTF_Quit();
 	IMG_Quit();
 	Mix_Quit();
 
@@ -20,18 +20,21 @@ nv::Instance::Instance(std::string windowTitle)
 	: m_SDLWindow{ SDL_CreateWindow(windowTitle.c_str(), 0, 0, NV_SCREEN_WIDTH, NV_SCREEN_HEIGHT, SDL_WINDOW_OPENGL) },
 	m_SDLRenderer{ SDL_CreateRenderer(m_SDLWindow, -1, SDL_RENDERER_ACCELERATED) }
 {
-	if (SDL_Init(SDL_INIT_EVERYTHING) != 0 ||
+	if (SDL_Init(SDL_INIT_EVERYTHING) != 0 || //returns zero on sucess
 		Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) != 0 ||
-		TTF_Init() != 0 || IMG_Init(IMG_INIT_JPG & IMG_INIT_PNG) != 0) 
+		//TTF_Init() != 0 || 
+		IMG_Init(IMG_INIT_JPG & IMG_INIT_PNG) != 0)
 	{
 		quit();
-		throw std::runtime_error("Failed to initialize SDL");
+		std::cerr << SDL_GetError() << '\n';
+		exit(-1);
 	}
 	nv::workingDirectory(); //set working directory
 	//Text::openFonts();
 }
 
 nv::Instance::~Instance() {
+	std::puts("Quitting\n");
 	quit();
 }
 
@@ -68,8 +71,8 @@ void nv::Instance::loadObjsFromDir(std::string absDirPath) {
 			if (fileExt) {
 				auto& ext = *fileExt;
 				if (ext == ".nv_sprite") {
-					Sprite sprite{ m_SDLRenderer, currPath };
-					m_spriteMap[sprite.getName()] = std::move(sprite);
+					/*Sprite sprite{ m_SDLRenderer, currPath };
+					m_spriteMap[sprite.getName()] = std::move(sprite);*/
 				} 
 			}
 		} else {

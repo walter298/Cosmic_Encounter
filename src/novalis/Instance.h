@@ -20,8 +20,8 @@ namespace nv {
 		//std::string param is the filepath
 		using ObjLoader = std::function<std::pair<std::string, std::any>(std::string)>;
 
-		std::map<std::string, ObjLoader> m_typeLoaders;
-		std::map<std::string, std::any> m_customTypeMap;
+		std::unordered_map<std::string, ObjLoader> m_typeLoaders;
+		std::unordered_map<std::string, std::any> m_customTypeMap;
 
 		void quit();
 

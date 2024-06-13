@@ -1,7 +1,10 @@
 #include "EditorApp.h"
 
+#include "BadRenderer.h"
+
 void nv::editor::runEditors() {
 	Instance instance{ "Novalis" };
+	Renderer renderer{ instance.getRawRenderer() };
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -13,7 +16,6 @@ void nv::editor::runEditors() {
 	ImGui_ImplSDLRenderer2_Init(instance.getRawRenderer());
 
 	bool running = true;
-	EditorRenderer renderer{ instance.getRawRenderer() };
 	EditorDest currDest = EditorDest::Home;
 
 	while (running) {
@@ -25,15 +27,9 @@ void nv::editor::runEditors() {
 			currDest = runEditor(io, renderer, runHomeEditor);
 			break;
 		case EditorDest::Sprite:
-		{ 
+		{
 			SpriteEditor spriteEditor{ renderer };
 			currDest = runEditor(io, renderer, spriteEditor);
-			break;
-		}
-		case EditorDest::Background:
-		{
-			BackgroundEditor backgroundEditor{ renderer };
-			currDest = runEditor(io, renderer, backgroundEditor);
 			break;
 		}
 		case EditorDest::Scene:
@@ -46,9 +42,8 @@ void nv::editor::runEditors() {
 			running = false;
 			break;
 		}
-		renderer.clear();
 	}
-
+	
 	ImGui_ImplSDLRenderer2_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();

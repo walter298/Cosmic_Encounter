@@ -14,4 +14,11 @@ namespace nv {
 		ID& operator=(ID&& other) noexcept;
 		bool operator==(const ID& other) const noexcept;
 	};
+
+	struct IDObj {
+	private:
+		ID m_ID;
+	public:
+		const ID& getID() const;
+	};
 }

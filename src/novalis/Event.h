@@ -8,8 +8,6 @@
 #include <type_traits>
 #include <string>
 
-#include <boost/container/flat_map.hpp>
-
 #include <SDL2/SDL.h>
 
 #include <imgui.h>

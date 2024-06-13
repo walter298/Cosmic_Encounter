@@ -1,0 +1,23 @@
+{
+  "ren": {
+    "color": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "sdl_rect": [
+      0,
+      0,
+      162,
+      150
+    ]
+  },
+  "texture_paths": [
+    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/black_planet.png",
+    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/blue_planet.png",
+    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/green_planet.png",
+    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/purple_planet.png",
+    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/red_planet.png"
+  ]
+}

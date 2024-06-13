@@ -1,47 +1,5 @@
 #include "EditorUtil.h"
 
-using nv::editor::EditorRenderer;
-
-void EditorRenderer::resetBackground() noexcept {
-	m_background = nullptr;
-}
-
-void EditorRenderer::addRect(Rect* rect) {
-	m_rects.insert(rect);
-}
-
-void EditorRenderer::render(ImGuiIO& io) noexcept {
-	ImVec4 color{ 0.45f, 0.55f, 0.60f, 1.00f };
-	ImGui::Render();
-	SDL_RenderSetScale(m_renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
-	SDL_SetRenderDrawColor(m_renderer,
-		//unfortunately SDL uses ints for screen pixels and ImGui uses floats 
-		static_cast<Uint8>(color.x * 255), static_cast<Uint8>(color.y * 255),
-		static_cast<Uint8>(color.z * 255), static_cast<Uint8>(color.w * 255));
-	SDL_RenderClear(m_renderer);
-
-	if (m_background != nullptr) {
-		m_background->render(m_renderer);
-	}
-	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
-	for (const auto& [layer, sprites] : m_objects) {
-		for (const auto& obj : sprites) {
-			obj->render(m_renderer);
-		}
-	}
-	for (const auto& rect : m_rects) {
-		rect->render(m_renderer);
-	}
-	
-	SDL_RenderPresent(m_renderer);
-}
-
-void EditorRenderer::moveRects(int dx, int dy) noexcept {
-	for (auto& rect : m_rects) {
-		rect->move(dx, dy);
-	}
-}
-
 std::optional<std::string> nv::editor::openFilePath() {
 	WCHAR buffer[MAX_PATH];
 	OPENFILENAME ofn = {};
@@ -114,7 +72,7 @@ std::optional<std::string> nv::editor::saveFile(std::wstring openMessage) {
 	ofn.lpstrFileTitle = szInitialFileName; // Initial file name
 
 	// Display the Save dialog
-	if (GetSaveFileName(&ofn) == TRUE) {
+	if (GetSaveFileName(&ofn)) {
 		// Save the file
 		HANDLE hFile = CreateFile(ofn.lpstrFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (hFile != INVALID_HANDLE_VALUE) {
@@ -131,7 +89,7 @@ std::optional<std::string> nv::editor::saveFile(std::wstring openMessage) {
 	return std::nullopt;
 }
 
-void nv::editor::loadImages(std::vector<std::string>& imagePaths, TexturePtrs& textures, Renderer& renderer) {
+void nv::editor::loadImages(std::vector<std::string>& imagePaths, plf::hive<Texture>& textures, Renderer& renderer) {
 	auto spritePaths = openFilePaths();
 	if (spritePaths) {
 		auto spritesToAddC = spritePaths->size();
@@ -141,45 +99,42 @@ void nv::editor::loadImages(std::vector<std::string>& imagePaths, TexturePtrs& t
 		}
 		
 		for (const auto& path : *spritePaths) {
-			textures.push_back(
-				std::make_shared<Texture>(IMG_LoadTexture(renderer.get(), path.c_str()))
-			);
+			textures.emplace(IMG_LoadTexture(renderer.get(), path.c_str()));
 			imagePaths.push_back(path);
 		}
 	}
 }
 
-void nv::editor::RectEditor::drag(const Coord& mousePos) {
-	auto [dmx, dmy] = ImGui::GetMouseDragDelta();
-	if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) &&
-		rect->isCoordContained(
-			static_cast<int>(mousePos.x),
-			static_cast<int>(mousePos.y)))
-	{ //drag selected texture
-		m_dragging = true;
-	}
-	else if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-		m_dragging = false;
-	}
-	if (m_dragging) {
-		rect->move(static_cast<int>(dmx), static_cast<int>(dmy));
-		ImGui::ResetMouseDragDelta();
-	}
+nv::editor::ObjectEditor::ObjectEditor(Renderer& renderer, ImVec2 optionsPos)
+	: m_renderer{ renderer }, m_objOptionsPos{ optionsPos }
+{
+	iterateStructs([this](auto& objHiveData) {
+		objHiveData = { nullptr, {}, 0, false };
+		return STAY_IN_LOOP;
+	}, m_objHiveData);
 }
 
-void nv::editor::RectEditor::edit(bool showingColor) {
-	if (rect == nullptr) {
-		return;
-	}
-	ImGui::SliderInt("Width", &rect->rect.w, 0, NV_SCREEN_WIDTH);
-	ImGui::SliderInt("Height", &rect->rect.h, 0, NV_SCREEN_HEIGHT);
+nv::editor::ObjectEditor::~ObjectEditor() {
+	m_renderer.clear();
+	std::println("Destroyed Object Editor\n");
+}
 
-	if (showingColor && ImGui::ColorEdit4("Color", m_floatColors.data())) {
-		rect->setRenderColor(
-			static_cast<Uint8>(m_floatColors[0] * 255),
-			static_cast<Uint8>(m_floatColors[1] * 255),
-			static_cast<Uint8>(m_floatColors[2] * 255),
-			static_cast<Uint8>(m_floatColors[3] * 255)
-		);
+void nv::editor::ObjectEditor::operator()() {
+	auto mousePos = convertPair<SDL_Point>(ImGui::GetMousePos());
+	iterateStructs([&, this](auto& objHiveData) {
+		auto& [objs, selectedObjIt, layer, isSelected] = objHiveData;
+		if (objs == nullptr) {
+			return STAY_IN_LOOP;
+		}
+		if (!isSelected) {
+			return STAY_IN_LOOP;
+		}
+		edit(objHiveData, mousePos);
+		return BREAK_FROM_LOOP;
+	}, m_objHiveData);
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) { //if we have a new clicked 
+		iterateStructs([&](auto& objHiveData) {
+			return selectObj(objHiveData, mousePos);
+		}, m_objHiveData);
 	}
 }

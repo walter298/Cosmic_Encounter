@@ -1,5 +1,4 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#pragma once
 
 #include <chrono>
 #include <map>
@@ -23,10 +22,10 @@
 #include "Sprite.h"
 
 namespace nv {
-	class Renderer {
+	class BadRenderer {
 	private:
 		SDL_Renderer* m_renderer;
-		
+
 		Layers<Sprite*> m_sprites;
 		Layers<Rect*> m_rects;
 		Layers<TextureData*> m_textures;
@@ -47,11 +46,11 @@ namespace nv {
 
 		bool showingCursor = true;
 
-		Renderer(SDL_Renderer* renderer); 
-		Renderer(const Renderer&) = delete;
-		Renderer(Renderer&&)      = delete;
+		BadRenderer(SDL_Renderer* renderer);
+		BadRenderer(const BadRenderer&) = delete;
+		BadRenderer(BadRenderer&&) = delete;
 
-		~Renderer() { std::println("Destroying Renderer"); }
+		~BadRenderer() { std::println("Destroying Renderer"); }
 
 		inline SDL_Renderer* get() {
 			return m_renderer;
@@ -70,9 +69,7 @@ namespace nv {
 		void add(TextureData* texData, int layer);
 		void erase(const TextureData* const texData, int layer);
 
-		void render() noexcept; 
+		void render() noexcept;
 		void renderWithImGui(ImGuiIO& io);
 	};
 }
-
-#endif

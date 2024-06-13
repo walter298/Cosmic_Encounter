@@ -17,15 +17,15 @@ nv::Scene::Scene(const std::string& absFilePath, Instance& instance) : renderer{
 		auto sprite = instance.getSprite(name);
 
 		auto ren = jsonData.at("sprites").at(name).at("layer").get<Rect>();
-		sprite.ren.setPos(ren.rect.x, ren.rect.y);
-		sprite.ren.setSize(ren.rect.w, ren.rect.h);
+		/*sprite.pos.ren.setPos(ren.rect.x, ren.rect.y);
+		sprite.pos.ren.setSize(ren.rect.w, ren.rect.h);
 
 		auto world = jsonData.at("sprites")[name]["world"].get<Rect>();
-		sprite.world.setPos(world.rect.x, world.rect.y);
-		sprite.ren.setSize(world.rect.w, world.rect.h);
+		sprite.pos.world.setPos(world.rect.x, world.rect.y);
+		sprite.pos.ren.setSize(world.rect.w, world.rect.h);*/
 
 		auto layer = jsonData.at("sprites").at(name).at("layer").get<int>();
-		renderer.addObj(&sprite, layer);
+		renderer.add(&sprite, layer);
 	}
 	sceneFile.close();
 }

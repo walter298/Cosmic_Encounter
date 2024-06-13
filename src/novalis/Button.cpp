@@ -5,12 +5,12 @@ nv::Button::Button(const Rect& rect) noexcept
 {
 }
 
-nv::ID nv::Button::getID() const noexcept {
+const nv::ID& nv::Button::getID() const noexcept {
 	return m_ID;
 }
 
 void nv::Button::operator()(const MouseButtonData& mouseBtnData) {
-	if (m_rect.isCoordContained(mouseBtnData.x, mouseBtnData.y)) {
+	if (m_rect.containsCoord(mouseBtnData.x, mouseBtnData.y)) {
 		m_previouslyHovered = true;
 	} else if (m_previouslyHovered) {
 		m_previouslyHovered = false;

@@ -7,63 +7,37 @@ namespace nv {
 	namespace editor {
 		class SceneEditor {
 		private:
-			Background m_background;
+			Layers<Sprite> m_sprites;
+			Layers<Rect> m_rects;
 			
-			struct SpriteData {
-				Sprite sprite;
-				int scale = 0;
-				int layer = 0;
-				int originalWidth = 0;
-				int originalHeight = 0;
-			};
-			using Sprites = std::unordered_map<std::string, plf::hive<SpriteData>>;
-			Sprites m_sprites;
+			ObjectEditor m_objEditor;
 
-			size_t m_selectedSpriteIdx = 0;
+			int m_currLayer = 0;
 
 			bool m_showingRightClickOptions = false;
 			ImVec2 m_rightClickWinPos{ 0.0f, 0.0f };
 
-			//SpriteData
-			SpriteData* m_selectedSpriteData = nullptr;
-			Sprite* m_selectedSprite = nullptr;
-			RectEditor m_spriteRectEditor;
+			template<RenderObject Obj>
+			void insertObjFromFile(Renderer& renderer, plf::hive<Obj>& objects) {
+				auto path = openFilePath();
+				if (path) {
+					try {
+						auto spriteName = fileName(*path);
+						objects.emplace(*path, renderer.get());
+					} catch (std::exception e) {
+						std::println("{}", e.what());
+					}
+				}
+			}
 
-			void resetSelectedSpriteData() noexcept;
-			void saveSelectedSpriteData() noexcept;
+			void showRightClickOptions(Renderer& renderer, const Coord& mousePos);
 
-			static constexpr ImVec2 backgroundOptionsWinPos{ 0.0f, static_cast<float>(NV_SCREEN_HEIGHT) - 300.0f };
-			static constexpr ImVec2 backgroundOptionsWinSize{ 200.0f, 300.0f };
+			void moveCamera(Renderer& renderer) noexcept;
 
-			void setBackground(EditorRenderer& renderer);
-			void editBackground();
-			void showBackgroundOptions(EditorRenderer& renderer);
-
-			static constexpr ImVec2 spriteOptionsWinPos = adjacentPos(backgroundOptionsWinPos, backgroundOptionsWinSize);
-			static constexpr ImVec2 spriteOptionsWinSize = backgroundOptionsWinSize;
-
-			void insertSprite(EditorRenderer& renderer, const ImVec2& mousePos);
-			void editSelectedSprite(EditorRenderer& renderer);
-			
-			static constexpr ImVec2 rectOptionsWinPos = adjacentPos(spriteOptionsWinPos, spriteOptionsWinSize);
-			static constexpr ImVec2 rectOptionsWinSize = backgroundOptionsWinSize;
-
-			plf::hive<Rect> m_rects;
-			RectEditor m_rectEditor;
-
-			void insertRect(EditorRenderer& renderer, const Coord& mousePos);
-			void editSelectedRect(const Coord& mousePos);
-
-			void selectObject(const Coord& mousePos);
-
-			void showRightClickOptions(EditorRenderer& renderer, const Coord& mousePos);
-
-			void moveCamera(EditorRenderer& renderer) noexcept;
-
-			void save();
+			//void save();
 		public:
-			SceneEditor(EditorRenderer& renderer);
-			EditorDest operator()(EditorRenderer& renderer);
+			SceneEditor(Renderer& renderer);
+			EditorDest operator()(Renderer& renderer);
 		};
 	}
 }

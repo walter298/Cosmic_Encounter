@@ -24,7 +24,7 @@ namespace nv {
 	public:
 		Button(const Rect& rect) noexcept;
 
-		ID getID() const noexcept;
+		const ID& getID() const noexcept;
 
 		template<std::invocable OnHovered, std::invocable OnUnhovered>
 		void onHovered(OnHovered&& onHovered, OnUnhovered&& onUnhovered) {
@@ -57,7 +57,7 @@ namespace nv {
 			}();
 			m_queuedEvents.emplace_back(
 				[&releasedFlag, func = std::forward<Func>(func)](const MouseButtonData& mouseBtnData) mutable {
-					if (m_rect.isCoordContained(mouseBtnData.x, mouseBtnData.y) && releasedFlag) {
+					if (m_rect.containsCoord(mouseBtnData.x, mouseBtnData.y) && releasedFlag) {
 						func();
 					}
 				}
