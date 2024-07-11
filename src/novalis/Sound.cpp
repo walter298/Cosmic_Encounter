@@ -13,6 +13,7 @@ nv::Music::Music(std::string absPath) noexcept
 
 nv::Music::~Music()
 {
+	stop();
 	Mix_FreeChunk(m_music);
 }
 

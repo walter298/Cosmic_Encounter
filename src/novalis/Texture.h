@@ -1,34 +1,24 @@
 #pragma once
 
+#include <fstream>
 #include <string_view>
+#include <unordered_map>
+#include <variant>
+
+#include <SDL2/SDL_image.h>
 
 #include "Rect.h"
 
 namespace nv {
-	struct Texture {
-		SDL_Texture* raw = nullptr;
+	using TextureRAII = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>;
+	TextureRAII loadTexture(SDL_Renderer* renderer, std::string_view texPath) noexcept;
 
-		Texture() = default;
-		explicit Texture(SDL_Texture* texture) noexcept;
+	using TextureMap = std::unordered_map<std::string, TextureRAII>;
 
-		Texture(const Texture&) = delete;
-		Texture& operator=(const Texture&) = delete;
+	using SharedTexture = std::shared_ptr<SDL_Texture>;
+	SharedTexture loadSharedTexture(SDL_Renderer* renderer, std::string_view texPath) noexcept;
 
-		Texture(Texture&&) noexcept = default;
-		Texture& operator=(Texture&&) noexcept = default;
-
-		~Texture() noexcept;
-	};
-
-	using TexturePtr = std::shared_ptr<Texture>;
-
-	struct TexturePos {
-		static constexpr std::string_view renJkey = "ren";
-		static constexpr std::string_view worldJkey = "world";
-		static constexpr std::string_view angleJkey = "angle";
-		static constexpr std::string_view rotationPointJkey = "rotation_point";
-		static constexpr std::string_view flipJkey = "flip";
-
+	struct TextureData {
 		Rect ren;
 		Rect world;
 		SDL_Point rotationPoint{ 0, 0 };
@@ -36,9 +26,20 @@ namespace nv {
 		SDL_RendererFlip flip = SDL_FLIP_NONE;
 	};
 
-	struct TextureData {
-		TexturePtr tex;
-		TexturePos pos;
+	class TextureObject : public NamedObject {
+	private:
+		SDL_Renderer* m_renderer;
+		std::variant<SharedTexture, SDL_Texture*> m_texVariant;
+		SDL_Texture* m_tex = nullptr;
+		std::shared_ptr<const std::string> m_texPath = nullptr;
+	public:
+		TextureObject(SDL_Renderer* renderer, std::string_view texPath, SharedTexture texPtr, TextureData texData);
+		TextureObject(SDL_Renderer* renderer, std::string_view texPath, SDL_Texture* rawTex, TextureData texData);
+		TextureObject(SDL_Renderer* renderer, const json& json, TextureMap& texMap);
+		
+		const std::string& getTexPath() const noexcept;
+
+		TextureData texData;
 		
 		void setOpacity(Uint8 opacity) noexcept;
 
@@ -50,6 +51,11 @@ namespace nv {
 		void move(int dx, int dy) noexcept;
 		void move(SDL_Point change) noexcept;
 
+		void setSize(int w, int h) noexcept;
+		void setSize(SDL_Point p);
+
+		SDL_Point getSize() const noexcept;
+
 		void scale(int dx, int dy) noexcept;
 		void scale(SDL_Point change) noexcept;
 
@@ -59,9 +65,8 @@ namespace nv {
 		bool containsCoord(int x, int y) const noexcept;
 		bool containsCoord(SDL_Point p) const noexcept;
 
-		void render(SDL_Renderer* renderer) const noexcept;
-	};
+		void render() const noexcept;
 
-	/*void from_json(const json& j, TexturePos& pos);
-	void to_json(json& j, const TexturePos& pos);*/
+		void save(json& json) const;
+	};
 }

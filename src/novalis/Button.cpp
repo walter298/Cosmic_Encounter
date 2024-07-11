@@ -1,48 +1,40 @@
 #include "Button.h"
 
-nv::Button::Button(const Rect& rect) noexcept
-	: m_rect{ rect }
+nv::Button::Button(const Rect& rect, Event<>&& onClicked, Event<> onHovered, Event<>&& onUnhovered) noexcept
+	: m_rect{ rect }, m_onClicked{ std::move(onClicked) }, m_onHovered{ std::move(onHovered) }, m_onUnhovered{ std::move(onUnhovered) }
 {
 }
 
-const nv::ID& nv::Button::getID() const noexcept {
-	return m_ID;
-}
+//void nv::Button::onClicked(Event<>&& onClicked, MouseButton btn) {
+//	const bool& releasedFlag = [&, this] {
+//		switch (btn) {
+//		case MouseButton::Left:
+//			return m_leftReleased;
+//			break;
+//		case MouseButton::Right:
+//			return m_rightReleased;
+//			break;
+//		default:
+//			return m_middleReleased;
+//			break;
+//		}
+//	}();
+//	m_onClicked = [&releasedFlag, onClicked = move(onClicked), this](const MouseButtonData& mouseBtnData) mutable {
+//		if (m_rect.containsCoord(mouseBtnData.x, mouseBtnData.y) && releasedFlag) {
+//			onClicked();
+//		}
+//	};
+//}
 
-void nv::Button::operator()(const MouseButtonData& mouseBtnData) {
+void nv::Button::operator()(const MouseData& mouseBtnData) {
 	if (m_rect.containsCoord(mouseBtnData.x, mouseBtnData.y)) {
+		m_onHovered();
 		m_previouslyHovered = true;
+		if (mouseBtnData.left == MouseButtonState::Down) {
+			m_onClicked();
+		}
 	} else if (m_previouslyHovered) {
 		m_previouslyHovered = false;
-		m_previouslyUnhovered = true;
+		m_onUnhovered();
 	}
-	if (mouseBtnData.state == MouseButtonState::Down) {
-		switch (mouseBtnData.btn) {
-		case MouseButton::Left:
-			m_previouslyLeftHeld = true;
-			break;
-		case MouseButton::Right:
-			m_previouslyRightHeld = true;
-			break;
-		case MouseButton::Middle:
-			m_previouslyMiddleHeld = true;
-			break;
-		}
-	} else if (mouseBtnData.state == MouseButtonState::Released) {
-		switch (mouseBtnData.btn) {
-		case MouseButton::Left:
-			m_leftReleased = true;
-			break;
-		case MouseButton::Right:
-			m_rightReleased = true;
-			break;
-		case MouseButton::Middle:
-			m_middleReleased = true;
-			break;
-		}
-	}
-	for (auto& evt : m_queuedEvents) {
-		evt();
-	}
-	m_previouslyUnhovered = false;
 }

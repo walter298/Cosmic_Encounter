@@ -1,23 +1,1004 @@
 {
-  "ren": {
-    "color": [
+  "texture_object_layers": [
+    [
       0,
-      0,
-      0,
-      0
+      [
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                63,
+                445,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                718,
+                514,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1191,
+                193,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                781,
+                -114,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                323,
+                63,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ]
+      ]
     ],
-    "sdl_rect": [
-      0,
-      0,
-      162,
-      150
+    [
+      1,
+      [
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ]
+      ]
+    ],
+    [
+      2,
+      [
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ]
+      ]
+    ],
+    [
+      3,
+      [
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ]
+      ]
+    ],
+    [
+      4,
+      [
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                463,
+                845,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1118,
+                914,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1591,
+                593,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                1181,
+                286,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ],
+        [
+          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                300,
+                300
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                723,
+                463,
+                0,
+                0
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ]
+        ]
+      ]
     ]
-  },
-  "texture_paths": [
-    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/black_planet.png",
-    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/blue_planet.png",
-    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/green_planet.png",
-    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/purple_planet.png",
-    "C:/Users/walte/OneDrive/Desktop/Code_Projects/Cosmic_Encounter/Cosmic_Encounter/Cosmic_Encounter/game_assets/images/planets/red_planet.png"
   ]
 }

@@ -2,6 +2,9 @@
 #include "ServerSide.h"
 
 #include "novalis/EditorApp.h"
+#include "novalis/Instance.h"
+
+#include "JoinGame.h"
 
 #undef main
 
@@ -12,7 +15,16 @@
 * argv[4] = if argv[2] == run_server, then player count
 */
 int main(int argc, char** argv) {
-	nv::editor::runEditors();
+	//nv::editor::runEditors();
+
+	nv::Instance instance{ "Cosmic Encounter" };
+
+	asio::io_context context;
+	tcp::socket sock{ context };
+
+	joinGame(instance.renderer, sock);
+
+	//nv::editor::runEditors();
 
 	/*tcp::endpoint endpoint{
 		ip::address_v4::from_string(argv[1]),

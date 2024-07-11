@@ -10,10 +10,9 @@ std::optional<std::string> nv::editor::openFilePath() {
 
 	if (GetOpenFileName(&ofn)) {
 		std::wstring wpath = ofn.lpstrFile; //store path in wstring so we can convert it to a normal std::string
-		std::ranges::replace(wpath, L'\\', L'/');
+		ranges::replace(wpath, L'\\', L'/');
 		return std::string{ wpath.begin(), wpath.end() };
-	}
-	else {
+	} else {
 		return std::nullopt;
 	}
 }
@@ -71,15 +70,11 @@ std::optional<std::string> nv::editor::saveFile(std::wstring openMessage) {
 	ofn.lpstrDefExt = L"txt";
 	ofn.lpstrFileTitle = szInitialFileName; // Initial file name
 
-	// Display the Save dialog
 	if (GetSaveFileName(&ofn)) {
-		// Save the file
 		HANDLE hFile = CreateFile(ofn.lpstrFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 		if (hFile != INVALID_HANDLE_VALUE) {
-			// Replace this with the data you want to save in the file
-			const char* dataToSave = "This is an example content to save in the file.";
 			DWORD dwBytesWritten;
-			WriteFile(hFile, dataToSave, strlen(dataToSave), &dwBytesWritten, NULL);
+			WriteFile(hFile, "", strlen(""), &dwBytesWritten, NULL);
 			CloseHandle(hFile);
 			std::wstring wpath = szFile;
 			std::ranges::replace(wpath, L'\\', L'/');
@@ -87,54 +82,4 @@ std::optional<std::string> nv::editor::saveFile(std::wstring openMessage) {
 		}
 	}
 	return std::nullopt;
-}
-
-void nv::editor::loadImages(std::vector<std::string>& imagePaths, plf::hive<Texture>& textures, Renderer& renderer) {
-	auto spritePaths = openFilePaths();
-	if (spritePaths) {
-		auto spritesToAddC = spritePaths->size();
-
-		if (textures.capacity() < spritesToAddC) {
-			textures.reserve(spritesToAddC);
-		}
-		
-		for (const auto& path : *spritePaths) {
-			textures.emplace(IMG_LoadTexture(renderer.get(), path.c_str()));
-			imagePaths.push_back(path);
-		}
-	}
-}
-
-nv::editor::ObjectEditor::ObjectEditor(Renderer& renderer, ImVec2 optionsPos)
-	: m_renderer{ renderer }, m_objOptionsPos{ optionsPos }
-{
-	iterateStructs([this](auto& objHiveData) {
-		objHiveData = { nullptr, {}, 0, false };
-		return STAY_IN_LOOP;
-	}, m_objHiveData);
-}
-
-nv::editor::ObjectEditor::~ObjectEditor() {
-	m_renderer.clear();
-	std::println("Destroyed Object Editor\n");
-}
-
-void nv::editor::ObjectEditor::operator()() {
-	auto mousePos = convertPair<SDL_Point>(ImGui::GetMousePos());
-	iterateStructs([&, this](auto& objHiveData) {
-		auto& [objs, selectedObjIt, layer, isSelected] = objHiveData;
-		if (objs == nullptr) {
-			return STAY_IN_LOOP;
-		}
-		if (!isSelected) {
-			return STAY_IN_LOOP;
-		}
-		edit(objHiveData, mousePos);
-		return BREAK_FROM_LOOP;
-	}, m_objHiveData);
-	if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) { //if we have a new clicked 
-		iterateStructs([&](auto& objHiveData) {
-			return selectObj(objHiveData, mousePos);
-		}, m_objHiveData);
-	}
 }

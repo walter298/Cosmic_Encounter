@@ -1,0 +1,214 @@
+{
+  "rects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "ip_address_input_rect",
+          "sdl_rect": [
+            1001,
+            647,
+            500,
+            50
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "port_input_rect",
+          "sdl_rect": [
+            1000,
+            394,
+            500,
+            50
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "join_button_rect",
+          "sdl_rect": [
+            993,
+            863,
+            520,
+            100
+          ]
+        }
+      ]
+    }
+  ],
+  "sprites": [
+    {
+      "layer": 0,
+      "objects": []
+    }
+  ],
+  "text": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "sdl_rect": [
+              1066,
+              331,
+              375,
+              51
+            ]
+          },
+          "value": "Host IPv4 Address"
+        },
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "sdl_rect": [
+              1152,
+              592,
+              190,
+              51
+            ]
+          },
+          "value": "Host Port"
+        },
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "join",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "sdl_rect": [
+              999,
+              888,
+              501,
+              51
+            ]
+          },
+          "value": "Join the Galactic Conflict"
+        },
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "ip_address_input",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "sdl_rect": [
+              1001,
+              647,
+              501,
+              51
+            ]
+          },
+          "value": ""
+        },
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "port_input",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "sdl_rect": [
+              1000,
+              394,
+              501,
+              51
+            ]
+          },
+          "value": ""
+        }
+      ]
+    }
+  ],
+  "texture_objects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "name": "join_game_space",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                -75,
+                -30,
+                2700,
+                2000
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "sdl_rect": [
+                -75,
+                -30,
+                2700,
+                2000
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\space\\join_game_space.png"
+        }
+      ]
+    }
+  ]
+}

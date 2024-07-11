@@ -1,57 +1,36 @@
 #ifndef SCENE_H
 #define SCENE_H
 
-#include <algorithm>
-#include <fstream>
-#include <memory>
-#include <ranges>
-#include <string>
-#include <thread>
-#include <unordered_map>
-#include <vector>
-
 #include <nlohmann/json.hpp>
 
-#include "Event.h"
-#include "Instance.h"
+#include "EventHandler.h"
+
+#include "Renderer.h"
+
 #include "Button.h"
-#include "GlobalMacros.h"
 #include "Sprite.h"
+#include "Text.h"
+#include "Texture.h"
 
 namespace nv {
-	namespace editor {
-		class SceneEditor;
-	}
-
 	class Scene {
-	public:
-		enum class EndReason {
-			QuitGame,
-			NextScene
-		};
 	private:
-		EndReason m_endReason = EndReason::QuitGame;
-		bool m_running = false;
-
-		using SpriteMap = std::unordered_map<std::string, Sprites>;
-		SpriteMap m_sprites;
+		SDL_Renderer* m_renderer;
+		FontMap m_fontMap;
+		TextureMap m_texMap;
 	public:
+		bool running = false;
+
+		Layers<Sprite> sprites;
+		Layers<TextureObject> textures;
+		Layers<Text> text;
+		Layers<Rect> rects;
+
 		EventHandler eventHandler;
-		Renderer renderer;
+		
+		Scene(std::string_view path, SDL_Renderer* renderer);
 
-		Scene() = default;
-		Scene(Instance& instance);
-		Scene(const std::string& path, Instance& instance);
-
-		Sprite& sprite(const std::string& name);
-		Sprites& spriteClones(const std::string& name);
-
-		EndReason endReason() const noexcept;
-		void endScene(EndReason end) noexcept;
-
-		void execute();
-
-		friend class editor::SceneEditor;
+		void operator()();
 	};
 }
 

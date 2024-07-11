@@ -29,4 +29,6 @@ namespace nv {
 		CameraPath(const std::string& path);
 		const Path& getPath() const noexcept;
 	};
+
+	
 }

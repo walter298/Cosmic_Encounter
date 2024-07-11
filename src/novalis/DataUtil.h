@@ -1,12 +1,17 @@
 #ifndef DATA_UTIL_H
 #define DATA_UTIL_H
 
+#include <algorithm> //equal_range
 #include <chrono>
+#include <deque>
 #include <filesystem>
+#include <ranges> //viewable_range
 #include <string>
 #include <type_traits>
+#include <vector>
 
 #include <boost/container/flat_map.hpp>
+#include <boost/optional.hpp>
 #include <boost/pfr.hpp>
 
 #include <plf_hive.h>
@@ -14,8 +19,6 @@
 #include <SDL2/SDL.h>
 
 #include <nlohmann/json.hpp>
-
-#include "GlobalMacros.h"
 
 void to_json(nlohmann::json& j, const SDL_Color& c);
 void from_json(const nlohmann::json& j, SDL_Color& c);
@@ -26,6 +29,7 @@ void from_json(const nlohmann::json& j, SDL_Rect& c);
 void to_json(nlohmann::json& j, const SDL_Point& p);
 void from_json(const nlohmann::json& j, SDL_Point& p);
 
+//json (de)serialization for chrono types
 namespace std {
 	namespace chrono {
 		template<typename Rep, typename Period>
@@ -40,10 +44,10 @@ namespace std {
 }
 
 namespace nv {
-	namespace chrono    = std::chrono;
-	namespace ranges    = std::ranges;
-	namespace views     = std::views;
-	namespace pfr       = boost::pfr;
+	namespace chrono = std::chrono;
+	namespace ranges = std::ranges;
+	namespace views = std::views;
+	namespace pfr = boost::pfr;
 	namespace boost_con = boost::container;
 
 	//class aliases
@@ -58,8 +62,8 @@ namespace nv {
 	namespace detail {
 		template<Aggregate Aggr, size_t... Idxs>
 		void assignEachAggrMember(const json& j, Aggr& aggr, std::index_sequence<Idxs...> idxs) {
-			using ParsedTuple = std::tuple<typename pfr::tuple_element_t<Idxs, Aggr>...>;
-			auto parsedTuple = j.get<ParsedTuple>();
+			using ParsedAggr = std::tuple<pfr::tuple_element_t<Idxs, Aggr>...>;
+			auto parsedTuple = j.get<ParsedAggr>();
 			((pfr::get<Idxs>(aggr) = std::move(std::get<Idxs>(parsedTuple))), ...);
 		}
 	}
@@ -72,7 +76,7 @@ namespace nv {
 	namespace detail {
 		template<Aggregate Aggr, size_t... Idxs>
 		auto feedJsonAggregate(json& j, const Aggr& aggr, std::index_sequence<Idxs...> idxs) {
-			j = std::tie((pfr::get<Idxs>(aggr), ...));
+			j = std::tuple{ pfr::get<Idxs>(aggr)... };
 		}
 	}
 
@@ -82,7 +86,7 @@ namespace nv {
 	}
 
 	const std::string& workingDirectory();
-	
+
 	inline std::string objectPath(std::string relativePath) {
 		return workingDirectory() + std::string("static_objects/") + relativePath;
 	}
@@ -101,7 +105,30 @@ namespace nv {
 
 	template<typename T, typename U>
 	using FlatOrderedMap = boost::container::flat_map<T, U>;
+}
 
+//boost::container::flat_map json (de)serialization
+namespace boost {
+	namespace container {
+		template<typename Key, typename Value>
+		void to_json(nlohmann::json& j, const flat_map<Key, Value>& bmap) {
+			std::vector<std::pair<Key, Value>> vec;
+			for (const auto& [key, value] : bmap) {
+				vec.emplace_back(key, value);
+			}
+			j = std::move(vec);
+		}
+		template<typename Key, typename Value>
+		void from_json(const nlohmann::json& j, flat_map<Key, Value>& bmap) {
+			auto keyValuePairs = j.get<std::vector<std::pair<Key, Value>>>();
+			for (auto& [key, value] : keyValuePairs) {
+				bmap.emplace(std::move(key), std::move(value));
+			}
+		}
+	}
+}
+
+namespace nv {
 	//convenience routine for plf::hive
 	template<typename T>
 	decltype(auto) getBack(T& container) {
@@ -113,22 +140,29 @@ namespace nv {
 		int y = 0;
 	};
 
-	template<typename Obj>
-	concept RenderObject = requires(Obj obj) {
+	template<typename Object>
+	concept RenderObject = requires(Object obj) {
 		obj.move(1, -1);
 		obj.move(SDL_Point{});
 		obj.scale(1, -1);
 		obj.scale(SDL_Point{});
 		obj.containsCoord(1, -1);
 		obj.containsCoord(SDL_Point{});
-		obj.render(SDL_CreateRenderer(nullptr, -1, SDL_RENDERER_ACCELERATED));
+		obj.render();
 	};
 
-	template<typename Obj>
-	concept RotatableObj = requires(Obj obj) {
+	template<typename Object>
+	concept RotatableObject = requires(Object obj) {
 		{ obj } -> RenderObject;
 		obj.rotate(0.0, SDL_Point{});
 		obj.setRotationCenter();
+	};
+
+	template<typename Object>
+	concept SizeableObject = requires(Object obj) {
+		obj.setSize(500, 500);
+		obj.setSize(SDL_Point{ 500, 500 });
+		{ obj.getSize() } -> std::same_as<SDL_Point>;
 	};
 
 	template<typename Range>
@@ -138,7 +172,7 @@ namespace nv {
 	template<size_t Idx, typename T>
 	constexpr decltype(auto) get(T&& t) {
 		if constexpr (std::is_aggregate_v<std::remove_cvref_t<T>>) {
-			return boost::pfr::get<Idx>(std::forward<T>(t)); //aggregate case
+			return pfr::get<Idx>(std::forward<T>(t)); //aggregate case
 		} else {
 			return std::get<Idx>(std::forward<T>(t)); //tuple case
 		}
@@ -183,28 +217,59 @@ namespace nv {
 	};
 
 	namespace detail {
-		template<size_t MemberIdx, typename Func, typename TiedTuples, size_t... TupleIdxs>
-		bool iterateStructMembers(Func f, TiedTuples tuples, std::index_sequence<TupleIdxs...>) {
-			auto tiedMembers = std::tie(get<MemberIdx>(get<TupleIdxs>(std::forward<TiedTuples>(tuples))...));
+		template<size_t MemberIdx, typename Func, typename TiedStructs, size_t... StructIdxs>
+		constexpr bool iterateStructMembers(Func f, TiedStructs tiedStructs, std::index_sequence<StructIdxs...>) {
+			auto tiedMembers = std::tie(get<MemberIdx>(get<StructIdxs>(std::forward<TiedStructs>(tiedStructs)))...);
 			return std::apply(f, tiedMembers);
 		}
 
-		template<typename Func, typename TiedTuples, size_t... MemberIdxs>
-		bool iterateStructsImpl(Func f, TiedTuples tuples, std::index_sequence<MemberIdxs...>) {
-			return ((iterateStructMembers<MemberIdxs>(f, tuples, std::make_index_sequence<memberCount<TiedTuples>()>())) || ...);
+		template<typename Func, typename TiedStructs, size_t... MemberIdxs>
+		constexpr bool iterateStructsImpl(Func f, TiedStructs tiedStructs, std::index_sequence<MemberIdxs...>) {
+			return ((iterateStructMembers<MemberIdxs>(f, tiedStructs, std::make_index_sequence<memberCount<TiedStructs>()>())) || ...);
 		}
 	}
 
-	template<typename Func, typename FirstTuple, typename... Tuples> //FirstTuple param lets us extract member count of each tuple (assumes all tuples have same count of members)
-	constexpr bool iterateStructs(Func f, FirstTuple& tuple, Tuples&... tuples) {
-		return detail::iterateStructsImpl(f, std::tie(tuple, tuples...), std::make_index_sequence<memberCount<FirstTuple>()>());
+	template<typename Func, typename FirstStruct, typename... Structs> //FirstStruct param lets us extract member count of each tuple (assumes all tuples have same count of members)
+	constexpr bool iterateStructs(Func f, FirstStruct& firstStruct, Structs&... structs) {
+		return detail::iterateStructsImpl(f, std::tie(firstStruct, structs...), std::make_index_sequence<memberCount<FirstStruct>()>());
 	}
 
 	inline constexpr bool STAY_IN_LOOP = false;
 	inline constexpr bool BREAK_FROM_LOOP = true;
 
-	template<typename T, template<typename> typename Container = plf::hive>
-	using Layers = FlatOrderedMap<int, Container<T>>;
+	std::string writeCloneID(std::string_view str);
+
+	template<typename T>
+	using Layers = boost_con::flat_map<int, std::vector<T>>;
+
+	template<ranges::viewable_range Range, typename Func>
+	void forEachEqualRange(Range& range, Func f) {
+		auto it = ranges::begin(range);
+		while (it != ranges::end(range)) {
+			auto equalRange = ranges::equal_range(it, ranges::end(range), *it);
+			f(equalRange);
+			it = ranges::end(equalRange);
+		}
+	}
+	template<ranges::viewable_range Range, typename Func, typename SortPred>
+	void forEachEqualRange(Range& range, Func f, SortPred pred) {
+		auto it = ranges::begin(range);
+		while (it != ranges::end(range)) {
+			auto equalRange = ranges::equal_range(it, ranges::end(range), *it, pred);
+			f(equalRange);
+			it = ranges::end(equalRange);
+		}
+	}
+
+	template<typename T>
+	using Subrange = ranges::subrange<typename std::vector<T>::iterator>;
+
+	class NamedObject {
+	protected:
+		std::string m_name;
+	public:
+		const std::string& getName() const noexcept;
+	};
 };
 
 #endif

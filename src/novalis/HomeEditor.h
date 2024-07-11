@@ -5,7 +5,10 @@
 
 namespace nv {
 	namespace editor {
-		EditorDest runHomeEditor(Renderer& renderer);
+		struct HomeEditor {
+			EditorDest imguiRender() noexcept;
+			void sdlRender() {}
+		};
 	}
 }
 

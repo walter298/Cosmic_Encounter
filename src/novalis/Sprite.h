@@ -6,31 +6,28 @@
 #include <SDL2/SDL_image.h>
 
 #include "DataUtil.h"
-#include "ID.h"
 #include "Texture.h"
 
 namespace nv {
-	namespace editor {
+	class Scene;
+	namespace editor { 
+		class SceneEditor; 
 		class SpriteEditor;
 	}
 
-	class Sprite {
+	class Sprite : public NamedObject {
 	private:
-		static constexpr std::string_view textureRenPairsJkey = "textures_and_rens";
-		static constexpr std::string_view textureCountJkey = "texture_size";
-		//static constexpr std::string_view layerIdxsJkey = "layer_idxs";
-
-		using TextureLayers = FlatOrderedMap<int, std::vector<TextureData>>;
-		TextureLayers m_textures;
+		Layers<TextureObject> m_texObjLayers;
 		int m_currLayer = 0;
-
-		Sprite() = default;
 	public:
-		Sprite(std::string_view path, SDL_Renderer* renderer) noexcept;
+		Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap);
 
-		void setLayer(int layer) noexcept; 
+		using JsonFormat = Layers<std::pair<std::string, TextureData>>;
 
-		TexturePos& texData(size_t texIdx);
+		TextureData& getTexData(size_t texIdx);
+
+		void setPos(int destX, int destY) noexcept;
+		void setPos(SDL_Point p) noexcept;
 
 		void move(int x, int y) noexcept;
 		void move(SDL_Point p) noexcept;
@@ -44,10 +41,13 @@ namespace nv {
 		bool containsCoord(int x, int y) const noexcept;
 		bool containsCoord(SDL_Point p) const noexcept;
 
-		void render(SDL_Renderer* renderer) const noexcept;
-		
+		void setOpacity(Uint8 opacity);
+
+		void render() const noexcept;
+
+		void save(json& json) const;
+
+		friend class editor::SceneEditor;
 		friend class editor::SpriteEditor;
 	};
-
-	using Sprites = std::vector<Sprite>;
 }

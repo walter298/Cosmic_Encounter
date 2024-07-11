@@ -1,9 +1,9 @@
 #include "HomeEditor.h"
 
-nv::editor::EditorDest nv::editor::runHomeEditor(Renderer& renderer) {
+nv::editor::EditorDest nv::editor::HomeEditor::imguiRender() noexcept {
 	static constexpr ImVec2 winPos{ NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2 };
 	static constexpr ImVec2 btnSize{ 183.0f, 80.0f };
-	static constexpr ImVec2 winSize = buttonList(btnSize, 3);
+	static constexpr ImVec2 winSize = buttonList(btnSize, 2);
 
 	ImGui::SetNextWindowPos(winPos);
 	ImGui::SetNextWindowSize(winSize);

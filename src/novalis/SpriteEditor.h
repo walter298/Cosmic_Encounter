@@ -1,24 +1,31 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "EditorUtil.h"
 
 namespace nv {
 	namespace editor {
 		class SpriteEditor {
 		private:
-			Layers<TextureData> m_textures;
+			SDL_Renderer* m_renderer;
+
+			Layers<EditedObjectData<TextureObject>> m_texLayers;
+			SelectedObjectData<TextureObject> m_selectedTexObj;
+			bool m_isTexSelected = false;
+
 			int m_currLayer = 0;
 			int m_currLayoutLayer = 0;
 
-			ObjectEditor m_texDataEditor;
-			
-			void insertTextures(Renderer& renderer);
+			void open(SDL_Renderer* renderer);
+			void save();
+			void insertTextures(SDL_Renderer* renderer);
 			void setIdenticalLayout();
-			void showSpriteOptions(Renderer& renderer);
+			void showSpriteOptions(SDL_Renderer* renderer);
 		public:
-			SpriteEditor(Renderer& renderer) noexcept;
-			~SpriteEditor() { std::println("Destroying Sprite Editor\n"); }
-			EditorDest operator()(Renderer& renderer);
+			SpriteEditor(SDL_Renderer* renderer) noexcept;
+			EditorDest imguiRender();
+			void sdlRender() const noexcept;
 		};
 	}
 }
