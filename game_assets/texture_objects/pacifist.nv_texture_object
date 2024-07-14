@@ -1,0 +1,41 @@
+{
+  "texture_object_data": [
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "name": "",
+      "sdl_rect": [
+        627,
+        401,
+        573,
+        573
+      ]
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "name": "",
+      "sdl_rect": [
+        227,
+        1,
+        473,
+        473
+      ]
+    },
+    [
+      0,
+      0
+    ],
+    0.0,
+    0
+  ],
+  "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\aliens\\pacifist.png"
+}

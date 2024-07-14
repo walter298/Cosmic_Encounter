@@ -2,7 +2,8 @@
 
 #include <thread>
 
-nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer) : m_renderer{ renderer } 
+nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMap& texMap, FontMap& fontMap) 
+	: renderer{ renderer }, texMap{texMap}, fontMap{ fontMap }
 {
 	std::ifstream sceneFile{ absFilePath.data() };
 	assert(sceneFile.is_open());
@@ -21,15 +22,15 @@ nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer) : m_rende
 
 	//load sprites
 	loadObjects(sceneJson["sprites"], [&, this](int layer, const json& objJson) {
-		sprites[layer].emplace_back(renderer, objJson, m_texMap);
+		sprites[layer].emplace_back(renderer, objJson, texMap);
 	});
 	//load texture objects
 	loadObjects(sceneJson["texture_objects"], [&, this](int layer, const json& objJson) {
-		textures[layer].emplace_back(renderer, objJson, m_texMap);
+		textures[layer].emplace_back(renderer, objJson, texMap);
 	});
 	//load text
 	loadObjects(sceneJson["text"], [&, this](int layer, const json& objJson) {
-		text[layer].emplace_back(renderer, objJson, m_fontMap);
+		text[layer].emplace_back(renderer, objJson, fontMap);
 	});
 	//load rects
 	loadObjects(sceneJson["rects"], [&, this](int layer, const json& objJson) {
@@ -58,8 +59,8 @@ void nv::Scene::operator()() {
 		if (now < endTime) {
 			std::this_thread::sleep_for(endTime - now);
 		}
-		SDL_RenderClear(m_renderer);
+		SDL_RenderClear(renderer);
 		renderCopy(textures, sprites, rects, text);
-		SDL_RenderPresent(m_renderer);
+		SDL_RenderPresent(renderer);
 	}
 }

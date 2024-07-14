@@ -2,7 +2,7 @@
 
 #include <algorithm>
 #include <functional>
-#include <iostream>
+#include <print>
 #include <ranges>
 #include <string>
 #include <type_traits>
@@ -91,28 +91,26 @@ template<typename Buffer>
 void readMsg(Buffer&) = delete; //you have to pass in at least one argument
 
 template<std::ranges::viewable_range Buffer, typename... Args>
-bool readMsg(Buffer& buffer, Args&... args) {
+void readMsg(Buffer& buffer, Args&... args) {
+	std::println("Reading this message: {}", buffer);
+
 	auto buffBegin = std::begin(buffer);
 
-	namespace rngs = std::ranges;
 	auto parseStr = [&](auto& arg) {
-		if (buffBegin == std::end(buffer)) {
-			return false;
-		}
-		auto msgEnd = rngs::find(buffBegin, std::end(buffer), DATUM_END_CHR);
+		auto msgEnd = std::ranges::find(buffBegin, std::end(buffer), DATUM_END_CHR);
 		if (msgEnd == std::end(buffer)) {
-			return false;
+			std::println("{} has invalid message end", buffer);
+			throw std::exception{ "bad message" };
 		}
-		
-		auto nextBuffBegin = std::next(msgEnd);
+	
 		std::string str{ std::make_move_iterator(buffBegin), std::make_move_iterator(msgEnd) };
+		std::println("Current substring: {}", str);
 		parseValueFromString(str, arg);
-		buffBegin = nextBuffBegin;
 
-		return true;
+		buffBegin = std::next(msgEnd);
 	};
 
-	return (parseStr(args) && ...);
+	((parseStr(args)), ...);
 }
 
 template<std::integral Num>
@@ -124,7 +122,7 @@ decltype(auto) toString(String&& str) { //no need to parse string
 	return std::forward<String>(str);
 }
 template<std::ranges::viewable_range Range>
-auto toString(const Range& range) {
+std::string toString(const Range& range) {
 	std::string ret;
 	for (const auto& elem : range) {
 		ret.append(toString(elem) + '!');
@@ -133,17 +131,24 @@ auto toString(const Range& range) {
 }
 
 template<Enum Enm>
-auto toString(Enm enm) {
+std::string toString(Enm enm) {
 	using UnderlyingType = std::underlying_type_t<Enm>;
 	return toString(static_cast<UnderlyingType>(enm));
 }
 
+template<Aggregate Aggr>
+std::string toString(Aggr& aggr) {
+	std::string buff;
+	pfr::for_each_field(aggr, [&](const auto& field) {
+		buff.push_back(toString(field));
+	});
+	return buff;
+}
+
 template<typename... Args>
-auto writeMsg(Args&&... args) {
-	std::string buffer;
-	((buffer.append(toString(std::forward<Args>(args)) + '!')), ...);
-	buffer.append(MSG_END_DELIM);
-	return buffer;
+void writeMsg(std::string& buff, Args&&... args) {
+	((buff.append(toString(std::forward<Args>(args)) + '!')), ...);
+	buff.append(MSG_END_DELIM);
 }
 
 template<typename T>
@@ -190,35 +195,40 @@ private:
 	
 	using ReconnCB = std::move_only_function<void(sys::error_code ec, tcp::socket&)>;
 
-	ReconnCB m_whenDisconnected{ [](auto ec, auto& sock) { std::cerr << ec << '\n'; } };
-	ReconnCB m_asyncWhenDisconnected{ [](auto ec, auto& sock) { std::cerr << ec << '\n'; } };
+	ReconnCB m_reconnect{ [](auto ec, auto& sock) { std::println("{}", ec.message()); } };
+	ReconnCB m_asyncReconnect{ [](auto ec, auto& sock) { std::println("{}", ec.message()); } };
 public:
-	explicit Socket(asio::io_context& context);
-	explicit Socket(tcp::socket&& sock);
-	Socket(tcp::socket&& sock, ReconnCB&& whenDisconnected, ReconnCB&& asyncWhenDsiconnected);
+	template<typename Executor>
+	explicit Socket(Executor& exec) : m_sock{ exec } 
+	{
+	}
+	Socket(tcp::socket&& sock);
+	
+	asio::any_io_executor getExecutor();
 
-	void onDisconnected(ReconnCB&& cb);
-	void onAsyncDisconnected(ReconnCB&& cb);
+	void setReconnection(ReconnCB&& cb);
+	void setAsyncReconnection(ReconnCB&& cb);
 
 	bool connect(const tcp::endpoint& endpoint, sys::error_code& ec);
 	void disconnect();
 
 	template<typename... Args>
 	void read(Args&... args) {
+		sys::error_code ec;
 		while (true) {
-			sys::error_code ec;
-			while (true) {
-				m_msgBeingRcvd.clear();
-				asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, ec);
-				if (ec) {
-					m_whenDisconnected(ec, m_sock);
-				} else {
-					break;
-				}
+			m_msgBeingRcvd.clear();
+			asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, ec);
+			std::println("Parsing {}", m_msgBeingRcvd);
+			if (ec) {
+				std::println("Reconnecting because: {}", ec.message());
+				m_reconnect(ec, m_sock);
+			} else {
+				break;
 			}
 		}
 		readMsg(m_msgBeingRcvd, args...);
 	}
+
 	template<typename... Args>
 	asio::awaitable<void> asyncRead(Args&... args) {
 		sys::error_code ec;
@@ -227,51 +237,42 @@ public:
 			co_await asio::async_read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM,
 				asio::redirect_error(asio::use_awaitable, ec));
 			if (ec) {
-				co_await m_asyncWhenDisconnected(ec, m_sock);
-			} else {
+				co_await m_asyncReconnect(ec, m_sock);
+			}
+			else {
 				break;
 			}
 		}
 		readMsg(m_msgBeingRcvd, args...);
 	}
 	
-	void send(const std::string& msg);
-	asio::awaitable<void> asyncSend(const std::string& msg);
-};
-
-class Server {
-private:
-	asio::io_context m_context;
-	asio::io_context::strand m_strand;
-	tcp::acceptor m_acceptor;
-	std::vector<Socket> m_clients;
-
-	void reconnect(sys::error_code ec, tcp::socket& socket);
-	void asyncReconnect(sys::error_code ec, tcp::socket& sock);
-
-	asio::awaitable<void> acceptConnection();
-
-	template<typename Func>
-	asio::awaitable<void> asyncRecvFromClient(Func argsFunc, Socket& cli) {
-		using Args = ApplyTrait<std::remove_cvref>::Apply<typename FunctionTraits<Func>::args>::type;
-		Args args;
-		co_await std::apply(&Socket::asyncRead, cli, args);
-		std::apply(argsFunc, args);
-	}
-public:
-	Server(const tcp::endpoint& endpoint);
-	
-	void acceptConnections(size_t connC);
-
-	Socket& getClient(size_t idx);
-
-	void broadcast(const std::string& msg);
-
-	template<typename Func>
-	void readFromAll(Func f) {
-		for (auto& client : m_clients) {
-			asio::co_spawn(m_context, asyncRecvFromClient(f, client), asio::detached);
+	template<typename... Args>
+	void send(Args&... args) {
+		m_msgBeingSent.clear();
+		writeMsg(m_msgBeingSent, args...);
+		sys::error_code ec;
+		while (true) {
+			asio::write(m_sock, asio::buffer(m_msgBeingSent), ec);
+			if (ec) {
+				m_reconnect(ec, m_sock);
+			} else {
+				break;
+			}
 		}
-		m_context.run();
+	}
+
+	template<typename... Args>
+	asio::awaitable<void> asyncSend(Args&... args) {
+		m_msgBeingSent = writeMsg(args...);
+		sys::error_code ec;
+		while (true) {
+			co_await asio::async_write(m_sock, asio::buffer(m_msgBeingRcvd),
+				asio::redirect_error(asio::use_awaitable, ec));
+			if (ec) {
+				m_asyncReconnect(ec, m_sock);
+			} else {
+				break;
+			}
+		}
 	}
 };

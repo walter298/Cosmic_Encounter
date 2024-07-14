@@ -35,7 +35,9 @@ nv::TextureObject::TextureObject(SDL_Renderer* renderer, const json& json, Textu
 		texMap.emplace(std::piecewise_construct, std::forward_as_tuple(std::move(texPath)), std::forward_as_tuple(m_tex, SDL_DestroyTexture));
 	}
 	texData = json["texture_object_data"].get<TextureData>();
-	m_name = json["name"].get<std::string>();
+	if (json.contains("name")) {
+		m_name = json["name"].get<std::string>();
+	}
 }
 
 const std::string& nv::TextureObject::getTexPath() const noexcept {

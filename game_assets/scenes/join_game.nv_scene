@@ -10,7 +10,7 @@
             255,
             255
           ],
-          "name": "ip_address_input_rect",
+          "name": "port_input_rect",
           "sdl_rect": [
             1001,
             647,
@@ -25,7 +25,7 @@
             255,
             255
           ],
-          "name": "port_input_rect",
+          "name": "ip_address_input_rect",
           "sdl_rect": [
             1000,
             394,
@@ -124,7 +124,7 @@
         {
           "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
-          "name": "ip_address_input",
+          "name": "port_input",
           "ren": {
             "color": [
               255,
@@ -144,7 +144,7 @@
         {
           "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
-          "name": "port_input",
+          "name": "ip_address_input",
           "ren": {
             "color": [
               255,

@@ -4,6 +4,11 @@
 #include <random>
 #include <string_view>
 
+#include <boost/pfr.hpp>
+
+#include "novalis/DataUtil.h"
+
+#include "Deck.h"
 #include "NetworkUtil.h"
 
 struct Card {
@@ -15,96 +20,6 @@ struct Card {
 	Type type = Type::Attack;
 	int attackValue = 0;
 };
-
-template<typename CardType>
-struct Deck {
-private:
-	using Cards = std::vector<CardType>;
-
-	Cards m_cards;
-	Cards::iterator m_firstCard = m_cards.begin();
-	Cards::iterator m_discardPileBorder = m_cards.begin();
-	Cards::iterator m_discardPileEnd = m_cards.begin();
-
-	template<typename... Args>
-	void parse(std::string_view fileName, Args&... args) {
-		std::ifstream file{ fileName.data() };
-		assert(file.is_open());
-
-		auto parse = [](std::istringstream& iss, auto& arg) {
-			using ArgType = std::remove_reference_t<decltype(arg)>;
-			if constexpr (std::is_enum_v<ArgType>) {
-				typename std::underlying_type_t<ArgType> underlying;
-				iss >> underlying;
-				arg = static_cast<ArgType>(underlying);
-			} else {
-				iss >> arg;
-			}
-		};
-
-		std::string line;
-		std::istringstream iss;
-		while (std::getline(file, line)) {
-			iss.str(line);
-			int occC = 0;
-			iss >> occC;
-			((parse(iss, args)), ...);
-			for (int i = 0; i < occC; i++) {
-				m_cards.emplace_back(args...);
-			}
-		}
-
-		file.close();
-	}
-
-	Deck(size_t cardC) {
-		m_cards.reserve(cardC * 2); //reserve double size because we store discard pile in same vector
-		m_discardPileBorder = m_cards.begin() + cardC; //set discard pile beginnning in middle of vector
-	}
-public:
-	Deck(std::string_view fileName, size_t cardC) requires(std::is_aggregate_v<CardType>) : Deck(cardC) {
-		auto applyWrapper = [&fileName, this](auto&... args) {
-			parse(fileName, args...);
-		};
-		CardType argSrc;
-		aggregateApply(applyWrapper, argSrc);
-	}
-	Deck(std::string_view fileName, size_t cardC) : Deck(cardC) {
-		CardType cardSrc;
-		parse(fileName, cardSrc);
-	}
-
-	void shuffleDiscardBackIn() {
-		//std::ranges::shuffle(std::ranges::subrange(m_firstCard, m_cards.end()));
-		m_discardPileBorder = m_cards.end();
-		m_discardPileEnd = m_cards.end();
-	}
-
-	void draw(Cards& hand, size_t cardC) {
-		if (m_firstCard == m_discardPileBorder) {
-			shuffleDiscardBackIn();
-		}
-		auto finalCardToDrawIt = m_firstCard + cardC;
-		hand.insert(hand.end(), m_firstCard, finalCardToDrawIt);
-		m_firstCard = finalCardToDrawIt;
-	}
-
-	CardType discardTop() {
-		if (m_firstCard == m_discardPileBorder) {
-			shuffleDiscardBackIn();
-		}
-		auto top = *m_firstCard;
-		m_discardPileEnd++; //extend discard pile
-		*m_discardPileEnd = top; //move top card to end of discard pile
-		return top;
-	}
-
-	void shuffle(std::mt19937& gen) {
-		std::ranges::shuffle(std::ranges::subrange(m_firstCard, m_discardPileBorder), gen); 
-	}
-};
-
-std::string toString(Card card);
 
 constexpr inline size_t COLOR_C = 5;
 
@@ -128,27 +43,38 @@ enum Color : size_t {
 	Purple
 };
 
+enum Alien : size_t {
+	Pacifist,
+	Virus,
+	Laser,
+	Oracle,
+	Zombie
+};
+
 struct Player {
-	Socket& cli;
-	std::vector<Card> hand;
+	Socket sock;
 	Color color;
-	std::vector<Colony> colonies;
+	std::vector<Card> hand;
+	std::array<Colony, 5> colonies;
 };
 
 using Players = std::vector<Player>;
 
-struct GameState {
+class GameState {
+private:
+	std::random_device m_dev;
+public:
+	std::mt19937 rbg{ m_dev() };
 	Players players;
-
-	Deck<Card> deck{ "cosmic_deck.csv", 40 };
-	Deck<Color> destinyDeck{ "destiny_deck.csv", 15 };
+	Deck<Card> deck{ nv::relativePath("Cosmic_Encounter/cosmic_deck.csv"), 40, rbg };
+	Deck<Color> destinyDeck{ nv::relativePath("Cosmic_Encounter/destiny_deck.csv"), 15, rbg };
 };
 
 //[from, to] is inclusive
 template<std::integral Integral>
 static Integral randomNum(Integral from, Integral to) {
-	thread_local static std::random_device dev;
-	thread_local static std::mt19937 gen{ dev };
+	thread_local std::random_device dev;
+	thread_local std::mt19937 gen{ dev };
 	std::uniform_int_distribution dist{ from, to };
 	return dist(gen());
 }

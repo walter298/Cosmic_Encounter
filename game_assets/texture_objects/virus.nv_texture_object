@@ -1,0 +1,41 @@
+{
+  "texture_object_data": [
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "name": "",
+      "sdl_rect": [
+        714,
+        426,
+        506,
+        506
+      ]
+    },
+    {
+      "color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "name": "",
+      "sdl_rect": [
+        314,
+        26,
+        406,
+        406
+      ]
+    },
+    [
+      0,
+      0
+    ],
+    0.0,
+    0
+  ],
+  "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\aliens\\virus.png"
+}

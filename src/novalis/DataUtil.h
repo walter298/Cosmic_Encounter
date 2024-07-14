@@ -96,8 +96,8 @@ namespace nv {
 	}
 
 	//returns the path relative to the working directory
-	inline std::string relativePath(std::string relativePath) {
-		return workingDirectory() + relativePath;
+	inline std::string relativePath(std::string_view relativePath) {
+		return workingDirectory() + relativePath.data();
 	}
 
 	std::optional<std::string> fileExtension(const std::string& fileName);
@@ -270,6 +270,8 @@ namespace nv {
 	public:
 		const std::string& getName() const noexcept;
 	};
+
+	json parseFile(std::string_view filename);
 };
 
 #endif

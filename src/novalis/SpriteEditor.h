@@ -19,6 +19,7 @@ namespace nv {
 
 			void open(SDL_Renderer* renderer);
 			void save();
+			void saveAsTextureObject();
 			void insertTextures(SDL_Renderer* renderer);
 			void setIdenticalLayout();
 			void showSpriteOptions(SDL_Renderer* renderer);

@@ -1,0 +1,107 @@
+{
+  "rects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "name",
+          "sdl_rect": [
+            904,
+            66,
+            800,
+            70
+          ]
+        }
+      ]
+    }
+  ],
+  "sprites": [
+    {
+      "layer": 0,
+      "objects": []
+    }
+  ],
+  "text": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              952,
+              76,
+              706,
+              51
+            ]
+          },
+          "value": "Waiting for host to start the game..."
+        }
+      ]
+    }
+  ],
+  "texture_objects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "name": "lobby_space",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -209,
+                -160,
+                3000,
+                2000
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -209,
+                -160,
+                3000,
+                2000
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\space\\lobby_space.png"
+        }
+      ]
+    }
+  ]
+}

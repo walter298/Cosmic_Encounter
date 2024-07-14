@@ -13,12 +13,12 @@
 #include "Texture.h"
 
 namespace nv {
-	class Scene {
-	private:
-		SDL_Renderer* m_renderer;
-		FontMap m_fontMap;
-		TextureMap m_texMap;
-	public:
+	struct Scene {
+		SDL_Renderer* renderer;
+
+		FontMap& fontMap;
+		TextureMap& texMap;
+
 		bool running = false;
 
 		Layers<Sprite> sprites;
@@ -28,7 +28,7 @@ namespace nv {
 
 		EventHandler eventHandler;
 		
-		Scene(std::string_view path, SDL_Renderer* renderer);
+		Scene(std::string_view path, SDL_Renderer* renderer, TextureMap& texMap, FontMap& fontMap);
 
 		void operator()();
 	};

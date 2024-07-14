@@ -1,5 +1,7 @@
 #include "DataUtil.h"
 
+#include <fstream>
+
 template<std::integral T>
 using Quad = std::tuple<T, T, T, T>;
 
@@ -51,6 +53,12 @@ std::string_view nv::fileName(std::string_view filePath) {
 
 std::string nv::writeCloneID(std::string_view str) {
 	return "clone_"s + str.data();
+}
+
+nlohmann::json nv::parseFile(std::string_view filename) {
+	std::ifstream file{ filename.data() };
+	assert(file.is_open());
+	return json::parse(file);
 }
 
 const std::string& nv::NamedObject::getName() const noexcept {

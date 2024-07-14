@@ -51,7 +51,23 @@ void nv::editor::SpriteEditor::save() {
 	assert(file.is_open());
 	file << json.dump(2);
 	file.close();
-} 
+}
+
+void nv::editor::SpriteEditor::saveAsTextureObject() {
+	auto& currTexLayer = m_texLayers[m_currLayer];
+	if (currTexLayer.size() != 1) {
+		std::println("Error: to save as texture object, there must be exactly one texture object in the current layer");
+		return;
+	}
+	auto filename = saveFile(L"Save as .nv_texture_object");
+	if (!filename) {
+		return;
+	}
+	json json;
+	currTexLayer.front().obj.save(json);
+	std::ofstream jsonFile{ *filename };
+	jsonFile << json.dump(2);
+}
 
 void nv::editor::SpriteEditor::insertTextures(SDL_Renderer* renderer) {
 	auto texPaths = openFilePaths();
@@ -114,6 +130,9 @@ void SpriteEditor::showSpriteOptions(SDL_Renderer* renderer) {
 	
 	if (ImGui::Button("Save")) {
 		save();
+	}
+	if (ImGui::Button("Save as Texture Object")) {
+		saveAsTextureObject();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("Open")) {
