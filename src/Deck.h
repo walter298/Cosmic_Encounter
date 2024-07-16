@@ -11,7 +11,7 @@
 template<typename CardType>
 struct Deck {
 private:
-	std::mt19937& m_rbg;
+	std::random_device& m_rbg;
 
 	using Cards = std::vector<CardType>;
 
@@ -20,11 +20,11 @@ private:
 	Cards::iterator m_discardPileBorder = m_cards.begin();
 	Cards::iterator m_discardPileEnd = m_cards.begin();
 
-	Deck(size_t cardC, std::mt19937& rbg) : m_rbg{ rbg } {
+	Deck(size_t cardC, std::random_device& rbg) : m_rbg{ rbg } {
 		m_cards.reserve(cardC * 2); //reserve double size because we store discard pile in same vector
 	}
 public:
-	Deck(std::string_view fileName, size_t cardC, std::mt19937& rbg) : Deck(cardC, rbg) {
+	Deck(std::string_view fileName, size_t cardC, std::random_device& rbg) : Deck(cardC, rbg) {
 		m_cards.reserve(cardC);
 
 		std::ifstream file{ fileName.data() };
@@ -65,6 +65,8 @@ public:
 		m_discardPileBorder = m_cards.begin();
 		m_discardPileEnd = m_cards.begin();
 		m_discardPileBorder = m_cards.begin() + cardC; //set discard pile beginnning in middle of vector
+
+		shuffle();
 	}
 
 	void shuffleDiscardBackIn() {

@@ -1,0 +1,143 @@
+{
+  "rects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "name",
+          "sdl_rect": [
+            32,
+            19,
+            200,
+            100
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "name",
+          "sdl_rect": [
+            29,
+            628,
+            200,
+            100
+          ]
+        }
+      ]
+    }
+  ],
+  "sprites": [
+    {
+      "layer": 0,
+      "objects": []
+    }
+  ],
+  "text": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 41,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              67,
+              46,
+              138,
+              46
+            ]
+          },
+          "value": "Players"
+        },
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 41,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              78,
+              654,
+              97,
+              46
+            ]
+          },
+          "value": "Warp"
+        }
+      ]
+    }
+  ],
+  "texture_objects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "name": "deep_space",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -28,
+                -51,
+                2700,
+                2000
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -28,
+                -51,
+                2700,
+                2000
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\space\\deep_space.png"
+        }
+      ]
+    }
+  ]
+}

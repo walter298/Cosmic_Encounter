@@ -3,8 +3,7 @@
 #include <fstream>
 #include <random>
 #include <string_view>
-
-#include <boost/pfr.hpp>
+#include <unordered_map>
 
 #include "novalis/DataUtil.h"
 
@@ -18,8 +17,19 @@ struct Card {
 		Reinforcement
 	};
 	Type type = Type::Attack;
-	int attackValue = 0;
+	int value = 0;
+
+	bool operator==(const Card& other) const noexcept;
 };
+
+namespace std {
+	template<>
+	struct hash<Card> {
+		size_t operator()(const Card& card) const {
+			return hash<int>{}(card.value);
+		}
+	};
+}
 
 constexpr inline size_t COLOR_C = 5;
 
@@ -60,11 +70,8 @@ struct Player {
 
 using Players = std::vector<Player>;
 
-class GameState {
-private:
-	std::random_device m_dev;
-public:
-	std::mt19937 rbg{ m_dev() };
+struct GameState {
+	std::random_device rbg;
 	Players players;
 	Deck<Card> deck{ nv::relativePath("Cosmic_Encounter/cosmic_deck.csv"), 40, rbg };
 	Deck<Color> destinyDeck{ nv::relativePath("Cosmic_Encounter/destiny_deck.csv"), 15, rbg };

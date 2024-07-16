@@ -11,25 +11,12 @@
 #include "novalis/Sound.h"
 
 #include "Game.h"
+#include "GameOverviewUI.h"
 #include "JoinGame.h"
 #include "Lobby.h"
 
 namespace ranges = std::ranges;
 namespace views  = std::views;
-
-static std::vector<nv::TextureObject> loadCardSprites(SDL_Renderer* renderer, nv::TextureMap& texMap) {
-	std::ifstream file{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/card_objects.json") };
-	auto json = nv::json::parse(file);
-
-	std::vector<nv::TextureObject> ret;
-	ret.reserve(20);
-
-	for (const auto& texObjJson : json) {
-		ret.emplace_back(renderer, json, texMap);
-	}
-
-	return ret;
-}
 
 struct PlayerPersona {
 	nv::TextureObject alien;
@@ -70,6 +57,12 @@ static PlayerPersona getPlayerPersona(SDL_Renderer* renderer, nv::TextureMap& te
 
 void play() {
 	asio::io_context context;
+
+	std::jthread networkingThread{ [&] {
+		asio::io_context::work dummy{ context };
+		context.run();
+	}};
+
 	Socket sock{ context };
 
 	nv::Instance instance{ "Cosmic Encounter" };
@@ -82,14 +75,18 @@ void play() {
 	joinGame(instance.renderer, sock, texMap, fontMap);
 	
 	//server spits out our alien and color
-	Color color; Alien alien;
-	sock.read(color, alien);
+	Color color; 
+	Alien alien;
+	size_t pCount;
+	sock.read(color, alien, pCount);
 
 	auto [alienObj, planetsSprite] = getPlayerPersona(instance.renderer, texMap, alien, color);
 
 	//join lobby
-	runLobby(sock, alienObj, instance.renderer, texMap, fontMap);
-
+	auto alienTexObjs = runLobby(sock, pCount, alienObj, instance.renderer, texMap, fontMap);
+	
+	//show the game 
+	showGameOverview(sock, instance.renderer, alienTexObjs, texMap, fontMap);
 
 	/*auto cardSprites = loadCardSprites(instance.renderer, texMap);
 	ranges::sort(cardSprites, [](const auto& card1, const auto& card2) {
@@ -97,4 +94,6 @@ void play() {
 	});
 
 	*/
+
+	networkingThread.join();
 }

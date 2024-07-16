@@ -1,8 +1,7 @@
 #pragma once
 
-#include <SDL2/SDL_render.h>
-
-#include "Novalis/Scene.h"
+#include "novalis/Text.h"
+#include "novalis/Texture.h"
 
 #include "NetworkUtil.h"
 
@@ -15,4 +14,4 @@ enum LobbyUpdate {
 	None
 };
 
-std::vector<nv::TextureObject> runLobby(Socket& sock, nv::TextureObject& alien, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap);
+std::vector<nv::TextureObject> runLobby(Socket& sock, size_t pCount, nv::TextureObject& alien, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap);

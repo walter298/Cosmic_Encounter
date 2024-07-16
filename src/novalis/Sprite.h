@@ -9,7 +9,7 @@
 #include "Texture.h"
 
 namespace nv {
-	class Scene;
+	struct Scene;
 	namespace editor { 
 		class SceneEditor; 
 		class SpriteEditor;

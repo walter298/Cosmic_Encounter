@@ -80,7 +80,7 @@ void nv::TextureObject::setSize(SDL_Point p) {
 }
 
 SDL_Point nv::TextureObject::getSize() const noexcept {
-	return { texData.ren.rect.x, texData.ren.rect.y };
+	return { texData.ren.rect.w, texData.ren.rect.h };
 }
 
 void nv::TextureObject::scale(int dx, int dy) noexcept {

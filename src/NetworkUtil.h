@@ -5,6 +5,7 @@
 #include <print>
 #include <ranges>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <vector>
 
@@ -14,6 +15,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/pfr.hpp>
 
+namespace ranges = std::ranges;
+
+//boost namespace aliases
 namespace asio = boost::asio;
 namespace ip = asio::ip;
 using ip::tcp;
@@ -22,57 +26,40 @@ namespace sys = boost::system;
 
 constexpr inline std::string_view MSG_END_DELIM{ "###" };
 constexpr inline std::string_view MSG_ERROR{ "ERROR" };
-constexpr inline char DATUM_END_CHR = '!';
-constexpr inline char DATUM_BREAK_CHR = '$';
-constexpr inline char DATUM_ELEM_BREAK_CHR = '&';
+constexpr inline char VALUE_END_CHR = '!';
+constexpr inline char FIELD_END_CHR = '&';
+constexpr inline char CONTAINER_ELEM_END = '^';
 
-using StringIt = std::string::const_iterator;
-std::string nextDatum(StringIt& begin, StringIt end);
+using StringIt = std::string_view::iterator;
+
+std::string_view dataSubstr(StringIt& begin, StringIt end, char dataBreak);
 
 template<typename T>
 concept Aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
 
-namespace detail {
-	template<Aggregate T, size_t... MemberIdxs>
-	void parseEachMember(std::string& data, T& aggr, std::index_sequence<MemberIdxs...> seq) {
-		auto begin = data.begin();
-		((parseValueFromString(nextDatum(begin, data.end()), pfr::get<MemberIdxs>(aggr))), ...);
-	}
-}
-
-template<Aggregate T> 
-void parseValueFromString(std::string& str, T& aggr) {
-	detail::parseEachMember(str, aggr, std::make_index_sequence<pfr::tuple_size_v<T>>());
-}
-
-namespace detail {
-	template<typename Callable, Aggregate T, size_t... MemberIdxs>
-	decltype(auto) aggregateApplyImpl(Callable&& callable, T&& aggr, std::index_sequence<MemberIdxs...> seq) {
-		return std::invoke(std::forward<Callable>(callable), pfr::get<MemberIdxs>(std::forward<T>(aggr))...);
-	}
-}
-
-template<typename Callable, Aggregate T>
-decltype(auto) aggregateApply(Callable&& callable, T&& aggr) {
-	return detail::aggregateApplyImpl(std::forward<Callable>(callable), std::forward<T>(aggr),
-		std::make_index_sequence<pfr::tuple_size_v<std::remove_cvref_t<T>>>());
-}
-
 template<std::integral Integral>
-void parseValueFromString(const std::string& str, Integral& integral) {
-	integral = boost::lexical_cast<Integral>(str);
+void parseValueFromString(std::string_view dataStr, Integral& integral) {
+	std::println("Parsing number from {}", dataStr);
+	integral = boost::lexical_cast<Integral>(dataStr);
 }
 
-template<std::ranges::viewable_range Range>
-void parseValueFromString(const std::string& str, Range& range) {
+template<ranges::viewable_range Range>
+void parseValueFromString(std::string_view str, Range& range) {
+	std::println("Parsing container: {}", str);
+
 	auto begin = str.begin();
-	while (true) {
-		auto nextElemBreak = std::ranges::find(begin, str.end());
-		if (nextElemBreak == str.end()) {
-			break;
-		}
-		typename Range::element_type elem{};
-		range.insert(range.end(), parseValueFromString(str, elem));
+	auto size = boost::lexical_cast<size_t>(dataSubstr(begin, str.end(), CONTAINER_ELEM_END));
+
+	auto parseElem = [&]() {
+		auto elemStr = dataSubstr(begin, str.end(), CONTAINER_ELEM_END);
+		std::println("Parsing element {}", elemStr);
+		typename Range::value_type elem{};
+		parseValueFromString(elemStr, elem);
+		range.insert(range.end(), std::move(elem));
+	};
+	
+	for (size_t i = 0; i < size; i++) {
+		parseElem();
 	}
 }
 
@@ -80,37 +67,35 @@ template<typename T>
 concept Enum = std::is_enum_v<std::remove_cvref_t<T>>;
 
 template<Enum Enm>
-void parseValueFromString(const std::string& str, Enm& enm) {
+void parseValueFromString(std::string_view str, Enm& enm) {
 	using UnderylingType = std::underlying_type_t<Enm>;
 	UnderylingType num{};
 	parseValueFromString(str, num);
 	enm = static_cast<Enm>(num);
 }
 
-template<typename Buffer>
-void readMsg(Buffer&) = delete; //you have to pass in at least one argument
-
-template<std::ranges::viewable_range Buffer, typename... Args>
-void readMsg(Buffer& buffer, Args&... args) {
-	std::println("Reading this message: {}", buffer);
-
-	auto buffBegin = std::begin(buffer);
-
-	auto parseStr = [&](auto& arg) {
-		auto msgEnd = std::ranges::find(buffBegin, std::end(buffer), DATUM_END_CHR);
-		if (msgEnd == std::end(buffer)) {
-			std::println("{} has invalid message end", buffer);
-			throw std::exception{ "bad message" };
-		}
-	
-		std::string str{ std::make_move_iterator(buffBegin), std::make_move_iterator(msgEnd) };
-		std::println("Current substring: {}", str);
-		parseValueFromString(str, arg);
-
-		buffBegin = std::next(msgEnd);
+template<Aggregate T>
+void parseValueFromString(std::string_view str, T& aggr) {
+	auto begin = str.begin();
+	auto parse = [&](auto& field) {
+		auto dataStr = dataSubstr(begin, str.end(), FIELD_END_CHR);
+		std::println("Parsing this field string: {}", dataStr);
+		parseValueFromString(dataStr, field);
 	};
+	pfr::for_each_field(aggr, parse);
+}
 
-	((parseStr(args)), ...);
+void readMsg(std::string_view) = delete; //you have to pass in at least one argument
+
+template<typename... Args>
+void readMsg(std::string_view str, Args&... args) {
+	auto begin = str.begin();
+	auto parse = [&](auto& arg) {
+		auto dataStr = dataSubstr(begin, str.end(), VALUE_END_CHR);
+		std::println("Parsing this value: {}", dataStr);
+		parseValueFromString(dataStr, arg);
+	};
+	((parse(args)), ...);
 }
 
 template<std::integral Num>
@@ -121,11 +106,13 @@ template<std::convertible_to<std::string> String>
 decltype(auto) toString(String&& str) { //no need to parse string
 	return std::forward<String>(str);
 }
+
 template<std::ranges::viewable_range Range>
 std::string toString(const Range& range) {
 	std::string ret;
+	ret.append(toString(ranges::size(range)) + CONTAINER_ELEM_END);
 	for (const auto& elem : range) {
-		ret.append(toString(elem) + '!');
+		ret.append(toString(elem) + CONTAINER_ELEM_END);
 	}
 	return ret;
 }
@@ -137,142 +124,65 @@ std::string toString(Enm enm) {
 }
 
 template<Aggregate Aggr>
-std::string toString(Aggr& aggr) {
+std::string toString(const Aggr& aggr) {
 	std::string buff;
 	pfr::for_each_field(aggr, [&](const auto& field) {
-		buff.push_back(toString(field));
+		buff.append(toString(field) + FIELD_END_CHR);
 	});
 	return buff;
 }
 
 template<typename... Args>
 void writeMsg(std::string& buff, Args&&... args) {
-	((buff.append(toString(std::forward<Args>(args)) + '!')), ...);
+	((buff.append(toString(std::forward<Args>(args)) + VALUE_END_CHR)), ...);
 	buff.append(MSG_END_DELIM);
 }
-
-template<typename T>
-struct FunctionTraits { //primary template assumes function call operator
-	using args = FunctionTraits<decltype(&T::operator())>::args;
-};
-
-template<typename R, typename... Args>
-struct FunctionTraits<R(Args...)> { //specialization for functions that haven't decayed
-	using args = std::tuple<Args...>;
-};
-
-template<typename R, typename... Args>
-struct FunctionTraits<R(*)(Args...)> { //specialization for function pointers
-	using args = std::tuple<Args...>;
-};
-
-template<typename C, typename R, typename... Args>
-struct FunctionTraits<R(C::*)(Args...) const> { //specialization for const member functions
-	using args = std::tuple<Args...>;
-};
-
-template<typename C, typename R, typename... Args>
-struct FunctionTraits<R(C::*)(Args...)> { //specialization for mutable member functions
-	using args = std::tuple<Args...>;
-};
-
-template<template<typename> typename Trait>
-struct ApplyTrait {
-	template<typename T>
-	struct Apply;
-
-	template<typename... Ts>
-	struct Apply<std::tuple<Ts...>> {
-		using type = typename std::tuple<typename Trait<Ts>::type...>;
-	};
-};
 
 class Socket {
 private:
 	tcp::socket m_sock;
 	std::string m_msgBeingSent;
 	std::string m_msgBeingRcvd;
-	
-	using ReconnCB = std::move_only_function<void(sys::error_code ec, tcp::socket&)>;
-
-	ReconnCB m_reconnect{ [](auto ec, auto& sock) { std::println("{}", ec.message()); } };
-	ReconnCB m_asyncReconnect{ [](auto ec, auto& sock) { std::println("{}", ec.message()); } };
 public:
 	template<typename Executor>
 	explicit Socket(Executor& exec) : m_sock{ exec } 
 	{
 	}
-	Socket(tcp::socket&& sock);
+	explicit Socket(tcp::socket&& sock);
 	
 	asio::any_io_executor getExecutor();
 
-	void setReconnection(ReconnCB&& cb);
-	void setAsyncReconnection(ReconnCB&& cb);
-
 	bool connect(const tcp::endpoint& endpoint, sys::error_code& ec);
+	asio::awaitable<void> asyncConnect(const tcp::endpoint& endpoint, sys::error_code& ec);
+
 	void disconnect();
 
 	template<typename... Args>
 	void read(Args&... args) {
-		sys::error_code ec;
-		while (true) {
-			m_msgBeingRcvd.clear();
-			asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, ec);
-			std::println("Parsing {}", m_msgBeingRcvd);
-			if (ec) {
-				std::println("Reconnecting because: {}", ec.message());
-				m_reconnect(ec, m_sock);
-			} else {
-				break;
-			}
-		}
+		m_msgBeingRcvd.clear();
+		asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM);
 		readMsg(m_msgBeingRcvd, args...);
 	}
 
 	template<typename... Args>
 	asio::awaitable<void> asyncRead(Args&... args) {
-		sys::error_code ec;
-		while (true) {
-			m_msgBeingRcvd.clear();
-			co_await asio::async_read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM,
-				asio::redirect_error(asio::use_awaitable, ec));
-			if (ec) {
-				co_await m_asyncReconnect(ec, m_sock);
-			}
-			else {
-				break;
-			}
-		}
+		m_msgBeingRcvd.clear();
+		co_await asio::async_read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, asio::use_awaitable);
 		readMsg(m_msgBeingRcvd, args...);
 	}
 	
 	template<typename... Args>
-	void send(Args&... args) {
+	void send(Args&&... args) {
 		m_msgBeingSent.clear();
-		writeMsg(m_msgBeingSent, args...);
-		sys::error_code ec;
-		while (true) {
-			asio::write(m_sock, asio::buffer(m_msgBeingSent), ec);
-			if (ec) {
-				m_reconnect(ec, m_sock);
-			} else {
-				break;
-			}
-		}
+		writeMsg(m_msgBeingSent, std::forward<Args>(args)...);
+		asio::write(m_sock, asio::buffer(m_msgBeingSent));
+		std::println("Sent {}", m_msgBeingSent);
 	}
 
 	template<typename... Args>
-	asio::awaitable<void> asyncSend(Args&... args) {
-		m_msgBeingSent = writeMsg(args...);
-		sys::error_code ec;
-		while (true) {
-			co_await asio::async_write(m_sock, asio::buffer(m_msgBeingRcvd),
-				asio::redirect_error(asio::use_awaitable, ec));
-			if (ec) {
-				m_asyncReconnect(ec, m_sock);
-			} else {
-				break;
-			}
-		}
+	asio::awaitable<void> asyncSend(Args&&... args) {
+		m_msgBeingSent.clear();
+		m_msgBeingSent = writeMsg(std::forward<Args>(args)...);
+		co_await asio::async_write(m_sock, asio::buffer(m_msgBeingRcvd), asio::use_awaitable);
 	}
 };
