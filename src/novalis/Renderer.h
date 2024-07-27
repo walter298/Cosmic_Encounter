@@ -15,6 +15,17 @@ namespace nv {
 		};
 		((renderImpl(objLayers)), ...);
 	}
+	template<RenderObject... Objects>
+	void renderCopyRefs(const Layers<std::reference_wrapper<Objects>>&... objLayers) {
+		auto renderImpl = [&](const auto& layers) {
+			for (const auto& [layer, objLayer] : layers) {
+				for (const auto& obj : objLayer) {
+					obj.get().render();
+				}
+			}
+		};
+		((renderImpl(objLayers)), ...);
+	}
 
 	template<RenderObject... Objects>
 	void cameraMove(int dx, int dy, const Layers<Objects>&... objLayers) {

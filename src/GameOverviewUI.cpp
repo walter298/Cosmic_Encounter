@@ -2,17 +2,19 @@
 
 #include <algorithm>
 
+#include <magic_enum.hpp>
+
 #include "novalis/Scene.h"
 
-#include "Game.h"
+#include "Destiny.h"
 
 namespace ranges = std::ranges;
 
 static constexpr size_t NEGOTIATE_CARD_IDX = 0;
 
-using CardObjects = std::unordered_map<Card, nv::TextureObject>;
+using CardMap = std::unordered_map<Card, nv::TextureObject>;
 
-static std::vector<nv::TextureObject> readCardsFromServer(Socket& sock, const CardObjects& allCardObjs) {
+static std::vector<nv::TextureObject> readCardsFromServer(Socket& sock, const CardMap& allCardObjs) {
 	std::vector<nv::TextureObject> ret;
 
 	//read cards sent over from server
@@ -37,8 +39,8 @@ static std::vector<nv::TextureObject> readCardsFromServer(Socket& sock, const Ca
 	return ret;
 }
 
-static CardObjects loadCardObjects(SDL_Renderer* renderer) {
-	CardObjects ret;
+static CardMap loadCardObjects(SDL_Renderer* renderer) {
+	CardMap ret;
 
 	namespace fs = std::filesystem;
 
@@ -58,7 +60,7 @@ static CardObjects loadCardObjects(SDL_Renderer* renderer) {
 		int attack = std::stoi(image.path().filename().string());
 		nv::SharedTexture tex{ IMG_LoadTexture(renderer, pathStr.c_str()), SDL_DestroyTexture };
 		ret.emplace(std::piecewise_construct, 
-			std::forward_as_tuple(Card::Attack, attack),
+			std::forward_as_tuple(type, attack),
 			std::forward_as_tuple(renderer, pathStr, tex, texData)
 		);
 	};
@@ -74,14 +76,51 @@ static CardObjects loadCardObjects(SDL_Renderer* renderer) {
 	return ret;
 }
 
-void showGameOverview(Socket& sock, SDL_Renderer* renderer, std::vector<nv::TextureObject>& aliens, nv::TextureMap& texMap, nv::FontMap& fontMap) {
-	nv::Scene scene{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/constant_game_ui.nv_scene"), renderer, texMap, fontMap };
+static ColorMap makeColorRects(SDL_Renderer* renderer, const std::vector<Color>& colors, SDL_Point size) {
+	ColorMap ret;
+	ret.reserve(colors.size());
+
+	for (const auto& color : colors) {
+		std::array<Uint8, 3> rgb = { 0, 0, 0 };
+		switch (color) {
+		case Blue:
+			rgb = { 0, 0, 255 };
+			break;
+		case Green:
+			rgb = { 0, 255, 0 };
+			break;
+		case Purple:
+			rgb = { 138, 43, 226 };
+			break;
+		case Red:
+			rgb = { 255, 0, 0 };
+			break;
+		}
+		nv::Rect r{ 0, 0, size.x, size.y, rgb[0], rgb[1], rgb[2] };
+		r.renderer = renderer;
+		ret[color] = std::move(r);
+	}
+
+	return ret;
+}
+
+void showGameOverview(Socket& sock, SDL_Renderer* renderer, std::vector<nv::TextureObject>& aliens, nv::TextureMap& texMap,
+	nv::FontMap& fontMap, const std::vector<Color>& turnOrder, Color pColor) 
+{
+	nv::Scene mainUi{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/constant_game_ui.nv_scene"), renderer, texMap, fontMap };
+	nv::Scene destiny{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/destiny.nv_scene"), renderer, texMap, fontMap };
 
 	//load cards in scene
-	auto cardObjs = loadCardObjects(renderer);
+	auto cardMap = loadCardObjects(renderer);
 	constexpr int CARD_LAYER = 0;
 
-	scene.textures[CARD_LAYER].append_range(readCardsFromServer(sock, cardObjs));
+	mainUi.textures[CARD_LAYER].append_range(readCardsFromServer(sock, cardMap));
 
-	scene();
+	auto colorRects = makeColorRects(renderer, turnOrder, cardMap.begin()->second.getSize());
+
+	size_t colorTurnIdx = 0;
+
+	mainUi.overlay(destiny);
+	showDestiny(sock, mainUi, colorRects, turnOrder[colorTurnIdx] == pColor);
+	//mainUi();
 }

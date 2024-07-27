@@ -40,16 +40,11 @@ static sys::error_code connectToGame(const nv::Text& ipAddrInput, const nv::Text
 void joinGame(SDL_Renderer* renderer, Socket& sock, nv::TextureMap& texMap, nv::FontMap& fontMap) {
     nv::Scene scene{ "Cosmic_Encounter/game_assets/scenes/join_game.nv_scene", renderer, texMap, fontMap };
 
-    auto findObj = [](auto& objs, std::string_view name) -> auto& {
-        return *ranges::find_if(objs, [&](const auto& obj) {
-            return obj.getName() == name;
-        });
-    };
-    auto& ipAddrInputText = findObj(scene.text.at(0), "ip_address_input");
-    auto& portInputText   = findObj(scene.text.at(0), "port_input");
+    auto& ipAddrInputText = scene.find(scene.text.at(0), "ip_address_input");
+    auto& portInputText   = scene.find(scene.text.at(0), "port_input");
 
     //connection button
-    auto& joinButtonRect = findObj(scene.rects.at(0), "join_button_rect");
+    auto& joinButtonRect = scene.find(scene.rects.at(0), "join_button_rect");
     nv::Button joinButton{ 
         joinButtonRect,
         [&] {
@@ -66,8 +61,8 @@ void joinGame(SDL_Renderer* renderer, Socket& sock, nv::TextureMap& texMap, nv::
     scene.eventHandler.addMouseEvent(std::move(joinButton));
 
     //text inputs
-    scene.eventHandler.addTextInput({ findObj(scene.rects.at(0), "ip_address_input_rect"), ipAddrInputText });
-    scene.eventHandler.addTextInput({ findObj(scene.rects.at(0), "port_input_rect"), portInputText });
+    scene.eventHandler.addTextInput({ scene.find(scene.rects.at(0), "ip_address_input_rect"), ipAddrInputText });
+    scene.eventHandler.addTextInput({ scene.find(scene.rects.at(0), "port_input_rect"), portInputText });
 
     scene();
 }

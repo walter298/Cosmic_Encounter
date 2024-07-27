@@ -129,12 +129,6 @@ namespace boost {
 }
 
 namespace nv {
-	//convenience routine for plf::hive
-	template<typename T>
-	decltype(auto) getBack(T& container) {
-		return *(std::prev(container.end()));
-	}
-
 	struct Coord {
 		int x = 0;
 		int y = 0;
@@ -272,6 +266,56 @@ namespace nv {
 	};
 
 	json parseFile(std::string_view filename);
+
+	template<ranges::viewable_range Range>
+	constexpr auto binaryFind(Range& range, typename Range::value_type& value) {
+		return ranges::lower_bound(range, value);
+	}
+
+	template<typename T, typename U>
+	concept SameAsDecayed = std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
+	
+	template<ranges::viewable_range Range, typename Value, typename PMD>
+	constexpr auto binaryFind(Range& range, const Value& value, PMD pmd) 
+		requires(std::is_member_pointer_v<PMD> && SameAsDecayed<Value, decltype(std::declval<typename Range::value_type>().*pmd)>)
+	{
+		return ranges::lower_bound(range, value, [](const Value& v1, const Value& v2) {
+			return v1 < v2;
+		}, [&](const auto& elem) { return elem.*pmd; });
+	}
+
+	template<size_t N, typename... Ts>
+	using PackIndex = GetType<N, std::tuple<Ts...>>;
+
+	template<typename T>
+	struct FunctionTraits { //primary template assumes function call operator
+		using args = FunctionTraits<decltype(&T::operator())>::args;
+	};
+
+	template<typename R, typename... Args>
+	struct FunctionTraits<R(Args...)> { //specialization for functions that haven't decayed
+		using args = std::tuple<Args...>;
+	};
+
+	template<typename R, typename... Args>
+	struct FunctionTraits<R(*)(Args...)> { //specialization for function pointers
+		using args = std::tuple<Args...>;
+	};
+
+	template<typename C, typename R, typename... Args>
+	struct FunctionTraits<R(C::*)(Args...) const> { //specialization for const member functions
+		using args = std::tuple<Args...>;
+	};
+
+	template<typename C, typename R, typename... Args>
+	struct FunctionTraits<R(C::*)(Args...)> { //specialization for mutable member functions
+		using args = std::tuple<Args...>;
+	};
+
+	template<typename Func>
+	using ResultOfNonOverloaded = decltype(
+		std::apply(std::declval<std::decay_t<Func>>(), std::declval<typename FunctionTraits<Func>::args>())
+	);
 };
 
 #endif

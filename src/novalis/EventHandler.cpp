@@ -11,28 +11,8 @@ void nv::EventHandler::selectTextInput() {
 	}
 }
 
-nv::ID nv::EventHandler::addPeriodicEvent(Event<>&& evt) {
-	ID id;
-	m_periodicEvents.emplace_back(std::move(evt), id);
-	return id;
-}
-
-nv::ID nv::EventHandler::addKeyboardEvent(KeyboardEvent&& evt) {
-	ID id;
-	m_keyboardEvents.emplace_back(std::move(evt), id);
-	return id;
-}
-
-nv::ID nv::EventHandler::addMouseEvent(MouseEvent&& evt) {
-	ID id;
-	m_mouseEvents.emplace_back(std::move(evt), id);
-	return id;
-}
-
-nv::ID nv::EventHandler::addQuitEvent(Event<>&& evt) {
-	ID id;
-	m_quitEvents.emplace_back(std::move(evt), id);
-	return id;
+void nv::EventHandler::removePeriodicEvent(ID id) {
+	removeEventImpl(m_periodicEvents, id);
 }
 
 nv::ID nv::EventHandler::addTextInput(TextInput&& textInput) {

@@ -2,8 +2,11 @@
 
 #include <algorithm>
 #include <cassert>
+#include <fstream>
 #include <random>
+#include <ranges>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include <boost/pfr.hpp>
@@ -17,16 +20,12 @@ private:
 
 	Cards m_cards;
 	Cards::iterator m_firstCard = m_cards.begin();
-	Cards::iterator m_discardPileBorder = m_cards.begin();
-	Cards::iterator m_discardPileEnd = m_cards.begin();
 
 	Deck(size_t cardC, std::random_device& rbg) : m_rbg{ rbg } {
-		m_cards.reserve(cardC * 2); //reserve double size because we store discard pile in same vector
+		m_cards.reserve(cardC); //reserve double size because we store discard pile in same vector
 	}
 public:
 	Deck(std::string_view fileName, size_t cardC, std::random_device& rbg) : Deck(cardC, rbg) {
-		m_cards.reserve(cardC);
-
 		std::ifstream file{ fileName.data() };
 		assert(file.is_open());
 
@@ -62,39 +61,39 @@ public:
 		}
 
 		m_firstCard = m_cards.begin();
-		m_discardPileBorder = m_cards.begin();
-		m_discardPileEnd = m_cards.begin();
-		m_discardPileBorder = m_cards.begin() + cardC; //set discard pile beginnning in middle of vector
 
 		shuffle();
 	}
 
+	Deck(std::random_device& rbg) : m_rbg{ rbg } {}
+
+	Deck& operator=(Cards&& cards) {
+		m_cards = std::move(cards);
+		m_firstCard = m_cards.begin();
+		return *this;
+	}
+
 	void shuffleDiscardBackIn() {
-		m_discardPileBorder = m_cards.end();
-		m_discardPileEnd = m_cards.end();
+		m_firstCard = m_cards.begin();
 		shuffle();
 	}
 
 	void draw(Cards& hand, size_t cardC) {
-		if (m_firstCard == m_discardPileBorder) {
-			shuffleDiscardBackIn();
+		for (size_t i = 0; i < cardC; i++) {
+			hand.push_back(discardTop());
 		}
-		auto finalCardToDrawIt = m_firstCard + cardC;
-		hand.insert(hand.end(), m_firstCard, finalCardToDrawIt);
-		m_firstCard = finalCardToDrawIt;
 	}
 
 	CardType discardTop() {
-		if (m_firstCard == m_discardPileBorder) {
+		if (m_firstCard == m_cards.end()) {
 			shuffleDiscardBackIn();
 		}
 		auto& top = *m_firstCard;
-		m_discardPileEnd++; //extend discard pile
-		*m_discardPileEnd = top; //move top card to end of discard pile
+		m_firstCard++;
 		return top;
 	}
 
 	void shuffle() {
-		std::ranges::shuffle(std::ranges::subrange(m_firstCard, m_discardPileBorder), m_rbg);
+		std::ranges::shuffle(std::ranges::subrange(m_firstCard, m_cards.end()), m_rbg);
 	}
 };

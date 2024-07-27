@@ -4,6 +4,7 @@
 #include "Event.h"
 #include "ID.h"
 #include "Rect.h"
+#include "Text.h"
 
 namespace nv {
 	class Button {

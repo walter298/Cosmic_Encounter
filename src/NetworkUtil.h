@@ -24,7 +24,7 @@ using ip::tcp;
 namespace pfr = boost::pfr;
 namespace sys = boost::system;
 
-constexpr inline std::string_view MSG_END_DELIM{ "###" };
+constexpr inline char MSG_END_DELIM = '#';
 constexpr inline std::string_view MSG_ERROR{ "ERROR" };
 constexpr inline char VALUE_END_CHR = '!';
 constexpr inline char FIELD_END_CHR = '&';
@@ -39,20 +39,20 @@ concept Aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
 
 template<std::integral Integral>
 void parseValueFromString(std::string_view dataStr, Integral& integral) {
-	std::println("Parsing number from {}", dataStr);
+	//std::println("Parsing number from {}", dataStr);
 	integral = boost::lexical_cast<Integral>(dataStr);
 }
 
 template<ranges::viewable_range Range>
 void parseValueFromString(std::string_view str, Range& range) {
-	std::println("Parsing container: {}", str);
+	//std::println("Parsing container: {}", str);
 
 	auto begin = str.begin();
 	auto size = boost::lexical_cast<size_t>(dataSubstr(begin, str.end(), CONTAINER_ELEM_END));
 
 	auto parseElem = [&]() {
 		auto elemStr = dataSubstr(begin, str.end(), CONTAINER_ELEM_END);
-		std::println("Parsing element {}", elemStr);
+		//std::println("Parsing element {}", elemStr);
 		typename Range::value_type elem{};
 		parseValueFromString(elemStr, elem);
 		range.insert(range.end(), std::move(elem));
@@ -79,7 +79,7 @@ void parseValueFromString(std::string_view str, T& aggr) {
 	auto begin = str.begin();
 	auto parse = [&](auto& field) {
 		auto dataStr = dataSubstr(begin, str.end(), FIELD_END_CHR);
-		std::println("Parsing this field string: {}", dataStr);
+		//std::println("Parsing this field string: {}", dataStr);
 		parseValueFromString(dataStr, field);
 	};
 	pfr::for_each_field(aggr, parse);
@@ -92,7 +92,7 @@ void readMsg(std::string_view str, Args&... args) {
 	auto begin = str.begin();
 	auto parse = [&](auto& arg) {
 		auto dataStr = dataSubstr(begin, str.end(), VALUE_END_CHR);
-		std::println("Parsing this value: {}", dataStr);
+		//std::println("Parsing this value: {}", dataStr);
 		parseValueFromString(dataStr, arg);
 	};
 	((parse(args)), ...);
@@ -135,17 +135,50 @@ std::string toString(const Aggr& aggr) {
 template<typename... Args>
 void writeMsg(std::string& buff, Args&&... args) {
 	((buff.append(toString(std::forward<Args>(args)) + VALUE_END_CHR)), ...);
-	buff.append(MSG_END_DELIM);
+	buff.push_back(MSG_END_DELIM);
 }
+
+class InputBuffer {
+private:
+	std::reference_wrapper<tcp::socket> m_sock;
+	std::string m_data;
+	std::string::iterator m_begin = m_data.end();
+
+	std::string_view parseLatestMessage();
+public:
+	InputBuffer(tcp::socket& sock);
+	std::string_view read();
+	asio::awaitable<std::string_view> asyncRead();
+};
+
+class OutputBuffer {
+private:
+	std::string m_data;
+public:
+	template<typename... Args>
+	void send(tcp::socket& sock, Args&&... args) {
+		m_data.clear();
+		writeMsg(m_data, std::forward<Args>(args)...);
+		asio::write(sock, asio::buffer(m_data));
+		//std::println("Sent {}", m_data);
+	}
+
+	template<typename... Args>
+	asio::awaitable<void> asyncSend(tcp::socket& sock, Args&&... args) {
+		m_data.clear();
+		writeMsg(m_data, std::forward<Args>(args)...);
+		co_await asio::async_write(sock, asio::buffer(m_data), asio::use_awaitable);
+	}
+};
 
 class Socket {
 private:
 	tcp::socket m_sock;
-	std::string m_msgBeingSent;
-	std::string m_msgBeingRcvd;
+	InputBuffer m_inbox;
+	OutputBuffer m_sendBuff;
 public:
 	template<typename Executor>
-	explicit Socket(Executor& exec) : m_sock{ exec } 
+	explicit Socket(Executor& exec) : m_sock{ exec }, m_inbox{ m_sock }
 	{
 	}
 	explicit Socket(tcp::socket&& sock);
@@ -159,30 +192,24 @@ public:
 
 	template<typename... Args>
 	void read(Args&... args) {
-		m_msgBeingRcvd.clear();
-		asio::read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM);
-		readMsg(m_msgBeingRcvd, args...);
+		auto msg = m_inbox.read();
+		//std::println("Parsing: {}", msg);
+		readMsg(msg, args...);
 	}
 
 	template<typename... Args>
 	asio::awaitable<void> asyncRead(Args&... args) {
-		m_msgBeingRcvd.clear();
-		co_await asio::async_read_until(m_sock, asio::dynamic_buffer(m_msgBeingRcvd), MSG_END_DELIM, asio::use_awaitable);
-		readMsg(m_msgBeingRcvd, args...);
+		auto msg = co_await m_inbox.asyncRead();
+		readMsg(msg, args...);
 	}
 	
 	template<typename... Args>
 	void send(Args&&... args) {
-		m_msgBeingSent.clear();
-		writeMsg(m_msgBeingSent, std::forward<Args>(args)...);
-		asio::write(m_sock, asio::buffer(m_msgBeingSent));
-		std::println("Sent {}", m_msgBeingSent);
+		m_sendBuff.send(m_sock, args...);
 	}
 
 	template<typename... Args>
 	asio::awaitable<void> asyncSend(Args&&... args) {
-		m_msgBeingSent.clear();
-		m_msgBeingSent = writeMsg(std::forward<Args>(args)...);
-		co_await asio::async_write(m_sock, asio::buffer(m_msgBeingRcvd), asio::use_awaitable);
+		co_await m_sendBuff.asyncSend(m_sock, std::forward<Args>(args)...);
 	}
 };

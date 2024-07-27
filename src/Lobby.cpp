@@ -17,7 +17,6 @@ static asio::awaitable<void> recvTexPaths(Socket& sock, size_t pCount, std::vect
 		std::scoped_lock lock{ mutex };
 		switch (lobbyUpdate) {
 		case StartingGame:
-			std::println("Starting the game\n");
 			gameStarting = true;
 			readingBytes = false;
 			break;

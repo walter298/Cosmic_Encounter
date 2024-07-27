@@ -1,0 +1,143 @@
+{
+  "rects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "name",
+          "sdl_rect": [
+            947,
+            726,
+            200,
+            100
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "name",
+          "sdl_rect": [
+            1227,
+            725,
+            300,
+            100
+          ]
+        }
+      ]
+    }
+  ],
+  "sprites": [
+    {
+      "layer": 0,
+      "objects": []
+    }
+  ],
+  "text": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              965,
+              750,
+              165,
+              51
+            ]
+          },
+          "value": "Accept?"
+        },
+        {
+          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              1241,
+              752,
+              276,
+              51
+            ]
+          },
+          "value": "Keep drawing"
+        }
+      ]
+    }
+  ],
+  "texture_objects": [
+    {
+      "layer": 0,
+      "objects": [
+        {
+          "name": "destiny_back",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                944,
+                453,
+                200,
+                200
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "destiny_back",
+              "sdl_rect": [
+                944,
+                453,
+                200,
+                200
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\cards\\card_backs\\destiny_back.png"
+        }
+      ]
+    }
+  ]
+}

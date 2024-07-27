@@ -61,6 +61,30 @@ void nv::Scene::operator()() {
 		}
 		SDL_RenderClear(renderer);
 		renderCopy(textures, sprites, rects, text);
+		renderCopyRefs(textureRefs, spriteRefs, rectRefs, textRefs);
 		SDL_RenderPresent(renderer);
 	}
+}
+
+void nv::Scene::overlay(Scene& scene) {
+	auto overlayImpl = [this](auto& thisObjLayers, auto& otherObjLayers) {
+		for (auto [idx, objLayer] : views::enumerate(otherObjLayers)) {
+			auto intIdx = static_cast<int>(idx);
+			auto refView = ranges::transform_view(otherObjLayers.at(intIdx), [](auto& obj) {
+				return std::ref(obj);
+			});
+			thisObjLayers[static_cast<int>(intIdx)].append_range(refView);
+		}
+	};
+	overlayImpl(spriteRefs, scene.sprites);
+	overlayImpl(textureRefs, scene.textures);
+	overlayImpl(textRefs, scene.text);
+	overlayImpl(rectRefs, scene.rects);
+}
+
+void nv::Scene::deoverlay() {
+	spriteRefs.clear();
+	textureRefs.clear();
+	textRefs.clear();
+	rectRefs.clear();
 }

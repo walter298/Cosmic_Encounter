@@ -5,6 +5,8 @@
 #include <string_view>
 #include <unordered_map>
 
+#include <boost/functional/hash.hpp>
+
 #include "novalis/DataUtil.h"
 
 #include "Deck.h"
@@ -26,7 +28,10 @@ namespace std {
 	template<>
 	struct hash<Card> {
 		size_t operator()(const Card& card) const {
-			return hash<int>{}(card.value);
+			size_t ret = 0;
+			boost::hash_combine(ret, card.type);
+			boost::hash_combine(ret, card.value);
+			return ret;
 		}
 	};
 }
@@ -74,7 +79,7 @@ struct GameState {
 	std::random_device rbg;
 	Players players;
 	Deck<Card> deck{ nv::relativePath("Cosmic_Encounter/cosmic_deck.csv"), 40, rbg };
-	Deck<Color> destinyDeck{ nv::relativePath("Cosmic_Encounter/destiny_deck.csv"), 15, rbg };
+	Deck<Color> destinyDeck{ rbg };
 };
 
 //[from, to] is inclusive

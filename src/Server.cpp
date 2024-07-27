@@ -45,7 +45,9 @@ static Defense getDefense(Player& turnTaker, GameState& gameState) {
 		broadcast(gameState.players, colorDrawn);
 
 		if (colorDrawn != turnTaker.color) { //player does not have a choice to keep drawing if another color is drawn
-			defensivePlayer = &gameState.players[colorDrawn];
+			defensivePlayer = &*ranges::find_if(gameState.players, [&](const auto& player) { 
+				return player.color == turnTaker.color; 
+			});
 			break;
 		} else if (acceptedOwnColorBeingDrawn(turnTaker, colonyIdx)) {
 			break;
@@ -73,10 +75,26 @@ static Players acceptConnections(size_t pCount, tcp::acceptor& acceptor, std::ra
 	//accept connections
 	for (size_t i = 0; i < pCount; i++) {
 		auto& player = players.emplace_back(Socket{ acceptor.accept() }, availableColors[i]);
-		player.sock.send(availableColors[i], availableAliens[i], pCount);
+
+		//send each player game data: their color, their alien, turn order
+		player.sock.send(availableColors[i], availableAliens[i], 
+			ranges::subrange(availableColors.begin(), availableColors.begin() + pCount));
 	}
 
 	return players;
+}
+
+static std::vector<Color> loadDestinyDeck(const Players& players) {
+	std::vector<Color> colors{ players.size() * 3 };
+	size_t playerIdx = 0;
+
+	ranges::generate(colors, [&]() {
+		auto color = players[playerIdx].color;
+		playerIdx += ((playerIdx + 1) % players.size());
+		return color;
+	});
+
+	return colors;
 }
 
 void host(size_t pCount, const tcp::endpoint& endpoint) {
@@ -96,8 +114,8 @@ void host(size_t pCount, const tcp::endpoint& endpoint) {
 	std::println("Press enter to start the game");
 	std::cin.get();
 
-	//tell everyone the game starting
-	broadcast(gameState.players, 0);
+	//tell everyone the game is starting
+	broadcast(gameState.players, StartingGame);
 
 	//give each player 8 cards
 	for (auto& player : gameState.players) {
@@ -105,12 +123,13 @@ void host(size_t pCount, const tcp::endpoint& endpoint) {
 		player.sock.send(player.hand);
 	}
 
+	gameState.destinyDeck = loadDestinyDeck(gameState.players);
+
 	size_t turnTakerIdx = 0;
 
-	std::cin.get();
 	//game loop
-	/*while (true) {
+	while (true) {
 		auto& turnTaker = gameState.players[turnTakerIdx];
 		auto defense = getDefense(turnTaker, gameState);
-	}*/
+	}
 }

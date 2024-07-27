@@ -18,12 +18,12 @@
 namespace ranges = std::ranges;
 namespace views  = std::views;
 
-struct PlayerPersona {
+struct PlayerRenderData {
 	nv::TextureObject alien;
 	nv::Sprite planets;
 };
 
-static PlayerPersona getPlayerPersona(SDL_Renderer* renderer, nv::TextureMap& texMap, Alien alien, Color color) {
+static PlayerRenderData getPlayerRenderData(SDL_Renderer* renderer, nv::TextureMap& texMap, Alien alien, Color color) {
 	auto alienObj = [&]() {
 		std::string path;
 		switch (alien) {
@@ -74,19 +74,19 @@ void play() {
 
 	joinGame(instance.renderer, sock, texMap, fontMap);
 	
-	//server spits out our alien and color
+	//server spits out our alien and color and player count
 	Color color; 
 	Alien alien;
-	size_t pCount;
-	sock.read(color, alien, pCount);
+	std::vector<Color> turnOrder;
+	sock.read(color, alien, turnOrder);
 
-	auto [alienObj, planetsSprite] = getPlayerPersona(instance.renderer, texMap, alien, color);
+	auto [alienObj, planetsSprite] = getPlayerRenderData(instance.renderer, texMap, alien, color);
 
 	//join lobby
-	auto alienTexObjs = runLobby(sock, pCount, alienObj, instance.renderer, texMap, fontMap);
+	auto alienTexObjs = runLobby(sock, turnOrder.size(), alienObj, instance.renderer, texMap, fontMap);
 	
 	//show the game 
-	showGameOverview(sock, instance.renderer, alienTexObjs, texMap, fontMap);
+	showGameOverview(sock, instance.renderer, alienTexObjs, texMap, fontMap, turnOrder, color);
 
 	/*auto cardSprites = loadCardSprites(instance.renderer, texMap);
 	ranges::sort(cardSprites, [](const auto& card1, const auto& card2) {
