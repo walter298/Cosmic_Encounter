@@ -62,8 +62,12 @@ SDL_Point nv::Rect::getSize() const noexcept {
 }
 
 void nv::Rect::render() const noexcept {
+	Uint8 r; Uint8 b; Uint8 g; Uint8 a;
+	SDL_GetRenderDrawColor(renderer, &r, &b, &g, &a);
+
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 	SDL_RenderFillRect(renderer, &rect);
+	SDL_SetRenderDrawColor(renderer, r, b, g, a);
 }
 
 void nv::Rect::setRenderColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) noexcept {

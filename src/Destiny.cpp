@@ -17,14 +17,14 @@ static nv::Rect& chooseDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& 
 	auto& colorBackObj = mainUi.findRef(mainUi.textureRefs[0], "destiny_back");
 	colorRect.setPos(colorBackObj.getPos());
 	colorRect.setSize(colorBackObj.getSize());
+
 	auto& rects = mainUi.rects[DRAWN_COLOR_IDX];
 	rects.push_back(colorRect);
-
 	return rects.back();
 }
 
 void showDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& colors, bool takingTurn) {
-	mainUi.eventHandler.addPeriodicEvent([&, colorDrawn = false, currColor = nv::Rect{}]() mutable {
+	mainUi.eventHandler.addPeriodicEvent([&, colorDrawn = false]() mutable {
 		if (!colorDrawn) {
 			colorDrawn = true;
 

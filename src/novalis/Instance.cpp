@@ -15,7 +15,7 @@ void nv::Instance::quit() {
 	SDL_Quit();
 }
 
-nv::Instance::Instance(std::string_view windowTitle) {
+nv::Instance::Instance(std::string_view windowTitle) noexcept {
 	auto exitWithError = [this] {
 		std::println("{}", SDL_GetError());
 		quit();
@@ -30,7 +30,13 @@ nv::Instance::Instance(std::string_view windowTitle) {
 		exitWithError();
 	}
 
-	window = SDL_CreateWindow(windowTitle.data(), 0, 0, NV_SCREEN_WIDTH, NV_SCREEN_HEIGHT, SDL_WINDOW_OPENGL);
+	//get screen width and height
+	SDL_DisplayMode dm;
+	SDL_GetCurrentDisplayMode(0, &dm);
+	m_screenWidth  = dm.w;
+	m_screenHeight = dm.h;
+
+	window = SDL_CreateWindow(windowTitle.data(), 0, 0, m_screenWidth, m_screenHeight, SDL_WINDOW_OPENGL);
 	if (window == nullptr) {
 		exitWithError();
 	}
@@ -38,10 +44,16 @@ nv::Instance::Instance(std::string_view windowTitle) {
 	if (renderer == nullptr) {
 		exitWithError();
 	}
-
-	SDL_RenderSetScale(renderer, static_cast<float>(NV_SCREEN_WIDTH / 1920), static_cast<float>(NV_SCREEN_HEIGHT / 1080));
 }
 
 nv::Instance::~Instance() noexcept {
 	quit();
+}
+
+int nv::Instance::getScreenWidth() const noexcept {
+	return m_screenWidth;
+}
+
+int nv::Instance::getScreenHeight() const noexcept {
+	return m_screenHeight;
 }

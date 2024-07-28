@@ -66,6 +66,7 @@ void play() {
 	Socket sock{ context };
 
 	nv::Instance instance{ "Cosmic Encounter" };
+	
 	nv::TextureMap texMap;
 	nv::FontMap fontMap;
 
@@ -87,7 +88,7 @@ void play() {
 	
 	//show the game 
 	showGameOverview(sock, instance.renderer, alienTexObjs, texMap, fontMap, turnOrder, color);
-
+	
 	/*auto cardSprites = loadCardSprites(instance.renderer, texMap);
 	ranges::sort(cardSprites, [](const auto& card1, const auto& card2) {
 		return card1.getName() < card2.getName();
