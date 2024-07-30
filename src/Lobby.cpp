@@ -61,16 +61,14 @@ namespace {
 		std::vector<PlayerRenderData>& pRenderDataV, std::mutex& mutex, 
 		std::atomic_bool& gameStarting) 
 	{
-		Alien alien{};
-		Color color{};
-
+		PlayerRenderData pRenderData;
 		size_t alienJoinCount = 0;
 		while (alienJoinCount < pCount) {
-			co_await sock.asyncRead(alien, color);
+			co_await sock.asyncRead(pRenderData);
 			alienJoinCount++;
 
 			std::scoped_lock lock{ mutex };
-			pRenderDataV.emplace_back(alien, color);
+			pRenderDataV.push_back(pRenderData);
 		} 
 		
 		int starting = 0;

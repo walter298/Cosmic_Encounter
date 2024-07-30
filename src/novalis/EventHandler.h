@@ -48,8 +48,8 @@ namespace nv {
 			ID id;
 
 			if constexpr (std::same_as<ResultOfNonOverloaded<Func>, bool>) {
-				typename FunctionTraits<std::decay_t<Func>>::args funcArgs;
-				std::apply([&, this](const auto&... args) { pushCancellableEvent(events, std::forward<Func>(func), id, args...); }, funcArgs);
+				typename FunctionTraits<std::decay_t<Func>>::args dummyArgs;
+				std::apply([&, this](const auto&... args) { pushCancellableEvent(events, std::forward<Func>(func), id, dummyArgs...); }, funcArgs);
 			} else {
 				events.emplace_back(std::forward<Func>(func), id);
 			}

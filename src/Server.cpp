@@ -109,7 +109,7 @@ static std::vector<Color> loadDestinyDeck(const Players& players) {
 	std::vector<Color> colors{ players.size() * 3 };
 	size_t playerIdx = 0;
 
-	ranges::generate(colors, [&]() {
+	ranges::generate(colors, [&] {
 		auto color = players[playerIdx].color;
 		playerIdx += ((playerIdx + 1) % players.size());
 		return color;
