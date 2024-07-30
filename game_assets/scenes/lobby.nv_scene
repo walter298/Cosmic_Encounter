@@ -32,7 +32,7 @@
       "layer": 0,
       "objects": [
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
           "name": "name",
           "ren": {
@@ -99,7 +99,7 @@
             0.0,
             0
           ],
-          "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\space\\lobby_space.png"
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\lobby_space.png"
         }
       ]
     }

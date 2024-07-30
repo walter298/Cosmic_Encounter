@@ -4,13 +4,14 @@ nv::Sprite::Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap)
 	auto uniqueTexIndices = json["texture_object_layers"].get<JsonFormat>();
 	for (const auto& [layer, texObjs] : uniqueTexIndices) {
 		for (const auto& [texPath, texData] : texObjs) {
-			auto texIt = texMap.find(texPath);
+			auto fullTexPath = relativePath(texPath);
+			auto texIt = texMap.find(fullTexPath);
 			if (texIt == texMap.end()) {
-				auto tex = IMG_LoadTexture(renderer, texPath.c_str());
-				m_texObjLayers[layer].emplace_back(renderer, texPath, tex, texData);
-				texMap.emplace(std::piecewise_construct, std::forward_as_tuple(texPath), std::forward_as_tuple(tex, SDL_DestroyTexture));
+				auto tex = IMG_LoadTexture(renderer, fullTexPath.c_str());
+				m_texObjLayers[layer].emplace_back(renderer, fullTexPath, tex, texData);
+				texMap.emplace(std::piecewise_construct, std::forward_as_tuple(fullTexPath), std::forward_as_tuple(tex, SDL_DestroyTexture));
 			} else {
-				m_texObjLayers[layer].emplace_back(renderer, texPath, texIt->second.get(), texData);
+				m_texObjLayers[layer].emplace_back(renderer, fullTexPath, texIt->second.get(), texData);
 			}
 		}
 	}

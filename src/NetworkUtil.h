@@ -92,7 +92,7 @@ void readMsg(std::string_view str, Args&... args) {
 	auto begin = str.begin();
 	auto parse = [&](auto& arg) {
 		auto dataStr = dataSubstr(begin, str.end(), VALUE_END_CHR);
-		//std::println("Parsing this value: {}", dataStr);
+		std::println("Parsing this value: {}", dataStr);
 		parseValueFromString(dataStr, arg);
 	};
 	((parse(args)), ...);
@@ -160,7 +160,7 @@ public:
 		m_data.clear();
 		writeMsg(m_data, std::forward<Args>(args)...);
 		asio::write(sock, asio::buffer(m_data));
-		//std::println("Sent {}", m_data);
+		std::println("Sent {}", m_data);
 	}
 
 	template<typename... Args>
@@ -193,7 +193,7 @@ public:
 	template<typename... Args>
 	void read(Args&... args) {
 		auto msg = m_inbox.read();
-		//std::println("Parsing: {}", msg);
+		std::println("Parsing: {}", msg);
 		readMsg(msg, args...);
 	}
 

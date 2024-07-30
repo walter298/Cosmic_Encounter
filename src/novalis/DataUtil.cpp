@@ -61,6 +61,12 @@ nlohmann::json nv::parseFile(std::string_view filename) {
 	return json::parse(file);
 }
 
+nlohmann::json nv::parseJson(const std::string& path) {
+	std::ifstream file{ path };
+	assert(file.is_open());
+	return json::parse(file);
+}
+
 const std::string& nv::NamedObject::getName() const noexcept {
 	return m_name;
 }

@@ -9,13 +9,24 @@
 namespace ranges = std::ranges;
 namespace views = std::views;
 
-template<typename... Args>
-static void broadcast(Players& players, Args&&... args) {
-	std::tuple argsTuple{ std::forward<Args>(args)... };
-	for (auto& player : players) {
-		std::apply([&](const auto&... tupleArgs) { 
-			player.sock.send(tupleArgs...); 
-		}, argsTuple);
+namespace {
+	template<ranges::viewable_range PlayerRange, typename... Args>
+	void broadcast(PlayerRange&& players, Args&&... args) {
+		std::tuple argsTuple{ std::forward<Args>(args)... };
+		for (auto&& player : players) {
+			std::apply([&](const auto&... tupleArgs) {
+				std::unwrap_reference_t<Player&>(player).sock.send(tupleArgs...);
+			}, argsTuple);
+		}
+	}
+
+	template<std::ranges::viewable_range Range, std::convertible_to<size_t>... Idxs>
+	auto excludeElems(Range& range, Idxs... idxs) {
+		return range | views::enumerate | views::filter([&](auto&& elemIdxPair) {
+			return ((std::get<0>(elemIdxPair) != idxs) && ...);
+		}) | views::transform([](auto&& elemIdxPair) {
+			return std::ref(std::get<1>(elemIdxPair));
+		});
 	}
 }
 
@@ -61,26 +72,36 @@ static Players acceptConnections(size_t pCount, tcp::acceptor& acceptor, std::ra
 
 	assert(pCount < 6);
 
-	std::vector<Player> players;
-
-	//Players players;
+	Players players;
 	players.reserve(pCount);
 
 	std::array availableColors = { Red, Green, Blue, Black, Purple };
-	std::array availableAliens = { Pacifist, Virus };
+	std::array availableAliens = { Pacifist, Virus, Pacifist, Virus, Pacifist };
 
 	ranges::shuffle(availableColors, rbg);
 	ranges::shuffle(availableAliens, rbg);
 
+	//combine availableColors and availableAliens
+	std::vector<PlayerRenderData> pRenderDataV;
+	pRenderDataV.append_range(
+		ranges::zip_view(availableAliens, availableColors) |
+		views::transform([](auto&& pair) { 
+			return PlayerRenderData{ std::get<0>(pair), std::get<1>(pair) }; 
+		})
+	);
+	
 	//accept connections
 	for (size_t i = 0; i < pCount; i++) {
 		auto& player = players.emplace_back(Socket{ acceptor.accept() }, availableColors[i]);
+		
+		/*send the newly joined player his or her color and alien,
+		and the colors and aliens of each other player who has already joined*/
+		player.sock.send(pCount, pRenderDataV | views::take(i + 1));
 
-		//send each player game data: their color, their alien, turn order
-		player.sock.send(availableColors[i], availableAliens[i], 
-			ranges::subrange(availableColors.begin(), availableColors.begin() + pCount));
+		//send each other player the new color and alien
+		broadcast(players | views::take(i), pRenderDataV[i]);
 	}
-
+	
 	return players;
 }
 
@@ -115,7 +136,7 @@ void host(size_t pCount, const tcp::endpoint& endpoint) {
 	std::cin.get();
 
 	//tell everyone the game is starting
-	broadcast(gameState.players, StartingGame);
+	broadcast(gameState.players, STARTING_GAME);
 
 	//give each player 8 cards
 	for (auto& player : gameState.players) {

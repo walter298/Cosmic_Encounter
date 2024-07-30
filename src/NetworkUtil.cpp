@@ -1,7 +1,5 @@
 #include "NetworkUtil.h"
 
-#include <functional> //boyer moore search
-
 std::string_view dataSubstr(StringIt& begin, StringIt end, char dataBreak) {
 	auto dataBreakIt = ranges::find(begin, end, dataBreak);
 	std::string_view ret{ begin, dataBreakIt };

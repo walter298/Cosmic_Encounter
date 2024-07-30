@@ -4,14 +4,17 @@
 #include "novalis/Texture.h"
 
 #include "NetworkUtil.h"
+#include "RenderData.h"
 
-enum LobbyUpdate {
-	StartingGame,
-	PacifistJoining,
-	VirusJoining,
-	LaserJoining,
-	OracleJoining,
-	None
+constexpr inline int STARTING_GAME = 5000;
+
+//player color
+//player alien
+//other aliens and colors
+
+struct PlayerRenderData {
+	Alien alien{};
+	Color color{};
 };
 
-std::vector<nv::TextureObject> runLobby(Socket& sock, size_t pCount, nv::TextureObject& alien, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap);
+GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap);

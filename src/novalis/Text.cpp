@@ -33,7 +33,7 @@ nv::Text::Text(SDL_Renderer* renderer, std::string_view str, std::string_view fo
 nv::Text::Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap) 
 	: m_renderer{ renderer }
 {
-	m_fontPath = json["font_path"].get<std::string>();
+	m_fontPath = relativePath(json["font_path"].get<std::string>());
 	m_fontSize = json["font_size"].get<int>();
 
 	auto fontName = m_fontPath + std::to_string(m_fontSize);
@@ -48,7 +48,6 @@ nv::Text::Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap)
 	m_str = json["value"].get<std::string>();
 	changeText(m_str);
 	m_ren = json["ren"].get<Rect>();
-
 	m_name = json["name"].get<std::string>();
 }
 

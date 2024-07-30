@@ -62,7 +62,7 @@
       "layer": 0,
       "objects": [
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
           "name": "name",
           "ren": {
@@ -82,7 +82,7 @@
           "value": "Host IPv4 Address"
         },
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
           "name": "name",
           "ren": {
@@ -102,7 +102,7 @@
           "value": "Host Port"
         },
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
           "name": "join",
           "ren": {
@@ -122,7 +122,7 @@
           "value": "Join the Galactic Conflict"
         },
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
           "name": "port_input",
           "ren": {
@@ -142,7 +142,7 @@
           "value": ""
         },
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
           "name": "ip_address_input",
           "ren": {
@@ -206,7 +206,7 @@
             0.0,
             0
           ],
-          "texture_path": "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\space\\join_game_space.png"
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\join_game_space.png"
         }
       ]
     }

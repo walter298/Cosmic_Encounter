@@ -4,7 +4,7 @@
       0,
       [
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
           [
             {
               "color": [
@@ -43,7 +43,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
           [
             {
               "color": [
@@ -82,7 +82,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
           [
             {
               "color": [
@@ -121,7 +121,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
           [
             {
               "color": [
@@ -160,7 +160,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\black_planet.png",
           [
             {
               "color": [
@@ -204,7 +204,7 @@
       1,
       [
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
           [
             {
               "color": [
@@ -243,7 +243,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
           [
             {
               "color": [
@@ -282,7 +282,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
           [
             {
               "color": [
@@ -321,7 +321,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
           [
             {
               "color": [
@@ -360,7 +360,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\blue_planet.png",
           [
             {
               "color": [
@@ -404,7 +404,7 @@
       2,
       [
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
           [
             {
               "color": [
@@ -443,7 +443,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
           [
             {
               "color": [
@@ -482,7 +482,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
           [
             {
               "color": [
@@ -521,7 +521,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
           [
             {
               "color": [
@@ -560,7 +560,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\green_planet.png",
           [
             {
               "color": [
@@ -604,7 +604,7 @@
       3,
       [
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
           [
             {
               "color": [
@@ -643,7 +643,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
           [
             {
               "color": [
@@ -682,7 +682,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
           [
             {
               "color": [
@@ -721,7 +721,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
           [
             {
               "color": [
@@ -760,7 +760,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\purple_planet.png",
           [
             {
               "color": [
@@ -804,7 +804,7 @@
       4,
       [
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
           [
             {
               "color": [
@@ -843,7 +843,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
           [
             {
               "color": [
@@ -882,7 +882,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
           [
             {
               "color": [
@@ -921,7 +921,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
           [
             {
               "color": [
@@ -960,7 +960,7 @@
           ]
         ],
         [
-          "D:\\C++_Projects_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter_V2\\Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
+          "Cosmic_Encounter\\game_assets\\images\\planets\\red_planet.png",
           [
             {
               "color": [

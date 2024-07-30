@@ -47,7 +47,7 @@
       "layer": 0,
       "objects": [
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 41,
           "name": "name",
           "ren": {
@@ -68,7 +68,7 @@
           "value": "Players"
         },
         {
-          "font_path": "D:/C++_Projects_V2/Cosmic_Encounter_V2/Cosmic_Encounter_V2/Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 41,
           "name": "name",
           "ren": {

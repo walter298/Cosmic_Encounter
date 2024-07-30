@@ -14,8 +14,6 @@
 #include <boost/optional.hpp>
 #include <boost/pfr.hpp>
 
-#include <plf_hive.h>
-
 #include <SDL2/SDL.h>
 
 #include <nlohmann/json.hpp>
@@ -316,6 +314,8 @@ namespace nv {
 	using ResultOfNonOverloaded = decltype(
 		std::apply(std::declval<std::decay_t<Func>>(), std::declval<typename FunctionTraits<Func>::args>())
 	);
+
+	json parseJson(const std::string& path);
 };
 
 #endif

@@ -17,8 +17,6 @@
 #include <imgui_impl_sdlrenderer2.h>
 #include <imgui_stdlib.h>
 
-#include <hash_set8.hpp>
-
 #include "Renderer.h"
 #include "ID.h"
 #include "Text.h"

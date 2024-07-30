@@ -33,7 +33,7 @@ nv::Instance::Instance(std::string_view windowTitle) noexcept {
 	//get screen width and height
 	SDL_DisplayMode dm;
 	SDL_GetCurrentDisplayMode(0, &dm);
-	m_screenWidth  = dm.w;
+	m_screenWidth = dm.w;
 	m_screenHeight = dm.h;
 
 	window = SDL_CreateWindow(windowTitle.data(), 0, 0, m_screenWidth, m_screenHeight, SDL_WINDOW_OPENGL);
@@ -44,6 +44,10 @@ nv::Instance::Instance(std::string_view windowTitle) noexcept {
 	if (renderer == nullptr) {
 		exitWithError();
 	}
+
+	constexpr int WIDTH_ANCHOR = 2560;
+	constexpr int HEIGHT_ANCHOR = 1440;
+	SDL_RenderSetLogicalSize(renderer, WIDTH_ANCHOR, HEIGHT_ANCHOR);
 }
 
 nv::Instance::~Instance() noexcept {

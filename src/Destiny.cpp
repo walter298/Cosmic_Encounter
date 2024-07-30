@@ -13,10 +13,10 @@ static nv::Rect& chooseDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& 
 	Color drawnColor;
 	sock.read(drawnColor);
 
-	auto colorRect = colors.at(drawnColor);
-	auto& colorBackObj = mainUi.findRef(mainUi.textureRefs[0], "destiny_back");
-	colorRect.setPos(colorBackObj.getPos());
-	colorRect.setSize(colorBackObj.getSize());
+	auto colorRect = colors.at(drawnColor).second;
+	auto& colorBack = mainUi.findRef(mainUi.textureRefs[0], "destiny_back");
+	colorRect.setPos(colorBack.getPos());
+	colorRect.setSize(colorBack.getSize());
 
 	auto& rects = mainUi.rects[DRAWN_COLOR_IDX];
 	rects.push_back(colorRect);

@@ -18,7 +18,7 @@ nv::TextureObject::TextureObject(SDL_Renderer* renderer, std::string_view path, 
 }
 
 nv::TextureObject::TextureObject(SDL_Renderer* renderer, std::string_view texPath, SDL_Texture* rawTex, TextureData texData)
-	: m_renderer{ renderer }, m_texPath { std::make_shared<std::string>(texPath) }, m_texVariant{ std::move(rawTex) }, texData{ std::move(texData) }
+	: m_renderer{ renderer }, m_texPath{ std::make_shared<std::string>(texPath) }, m_texVariant{ std::move(rawTex) }, texData{ std::move(texData) }
 {
 	m_tex = rawTex;
 }
@@ -26,7 +26,7 @@ nv::TextureObject::TextureObject(SDL_Renderer* renderer, std::string_view texPat
 nv::TextureObject::TextureObject(SDL_Renderer* renderer, const json& json, TextureMap& texMap) 
 	: m_renderer{ renderer } 
 {
-	auto texPath = json["texture_path"].get<std::string>();
+	auto texPath = relativePath(json["texture_path"].get<std::string>());
 	auto texPathIt = texMap.find(texPath);
 	if (texPathIt != texMap.end()) {
 		m_tex = texPathIt->second.get();
@@ -38,6 +38,8 @@ nv::TextureObject::TextureObject(SDL_Renderer* renderer, const json& json, Textu
 	if (json.contains("name")) {
 		m_name = json["name"].get<std::string>();
 	}
+
+	std::println("{}", SDL_GetError());
 }
 
 const std::string& nv::TextureObject::getTexPath() const noexcept {
