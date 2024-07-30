@@ -16,7 +16,7 @@
 * player count
 */
 int main(int argc, char** argv) {
-	tcp::endpoint ep{ ip::make_address_v4("192.168.7.73"), 5555 };
+	tcp::endpoint ep{ ip::make_address_v4("192.168.7.250"), 5555 };
 	std::jthread serverThread{ host, 1, std::ref(ep) };
 	
 	play();

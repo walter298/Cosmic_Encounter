@@ -33,24 +33,25 @@ namespace {
 		std::unreachable();
 	}
 
-	nv::Rect getColorRect(Color color) {
+	nv::Rect getColorRect(SDL_Renderer* renderer, Color color) {
 		constexpr int CARD_WIDTH = 200;
 		constexpr int CARD_HEIGHT = 200;
 		switch (color) {
 		case Blue:
-			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 0, 255 };
+			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 0, 255 };
 			break;
 		case Black:
-			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT };
+			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT };
 			break;
 		case Green:
-			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 178, 0 };
+			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 178, 0 };
 			break;
 		case Purple:
-			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 138,43,226 };
+			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 138, 43, 226 };
 			break;
 		case Red:
-			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 255, 0, 0 };
+			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 255, 0, 0 };
+			break;
 		}
 		assert(false); //invalid color
 		std::unreachable();
@@ -64,17 +65,15 @@ namespace {
 		Color color{};
 
 		size_t alienJoinCount = 0;
-		do {
+		while (alienJoinCount < pCount) {
 			co_await sock.asyncRead(alien, color);
-			
-			std::unique_lock lock{ mutex };
-			pRenderDataV.emplace_back(alien, color);
-			lock.unlock();
-
 			alienJoinCount++;
-		} while (alienJoinCount < pCount - 1);
 
-		bool starting = false;
+			std::scoped_lock lock{ mutex };
+			pRenderDataV.emplace_back(alien, color);
+		} 
+		
+		int starting = 0;
 		co_await sock.asyncRead(starting);
 		gameStarting.store(true);
 	}
@@ -88,7 +87,7 @@ namespace {
 			lobby.texMap
 		};
 		alienPosSetter.setPos(alien);
-		colorMap[pRenderInfo.color] = { alien, getColorRect(pRenderInfo.color) };
+		colorMap[pRenderInfo.color] = { alien, getColorRect(lobby.renderer, pRenderInfo.color) };
 		lobby.textures[0].push_back(std::move(alien));
 	}
 
@@ -103,17 +102,7 @@ namespace {
 			pRenderInfoV.pop_back();
 			alienJoinCount++;
 		}
-		return alienJoinCount == pCount - 1;
-	}
-
-	std::vector<nv::TextureObject> getAlienTexObjs(std::vector<nv::TextureObject>& texObjs) {
-		namespace ranges = std::ranges;
-
-		std::vector<nv::TextureObject> alienObjs;
-		alienObjs.reserve(texObjs.size() - 1);
-		ranges::move(ranges::subrange(texObjs.begin() + 1, texObjs.end()), std::back_inserter(alienObjs));
-
-		return alienObjs;
+		return alienJoinCount == pCount;
 	}
 }
 
@@ -146,7 +135,7 @@ GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& te
 
 	//periodically check server updates
 	lobby.eventHandler.addPeriodicEvent([&, alienJoinCount = size_t{}]() mutable {
-		if (alienJoinCount == pCount && gameStarting.load()) {
+		if (gameStarting.load()) {
 			lobby.running = false;
 		} else {
 			checkForLobbyUpdate(lobby, alienPosSetter, pRenderInfoV, alienJoinCount, pCount, mutex, ret.colorMap);
@@ -155,5 +144,5 @@ GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& te
 
 	lobby();
 	
-	return GameRenderData{ renderer, texMap };
+	return ret;
 }

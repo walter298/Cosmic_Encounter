@@ -85,18 +85,8 @@ namespace nv {
 
 	const std::string& workingDirectory();
 
-	inline std::string objectPath(std::string relativePath) {
-		return workingDirectory() + std::string("static_objects/") + relativePath;
-	}
-
-	inline std::string imagePath(std::string relativePath) {
-		return workingDirectory() + std::string("images/") + relativePath;
-	}
-
 	//returns the path relative to the working directory
-	inline std::string relativePath(std::string_view relativePath) {
-		return workingDirectory() + relativePath.data();
-	}
+	std::string relativePath(std::string_view relativePath);
 
 	std::optional<std::string> fileExtension(const std::string& fileName);
 	std::string_view fileName(std::string_view filePath);

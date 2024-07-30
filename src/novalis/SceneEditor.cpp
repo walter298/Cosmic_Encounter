@@ -20,8 +20,7 @@ void SceneEditor::loadSprite() {
 
 void SceneEditor::createRect() {
 	auto& currRectLayer = m_rectLayers[m_currLayer];
-	currRectLayer.emplace_back(m_renderer);
-	auto& lastRect = currRectLayer.back().obj;
+	auto& lastRect = currRectLayer.emplace_back(m_renderer, 0, 0, 0, 0).obj;
 	lastRect.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
 	lastRect.setSize(200, 100);
 	m_showingRightClickOptions = false;

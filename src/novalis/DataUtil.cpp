@@ -37,6 +37,13 @@ const std::string& nv::workingDirectory() {
 	return path;
 }
 
+/*Have thread local string to prevent dangling pointers when relativePath is assigned to string_view*/
+std::string nv::relativePath(std::string_view relativePath) {
+	thread_local std::string global;
+	global = workingDirectory() + relativePath.data();
+	return global;
+}
+
 std::optional<std::string> nv::fileExtension(const std::string& fileName) {
 	auto dotPos = ranges::find(fileName, '.');
 	if (dotPos == fileName.end()) {

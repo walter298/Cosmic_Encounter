@@ -37,6 +37,7 @@ namespace nv {
 		}
 
 		bool operator()() {
+			std::println("Moving\n");
 			if (!m_startedMoving) {
 				m_xStart = chrono::system_clock::now();
 				m_yStart = chrono::system_clock::now();

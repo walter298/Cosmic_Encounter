@@ -50,6 +50,7 @@ namespace nv {
 		auto& findRef(auto& objs, std::string_view name) {
 			auto objIt = ranges::find_if(objs, [&](const auto& obj) { return obj.get().getName() == name; });
 			if (objIt == objs.end()) {
+				std::println("Could not find: {}", name);
 				for (const auto& obj : objs) {
 					std::println("{}", obj.get().getName());
 				}

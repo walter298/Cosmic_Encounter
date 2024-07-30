@@ -4,23 +4,23 @@
 
 #include "Game.h"
 
-constexpr int DRAWN_COLOR_IDX = 4;
-constexpr int DESTINY_BACK_LAYER = 5;
+namespace {
+	constexpr int DRAWN_COLOR_LAYER = 4;
+	constexpr int DESTINY_BACK_LAYER = 5;
 
-static nv::Rect& chooseDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& colors, bool takingTurn) {
-	mainUi.textures[DRAWN_COLOR_IDX].clear();
+	nv::Rect& chooseDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& colors, bool takingTurn) {
+		Color drawnColor;
+		sock.read(drawnColor);
 
-	Color drawnColor;
-	sock.read(drawnColor);
+		auto colorRect = colors.at(drawnColor).second;
+		auto& colorBack = mainUi.findRef(mainUi.textureRefs[0], "destiny_back");
+		colorRect.setPos(colorBack.getPos());
+		colorRect.setSize(colorBack.getSize());
 
-	auto colorRect = colors.at(drawnColor).second;
-	auto& colorBack = mainUi.findRef(mainUi.textureRefs[0], "destiny_back");
-	colorRect.setPos(colorBack.getPos());
-	colorRect.setSize(colorBack.getSize());
-
-	auto& rects = mainUi.rects[DRAWN_COLOR_IDX];
-	rects.push_back(colorRect);
-	return rects.back();
+		auto& rects = mainUi.rects[DRAWN_COLOR_LAYER];
+		rects.push_back(colorRect);
+		return rects.back();
+	}
 }
 
 void showDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& colors, bool takingTurn) {

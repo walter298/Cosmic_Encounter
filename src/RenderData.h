@@ -4,7 +4,6 @@
 
 #include "Game.h"
 
-//todo: get rid of duplicate declarations
 using CardMap  = std::unordered_map<Card, nv::TextureObject>;
 using ColorMap = std::unordered_map<Color, std::pair<nv::TextureObject, nv::Rect>>;
 

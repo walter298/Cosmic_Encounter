@@ -21,9 +21,8 @@ namespace nv {
 		int borderThickness = 20;
 
 		Rect() = default;
-		Rect(SDL_Renderer* renderer);
-		Rect(int x, int y, int w, int h, Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a = 255);
-
+		Rect(SDL_Renderer* renderer, int x, int y, int w, int h, Uint8 r = 255, Uint8 g = 255, Uint8 b = 255, Uint8 a = 255);
+		
 		bool containsCoord(int mX, int mY) const noexcept;
 		bool containsCoord(SDL_Point p) const noexcept;
 

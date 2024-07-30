@@ -9,14 +9,10 @@ bool nv::Rect::isInRegion(const Coord& coord, int x, int y, int w, int h) noexce
 	return isInRegion(coord.x, coord.y, x, y, w, h);
 }
 
-nv::Rect::Rect(SDL_Renderer* renderer)
-	: renderer{ renderer }
+nv::Rect::Rect(SDL_Renderer* renderer, int x, int y, int w, int h, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
+	: renderer{ renderer }, rect{ x, y, w, h }, color{ r, g, b, a }
 {
 }
-
-nv::Rect::Rect(int x, int y, int w, int h, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-	: rect{ x, y, w, h }, color{ r, g, b, a }
-{}
 
 bool nv::Rect::containsCoord(int mx, int my) const noexcept {
 	return isInRegion(mx, my, rect.x, rect.y, rect.w, rect.h);
@@ -62,6 +58,8 @@ SDL_Point nv::Rect::getSize() const noexcept {
 }
 
 void nv::Rect::render() const noexcept {
+	assert(renderer != nullptr);
+
 	Uint8 r; Uint8 b; Uint8 g; Uint8 a;
 	SDL_GetRenderDrawColor(renderer, &r, &b, &g, &a);
 

@@ -102,6 +102,7 @@ template<std::integral Num>
 std::string toString(Num num) {
 	return std::to_string(num);
 }
+
 template<std::convertible_to<std::string> String>
 decltype(auto) toString(String&& str) { //no need to parse string
 	return std::forward<String>(str);
@@ -160,7 +161,7 @@ public:
 		m_data.clear();
 		writeMsg(m_data, std::forward<Args>(args)...);
 		asio::write(sock, asio::buffer(m_data));
-		std::println("Sent {}", m_data);
+		//std::println("Sent {}", m_data);
 	}
 
 	template<typename... Args>
@@ -193,7 +194,7 @@ public:
 	template<typename... Args>
 	void read(Args&... args) {
 		auto msg = m_inbox.read();
-		std::println("Parsing: {}", msg);
+		std::println("Entire Message: {}", msg);
 		readMsg(msg, args...);
 	}
 

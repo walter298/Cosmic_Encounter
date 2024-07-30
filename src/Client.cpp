@@ -39,10 +39,10 @@ void play() {
 	joinGame(instance.renderer, sock, texMap, fontMap);
 	
 	//join lobby
-	auto alienTexObjs = runLobby(sock, instance.renderer, texMap, fontMap);
+	auto gameRenderData = runLobby(sock, instance.renderer, texMap, fontMap);
 	
 	//show the game 
-	showGameOverview(sock, instance.renderer, texMap, fontMap);
+	showGameOverview(sock, instance.renderer, texMap, fontMap, gameRenderData);
 
 	networkingThread.join();
 }

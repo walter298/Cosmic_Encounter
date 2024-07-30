@@ -138,10 +138,12 @@ void host(size_t pCount, const tcp::endpoint& endpoint) {
 	//tell everyone the game is starting
 	broadcast(gameState.players, STARTING_GAME);
 
-	//give each player 8 cards
+	//send each player his or her 8 cards and the turn order
 	for (auto& player : gameState.players) {
 		gameState.deck.draw(player.hand, 8);
-		player.sock.send(player.hand);
+		player.sock.send(player.hand, gameState.players | views::transform([](const auto& player) {
+			return player.color;
+		}));
 	}
 
 	gameState.destinyDeck = loadDestinyDeck(gameState.players);
