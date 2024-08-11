@@ -13,7 +13,7 @@ namespace {
 		int m_alienX = 0;
 		static constexpr int ALIEN_Y = 500;
 	public:
-		void setPos(nv::TextureObject& alien) {
+		void setPos(nv::Texture& alien) {
 			alien.setPos(m_alienX, ALIEN_Y);
 			m_alienX += alien.getSize().x + 20;
 		}
@@ -79,14 +79,14 @@ namespace {
 	void loadColorData(AlienPositionSetter& alienPosSetter, nv::Scene& lobby, 
 		PlayerRenderData pRenderInfo, ColorMap& colorMap) 
 	{
-		nv::TextureObject alien{
+		nv::Texture alien{
 			lobby.renderer,
 			nv::parseFile(nv::relativePath(getAlienTexPath(pRenderInfo.alien))),
 			lobby.texMap
 		};
 		alienPosSetter.setPos(alien);
 		colorMap[pRenderInfo.color] = { alien, getColorRect(lobby.renderer, pRenderInfo.color) };
-		lobby.textures[0].push_back(std::move(alien));
+		lobby.addObject(std::move(alien), 1);
 	}
 
 	bool checkForLobbyUpdate(nv::Scene& lobby, AlienPositionSetter& alienPosSetter,
@@ -132,7 +132,7 @@ GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& te
 	asio::co_spawn(sock.getExecutor(), readServerUpdates(sock, pCount, pRenderInfoV, mutex, gameStarting), asio::detached);
 
 	//periodically check server updates
-	lobby.eventHandler.addPeriodicEvent([&, alienJoinCount = size_t{}]() mutable {
+	lobby.addEvent([&, alienJoinCount = size_t{}]() mutable {
 		if (gameStarting.load()) {
 			lobby.running = false;
 		} else {

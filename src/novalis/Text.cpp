@@ -8,7 +8,7 @@ nv::FontRAII nv::loadFont(std::string_view fontPath, int fontSize) {
 
 void nv::Text::changeText(std::string_view newText) noexcept {
 	m_str = newText;
-	auto surface = TTF_RenderText_Solid(m_font, newText.data(), { 0, 0, 0, 255 });
+	auto surface = TTF_RenderText_Solid(m_font, m_str.data(), { 0, 0, 0, 255 });
 	if (surface == nullptr) {
 		m_ren.setSize(0, 0);
 		return;
@@ -90,6 +90,10 @@ bool nv::Text::containsCoord(int x, int y) const noexcept {
 
 bool nv::Text::containsCoord(SDL_Point p) const noexcept {
 	return containsCoord(p.x, p.y);
+}
+
+void nv::Text::setOpacity(uint8_t a) noexcept {
+	color.a = a;
 }
 
 void nv::Text::render() const noexcept {

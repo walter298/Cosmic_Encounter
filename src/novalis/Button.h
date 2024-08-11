@@ -2,13 +2,18 @@
 #define BUTTON_H
 
 #include "Event.h"
-#include "ID.h"
 #include "Rect.h"
 #include "Text.h"
 
 namespace nv {
+	struct ExternalRect {};
+	constexpr inline ExternalRect usingExternalRect;
+
 	class Button {
 	private:
+		Rect m_rect;
+		std::reference_wrapper<const Rect> m_rectRef;
+
 		Event<> m_onClicked;
 		Event<> m_onHovered;
 		Event<> m_onUnhovered;
@@ -21,12 +26,11 @@ namespace nv {
 		bool m_leftReleased = false;
 		bool m_rightReleased = false;
 		bool m_middleReleased = false;
-
-		Rect m_rect;
 	public:
 		Button(const Rect& rect, Event<>&& onClicked, Event<> onHovered, Event<>&& onUnhovered) noexcept;
+		Button(ExternalRect, const Rect& rect, Event<>&& onClicked, Event<> onHovered, Event<>&& onUnhovered) noexcept;
 
-		void operator()(const MouseData& mouseBtnData);
+		void operator()(MouseData mouseBtnData);
 	};
 }
 

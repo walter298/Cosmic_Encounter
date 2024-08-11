@@ -1,8 +1,102 @@
 #include "Scene.h"
 
-#include <thread>
+#include <thread> //sleep for framerate
 
-nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMap& texMap, FontMap& fontMap) 
+void nv::Scene::render() {
+	for (const auto& [layer, objLayer] : m_objectLayers) {
+		forEachDataMember([](const auto& objs) {
+			for (const auto& obj : objs) {
+				unrefwrap(obj).render();
+			}
+			return STAY_IN_LOOP;
+		}, objLayer);
+	}
+}
+
+void nv::Scene::selectTextInput() {
+	auto editedTexIt = ranges::find_if(m_textInputs, [this](const auto& textInput) {
+		return textInput.first.getRect().containsCoord(m_mouseData.x, m_mouseData.y);
+	});
+	if (editedTexIt == m_textInputs.end()) {
+		m_currEditedTextInput = nullptr;
+	} else {
+		m_currEditedTextInput = &(editedTexIt->first);
+	}
+}
+
+void nv::Scene::executeEvents() {
+	auto runEvents = [](auto& events, const auto&... inputs) {
+		for (auto& [evt, ID] : events) {
+			evt(inputs...);
+		}
+	};
+	
+	runEvents(std::get<0>(m_callableEvents));
+
+	int deltaX = 0;
+	int deltaY = 0;
+
+	auto setMouseState = [this](Uint8 btn, MouseButtonState newState) {
+		switch (btn) {
+		case SDL_BUTTON_LEFT:
+			m_mouseData.left = newState;
+			break;
+		case SDL_BUTTON_MIDDLE:
+			m_mouseData.mid = newState;
+			break;
+		case SDL_BUTTON_RIGHT:
+			m_mouseData.right = newState;
+			break;
+		}
+	};
+
+	bool textEditing = false;
+
+	while (SDL_PollEvent(&m_SDLEvt)) {
+		switch (m_SDLEvt.type) {
+		case SDL_QUIT:
+			running = false;
+			break;
+		case SDL_MOUSEBUTTONDOWN:
+			setMouseState(m_SDLEvt.button.button, MouseButtonState::Down);
+			break;
+		case SDL_MOUSEBUTTONUP:
+			setMouseState(m_SDLEvt.button.button, MouseButtonState::Released);
+			selectTextInput();
+			break;
+		case SDL_MOUSEMOTION:
+			m_mouseData.x = m_SDLEvt.button.x;
+			m_mouseData.y = m_SDLEvt.button.y;
+			deltaX = m_SDLEvt.motion.x;
+			deltaY = m_SDLEvt.motion.y;
+			break;
+		case SDL_TEXTINPUT:
+			m_textInputBuff = m_SDLEvt.text.text;
+			textEditing = true;
+			break;
+		}
+	}
+	m_mouseData.deltaX = deltaX;
+	m_mouseData.deltaY = deltaY;
+	runEvents(std::get<Events<MouseEvent>>(m_callableEvents), m_mouseData);
+
+	//text editing
+	if (m_currEditedTextInput == nullptr) {
+		return;
+	}
+	if (m_keystate[SDL_SCANCODE_BACKSPACE]) {
+		m_currEditedTextInput->pop();
+	} else if (!m_textInputBuff.empty() && textEditing) {
+		m_currEditedTextInput->append(m_textInputBuff);
+	}
+}
+
+namespace {
+	template<typename Range>
+	struct ContainsReferenceWrappers : public nv::IsReferenceWrapper<typename Range::value_type> {};
+}
+
+nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMap& texMap, FontMap& fontMap)
 	: renderer{ renderer }, texMap{texMap}, fontMap{ fontMap }
 {
 	std::ifstream sceneFile{ absFilePath.data() };
@@ -10,42 +104,43 @@ nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMa
 
 	auto sceneJson = json::parse(sceneFile);
 
-	auto loadObjects = [&, this](const json& objLayersRoot, std::invocable<int, const json&> auto forEachObj) {
-		for (const auto& objLayer : objLayersRoot) {
-			int layer = objLayer["layer"].get<int>();
-
-			for (const auto& objJson : objLayer["objects"]) {
-				forEachObj(layer, objJson);
-			}
+	auto loadObjectLayer = [&, this](const json& objsJson, auto& objs, auto&... args) {
+		objs.reserve(objsJson.size());
+		std::println("Reserving {} {}s", objsJson.size(), typeid(ValueType<decltype(objs)>).name());
+		for (const auto& objJson : objsJson) {
+			objs.emplace_back(renderer, objJson, args...);
 		}
 	};
 
-	//load sprites
-	loadObjects(sceneJson["sprites"], [&, this](int layer, const json& objJson) {
-		sprites[layer].emplace_back(renderer, objJson, texMap);
-	});
-	//load texture objects
-	loadObjects(sceneJson["texture_objects"], [&, this](int layer, const json& objJson) {
-		textures[layer].emplace_back(renderer, objJson, texMap);
-	});
-	//load text
-	loadObjects(sceneJson["text"], [&, this](int layer, const json& objJson) {
-		text[layer].emplace_back(renderer, objJson, fontMap);
-	});
-	//load rects
-	loadObjects(sceneJson["rects"], [&, this](int layer, const json& objJson) {
-		auto rect = objJson.get<Rect>();
-		rect.renderer = renderer;
-		rects[layer].push_back(std::move(rect));
-	});
-	
+	auto loadObjectLayers = [&, this](const json& objsJson, int layer) {
+		auto& sprites  = std::get<0>(m_objectLayers[layer]);
+		auto& textures = std::get<1>(m_objectLayers[layer]);
+		auto& text     = std::get<2>(m_objectLayers[layer]);
+		auto& rects    = std::get<3>(m_objectLayers[layer]);
+
+		loadObjectLayer(objsJson.at(typeid(Sprite).name()), sprites, texMap);
+		loadObjectLayer(objsJson.at(typeid(Texture).name()), textures, texMap);
+		loadObjectLayer(objsJson.at(typeid(Text).name()), text, fontMap);
+		loadObjectLayer(objsJson.at(typeid(Rect).name()), rects);
+	};
+
+	auto& objectLayersJson = sceneJson["objects"];
+	for (auto& jsonLayer : objectLayersJson) {
+		int layer = jsonLayer["layer"].get<int>();
+		loadObjectLayers(jsonLayer, layer);
+	}
+
 	sceneFile.close();
+}
+
+nv::ID nv::Scene::addTextInput(nv::TextInput&& textInput) {
+	ID id;
+	m_textInputs.emplace_back(std::move(textInput), id);
+	return id;
 }
 
 void nv::Scene::operator()() {
 	running = true;
-
-	eventHandler.addQuitEvent([this] { running = false; });
 
 	constexpr auto FPS = 180;
 	constexpr auto waitTime = 1000ms / FPS;
@@ -53,38 +148,43 @@ void nv::Scene::operator()() {
 	while (running) {
 		auto endTime = std::chrono::system_clock::now() + waitTime;
 
-		eventHandler();
+		executeEvents();
 		
 		const auto now = std::chrono::system_clock::now();
 		if (now < endTime) {
 			std::this_thread::sleep_for(endTime - now);
 		}
 		SDL_RenderClear(renderer);
-		renderCopy(textures, sprites, rects, text);
-		renderCopyRefs(textureRefs, spriteRefs, rectRefs, textRefs);
+		render();
 		SDL_RenderPresent(renderer);
 	}
 }
 
 void nv::Scene::overlay(Scene& scene) {
-	auto overlayImpl = [this](auto& thisObjLayers, auto& otherObjLayers) {
-		for (auto [idx, objLayer] : views::enumerate(otherObjLayers)) {
-			auto intIdx = static_cast<int>(idx);
-			auto refView = ranges::transform_view(otherObjLayers.at(intIdx), [](auto& obj) {
+	/*you can't overlay an already overlayed scene on another scene as 
+	references don't get pushed*/
+	auto overlayImpl = [](auto& thisObjectLayer, auto& otherObjectLayer) {
+		forEachDataMember([](auto& thisObjects, auto& otherObjects) { 
+			auto refView = ranges::transform_view(otherObjects, [](auto& obj) {
 				return std::ref(obj);
 			});
-			thisObjLayers[static_cast<int>(intIdx)].append_range(refView);
-		}
+			thisObjects.append_range(refView);
+			return STAY_IN_LOOP; 
+		}, thisObjectLayer, otherObjectLayer);
 	};
-	overlayImpl(spriteRefs, scene.sprites);
-	overlayImpl(textureRefs, scene.textures);
-	overlayImpl(textRefs, scene.text);
-	overlayImpl(rectRefs, scene.rects);
+
+	for (auto& [layer, otherObjectLayer] : scene.m_objectLayers) {
+		auto objRefs = filterDataMembers<ContainsReferenceWrappers>(m_objectLayers[layer]);
+		overlayImpl(objRefs, otherObjectLayer);
+	}
 }
 
 void nv::Scene::deoverlay() {
-	spriteRefs.clear();
-	textureRefs.clear();
-	textRefs.clear();
-	rectRefs.clear();
+	for (auto& [layer, objLayer] : m_objectLayers) {
+		auto objRefs = filterDataMembers<ContainsReferenceWrappers>(m_objectLayers[layer]);
+		forEachDataMember([](auto& objs) {
+			objs.clear();
+			return STAY_IN_LOOP;
+		}, objRefs);
+	}
 }

@@ -1,64 +1,9 @@
 {
-  "rects": [
+  "objects": [
     {
-      "layer": 0,
-      "objects": [
-        {
-          "color": [
-            255,
-            255,
-            255,
-            255
-          ],
-          "name": "name",
-          "sdl_rect": [
-            904,
-            66,
-            800,
-            70
-          ]
-        }
-      ]
-    }
-  ],
-  "sprites": [
-    {
-      "layer": 0,
-      "objects": []
-    }
-  ],
-  "text": [
-    {
-      "layer": 0,
-      "objects": [
-        {
-          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
-          "font_size": 45,
-          "name": "name",
-          "ren": {
-            "color": [
-              255,
-              255,
-              255,
-              255
-            ],
-            "name": "",
-            "sdl_rect": [
-              952,
-              76,
-              706,
-              51
-            ]
-          },
-          "value": "Waiting for host to start the game..."
-        }
-      ]
-    }
-  ],
-  "texture_objects": [
-    {
-      "layer": 0,
-      "objects": [
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
         {
           "name": "lobby_space",
           "texture_object_data": [
@@ -71,10 +16,10 @@
               ],
               "name": "",
               "sdl_rect": [
-                -209,
-                -160,
-                3000,
-                2000
+                -16,
+                -17,
+                2700,
+                1700
               ]
             },
             {
@@ -86,10 +31,10 @@
               ],
               "name": "",
               "sdl_rect": [
-                -209,
-                -160,
-                3000,
-                2000
+                -16,
+                -17,
+                2700,
+                1700
               ]
             },
             [
@@ -101,7 +46,16 @@
           ],
           "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\lobby_space.png"
         }
-      ]
+      ],
+      "layer": 0,
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [],
+      "layer": 1,
+      "struct nv::Rect": []
     }
   ]
 }

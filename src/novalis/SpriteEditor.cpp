@@ -6,7 +6,27 @@
 
 using nv::editor::SpriteEditor;
 
-void nv::editor::SpriteEditor::open(SDL_Renderer* renderer) {
+void SpriteEditor::reduceOpacityOfOtherLayers() {
+	auto reduceOpacityImpl = [](auto&& objLayers) {
+		for (auto& [layer, objLayer] : objLayers) {
+			for (auto& editedObj : objLayer) {
+				editedObj.obj.setOpacity(100);
+			}
+		}
+	};
+
+	auto visibleLayerIt = m_texLayers.find(m_currLayer); //call find to get iterator
+	for (auto& editedObj : visibleLayerIt->second) {
+		editedObj.obj.setOpacity(255);
+	}
+
+	auto beforeVisibleLayer = ranges::subrange(m_texLayers.begin(), visibleLayerIt);
+	auto afterVisibleLayer = ranges::subrange(std::next(visibleLayerIt), m_texLayers.end());
+	reduceOpacityImpl(beforeVisibleLayer);
+	reduceOpacityImpl(afterVisibleLayer);
+}
+
+void SpriteEditor::open(SDL_Renderer* renderer) {
 	auto filePath = openFilePath();
 	if (filePath) {
 		try {
@@ -114,7 +134,8 @@ void SpriteEditor::showSpriteOptions(SDL_Renderer* renderer) {
 
 	//select layer
 	if (ImGui::InputInt("Layer", &m_currLayer)) {
-		makeOneLayerMoreVisible(m_texLayers, m_currLayer, 100);
+		auto tupleWrapper = std::tie(m_texLayers);
+		//makeOneLayerMoreVisible(std::tie(m_texLayers), m_currLayer, 100);
 	}
 
 	//insert textures
@@ -171,5 +192,9 @@ nv::editor::EditorDest SpriteEditor::imguiRender() {
 }
 
 void nv::editor::SpriteEditor::sdlRender() const noexcept {
-	renderCopy(m_texLayers);
+	for (const auto& [layer, textures] : m_texLayers) {
+		for (const auto& editedTex : textures) {
+			editedTex.obj.render();
+		}
+	}
 }

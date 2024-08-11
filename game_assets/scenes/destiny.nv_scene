@@ -1,100 +1,9 @@
 {
-  "rects": [
+  "objects": [
     {
-      "layer": 0,
-      "objects": [
-        {
-          "color": [
-            255,
-            255,
-            255,
-            255
-          ],
-          "name": "name",
-          "sdl_rect": [
-            947,
-            726,
-            200,
-            100
-          ]
-        },
-        {
-          "color": [
-            255,
-            255,
-            255,
-            255
-          ],
-          "name": "name",
-          "sdl_rect": [
-            1227,
-            725,
-            300,
-            100
-          ]
-        }
-      ]
-    }
-  ],
-  "sprites": [
-    {
-      "layer": 0,
-      "objects": []
-    }
-  ],
-  "text": [
-    {
-      "layer": 0,
-      "objects": [
-        {
-          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
-          "font_size": 45,
-          "name": "name",
-          "ren": {
-            "color": [
-              255,
-              255,
-              255,
-              255
-            ],
-            "name": "",
-            "sdl_rect": [
-              965,
-              750,
-              165,
-              51
-            ]
-          },
-          "value": "Accept?"
-        },
-        {
-          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
-          "font_size": 45,
-          "name": "name",
-          "ren": {
-            "color": [
-              255,
-              255,
-              255,
-              255
-            ],
-            "name": "",
-            "sdl_rect": [
-              1241,
-              752,
-              276,
-              51
-            ]
-          },
-          "value": "Keep drawing"
-        }
-      ]
-    }
-  ],
-  "texture_objects": [
-    {
-      "layer": 0,
-      "objects": [
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
         {
           "name": "destiny_back",
           "texture_object_data": [
@@ -107,8 +16,8 @@
               ],
               "name": "",
               "sdl_rect": [
-                944,
-                453,
+                1176,
+                607,
                 200,
                 200
               ]
@@ -120,10 +29,10 @@
                 255,
                 255
               ],
-              "name": "destiny_back",
+              "name": "",
               "sdl_rect": [
-                944,
-                453,
+                1176,
+                607,
                 200,
                 200
               ]
@@ -137,7 +46,9 @@
           ],
           "texture_path": "Cosmic_Encounter\\game_assets\\images\\cards\\card_backs\\destiny_back.png"
         }
-      ]
+      ],
+      "layer": 0,
+      "struct nv::Rect": []
     }
   ]
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <functional>
 #include <string_view>
 #include <unordered_map>
 #include <variant>
@@ -26,17 +27,17 @@ namespace nv {
 		SDL_RendererFlip flip = SDL_FLIP_NONE;
 	};
 
-	class TextureObject : public NamedObject {
+	class Texture : public NamedObject {
 	private:
 		SDL_Renderer* m_renderer;
 		std::variant<SharedTexture, SDL_Texture*> m_texVariant;
 		SDL_Texture* m_tex = nullptr;
 		std::shared_ptr<const std::string> m_texPath = nullptr;
 	public:
-		TextureObject() = default;
-		TextureObject(SDL_Renderer* renderer, std::string_view texPath, SharedTexture texPtr, TextureData texData);
-		TextureObject(SDL_Renderer* renderer, std::string_view texPath, SDL_Texture* rawTex, TextureData texData);
-		TextureObject(SDL_Renderer* renderer, const json& json, TextureMap& texMap);
+		Texture() = default;
+		Texture(SDL_Renderer* renderer, std::string_view texPath, SharedTexture texPtr, TextureData texData);
+		Texture(SDL_Renderer* renderer, std::string_view texPath, SDL_Texture* rawTex, TextureData texData);
+		Texture(SDL_Renderer* renderer, const json& json, TextureMap& texMap);
 		
 		const std::string& getTexPath() const noexcept;
 
@@ -70,4 +71,6 @@ namespace nv {
 
 		void save(json& json) const;
 	};
+
+	using TextureRef = std::reference_wrapper<Texture>;
 }

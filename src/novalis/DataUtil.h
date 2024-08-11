@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <ranges> //viewable_range
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <vector>
 
@@ -86,7 +87,7 @@ namespace nv {
 	const std::string& workingDirectory();
 
 	//returns the path relative to the working directory
-	std::string relativePath(std::string_view relativePath);
+	const std::string& relativePath(std::string_view relativePath);
 
 	std::optional<std::string> fileExtension(const std::string& fileName);
 	std::string_view fileName(std::string_view filePath);
@@ -117,13 +118,8 @@ namespace boost {
 }
 
 namespace nv {
-	struct Coord {
-		int x = 0;
-		int y = 0;
-	};
-
 	template<typename Object>
-	concept RenderObject = requires(Object obj) {
+	concept RenderObject = requires(Object& obj) {
 		obj.move(1, -1);
 		obj.move(SDL_Point{});
 		obj.scale(1, -1);
@@ -150,9 +146,12 @@ namespace nv {
 	template<typename Range>
 	concept RenderObjectRange = ranges::viewable_range<Range> && RenderObject<typename Range::value_type>;
 
+	template<typename... Ts>
+	using ObjectLayers = boost_con::flat_map<int, std::tuple<std::vector<Ts>...>>;
+
 	//get that works with tuples AND aggregates
 	template<size_t Idx, typename T>
-	constexpr decltype(auto) get(T&& t) {
+	constexpr decltype(auto) powerGet(T&& t) {
 		if constexpr (std::is_aggregate_v<std::remove_cvref_t<T>>) {
 			return pfr::get<Idx>(std::forward<T>(t)); //aggregate case
 		} else {
@@ -161,25 +160,25 @@ namespace nv {
 	}
 	
 	namespace detail {
-		template<size_t Idx, typename T>
-		struct GetType {
-			using Plain = std::remove_cvref_t<T>;
-			using type = std::conditional_t< 
-				std::is_aggregate_v<Plain>,
-				pfr::tuple_element_t<Idx, Plain>,
-				std::tuple_element_t<Idx, Plain>
-			>;
+		template<bool B, size_t Idx, typename T>
+		struct GetTypeImpl {
+			using type = std::tuple_element_t<Idx, std::remove_cvref_t<T>>;
+		};
+
+		template<size_t Idx, Aggregate T>
+		struct GetTypeImpl<true, Idx, T> {
+			using type = pfr::tuple_element_t<Idx, std::remove_cvref_t<T>>;
 		};
 	}
-	//tuple_element_t that works with tuples and aggregates
+
 	template<size_t Idx, typename T>
-	using GetType = typename detail::GetType<Idx, T>::type;
+	using GetType = typename detail::GetTypeImpl<std::is_aggregate_v<std::remove_cvref<T>>, Idx, T>::type;
 
 	//tuple_size_v that works with tuples and aggregates
 	template<typename T>
 	consteval size_t memberCount() {
 		using Plain = std::remove_cvref_t<T>;
-		if constexpr (std::is_aggregate_v<std::remove_cvref_t<T>>) {
+		if constexpr (std::is_aggregate_v<Plain>) {
 			return pfr::tuple_size_v<Plain>; //aggregate case
 		} else {
 			return std::tuple_size_v<Plain>; //tuple case
@@ -201,7 +200,7 @@ namespace nv {
 	namespace detail {
 		template<size_t MemberIdx, typename Func, typename TiedStructs, size_t... StructIdxs>
 		constexpr bool iterateStructMembers(Func f, TiedStructs tiedStructs, std::index_sequence<StructIdxs...>) {
-			auto tiedMembers = std::tie(get<MemberIdx>(get<StructIdxs>(std::forward<TiedStructs>(tiedStructs)))...);
+			auto tiedMembers = std::tie(powerGet<MemberIdx>(powerGet<StructIdxs>(std::forward<TiedStructs>(tiedStructs)))...);
 			return std::apply(f, tiedMembers);
 		}
 
@@ -212,7 +211,7 @@ namespace nv {
 	}
 
 	template<typename Func, typename FirstStruct, typename... Structs> //FirstStruct param lets us extract member count of each tuple (assumes all tuples have same count of members)
-	constexpr bool iterateStructs(Func f, FirstStruct& firstStruct, Structs&... structs) {
+	constexpr bool forEachDataMember(Func f, FirstStruct& firstStruct, Structs&... structs) {
 		return detail::iterateStructsImpl(f, std::tie(firstStruct, structs...), std::make_index_sequence<memberCount<FirstStruct>()>());
 	}
 
@@ -306,6 +305,127 @@ namespace nv {
 	);
 
 	json parseJson(const std::string& path);
+
+	template<typename Value, typename... Keys>
+	class TypeMap {
+	private:
+		std::array<Value, sizeof...(Keys)> m_values;
+
+		template<typename KeyTarget, size_t I, typename IthKey, typename... OtherKeys>
+		static consteval size_t getTypeIndex() {
+			if constexpr (std::same_as<KeyTarget, IthKey>) {
+				return I;
+			} else {
+				return getTypeIndex<KeyTarget, I + 1, OtherKeys...>();
+			}
+		}
+	public:
+		constexpr TypeMap() {
+			ranges::fill(m_values, Value{});
+		}
+		template<std::same_as<Value>... Values>
+		constexpr TypeMap(Values&&... values) requires(sizeof...(Values) > 0)
+			: m_values{ std::forward<Values>(values)... } 
+		{
+		}
+
+		template<typename Key>
+		constexpr decltype(auto) get(this auto&& self) noexcept {
+			static constexpr auto typeIdx = getTypeIndex<Key, 0, Keys...>();
+			return self.m_values[typeIdx];
+		}
+	};
+
+	namespace detail {
+		template<size_t TypeIdx, bool Negation, template<typename> typename Pred, typename FilteredTuple, typename Tuple>
+		constexpr auto filterDataMembersImpl(FilteredTuple filteredTuple, Tuple& tuple) {
+			if constexpr (TypeIdx == memberCount<Tuple>()) {
+				return filteredTuple;
+			} else if constexpr (!Negation && Pred<GetType<TypeIdx, Tuple>>::value) {
+				return filterDataMembersImpl<TypeIdx + 1, Negation, Pred>(
+					std::tuple_cat(filteredTuple, std::tie(powerGet<TypeIdx>(tuple))), tuple
+				);
+			} else if constexpr (Negation && !Pred<GetType<TypeIdx, Tuple>>::value) {
+				return filterDataMembersImpl<TypeIdx + 1, Negation, Pred>(
+					std::tuple_cat(filteredTuple, std::tie(powerGet<TypeIdx>(tuple))), tuple
+				);
+			} else {
+				return filterDataMembersImpl<TypeIdx + 1, Negation, Pred>(filteredTuple, tuple);
+			}
+		}
+	}
+
+	template<template<typename> typename Pred, bool Negation = false, typename T>
+	constexpr auto filterDataMembers(T& t) {
+		return detail::filterDataMembersImpl<0, Negation, Pred>(std::tuple{}, t);
+	}
+
+	template<typename Member, typename Transform, typename WhenFound, typename Pred, typename Tuple>
+	constexpr void findMember(Transform getMember, WhenFound whenFound, Pred pred, Tuple& tuple) {
+		forEachDataMember([&](auto& obj) {
+			if constexpr (pred(obj)) {
+				whenFound(obj);
+				return BREAK_FROM_LOOP;
+			} else {
+				return STAY_IN_LOOP;
+			}
+		}, tuple);
+	}
+
+	namespace detail {
+		template<typename Comp, typename Transform, typename WhenFound, typename FirstArg, typename SecondArg, typename... Args>
+		void findCompImpl(Comp comp, Transform transform, WhenFound whenFound, FirstArg& first, SecondArg& second, Args&... args) {
+			using ComparedType = decltype(std::invoke(transform, first));
+
+			auto v1 = std::invoke(transform, first);
+			auto v2 = std::invoke(transform, second);
+
+			auto cont = [&](auto& bigger) {
+				if constexpr (sizeof...(Args) == 0) {
+					std::invoke(whenFound, bigger);
+				} else {
+					findCompImpl(comp, transform, whenFound, bigger, args...);
+				}
+			};
+			if (v1 > v2) {
+				cont(first);
+			} else {
+				cont(second);
+			}
+		}
+	}
+
+	template<typename Transform, typename WhenFound, typename FirstArg, typename SecondArg, typename... Args>
+	void findMin(Transform transform, WhenFound whenFound, FirstArg& first, SecondArg& second, Args&... args) {
+		auto comp = [](const auto& x, const auto& y) { return x < y; };
+		detail::findCompImpl(comp, transform, whenFound, first, second, args...);
+	}
+	template<typename Transform, typename WhenFound, typename FirstArg, typename SecondArg, typename... Args>
+	void findMax(Transform transform, WhenFound whenFound, FirstArg& first, SecondArg& second, Args&... args) {
+		auto comp = [](const auto& x, const auto& y) { return x > y; };
+		detail::findCompImpl(comp, transform, whenFound, first, second, args...);
+	}
+
+	template<typename T>
+	struct IsReferenceWrapper : public std::false_type {};
+
+	template<typename T>
+	struct IsReferenceWrapper<std::reference_wrapper<T>> : public std::true_type {};
+
+	template<typename T>
+	auto& unrefwrap(T& t) {
+		if constexpr (IsReferenceWrapper<std::remove_cvref_t<T>>::value) {
+			return t.get();
+		} else {
+			return t;
+		}
+	}
+
+	template<typename Range>
+	using ValueType = typename std::remove_cvref_t<Range>::value_type;
+
+	std::string& convertFullToRegularPath(std::string& path);
+	std::string convertFullToRegularPath(std::string_view path);
 };
 
 #endif

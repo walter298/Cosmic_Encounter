@@ -1,5 +1,7 @@
 #include "Instance.h"
 
+#include "DataUtil.h"
+
 #include <print>
 
 #include <SDL2/SDL_image.h>
@@ -48,6 +50,8 @@ nv::Instance::Instance(std::string_view windowTitle) noexcept {
 	constexpr int WIDTH_ANCHOR = 2560;
 	constexpr int HEIGHT_ANCHOR = 1440;
 	SDL_RenderSetLogicalSize(renderer, WIDTH_ANCHOR, HEIGHT_ANCHOR);
+
+	workingDirectory(); //initialize local static inside workingDirectory
 }
 
 nv::Instance::~Instance() noexcept {

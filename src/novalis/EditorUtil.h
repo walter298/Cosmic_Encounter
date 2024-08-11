@@ -17,8 +17,6 @@
 #include <imgui_impl_sdlrenderer2.h>
 #include <imgui_stdlib.h>
 
-#include "Renderer.h"
-#include "ID.h"
 #include "Text.h"
 
 namespace nv {
@@ -151,15 +149,22 @@ namespace nv {
 		};
 
 		template<RenderObject Object>
-		struct SelectedObjectData {
-			EditedObjectData<Object>* obj                   = nullptr;
-			std::vector<EditedObjectData<Object>>* objLayer = nullptr;
-			std::vector<EditedObjectData<Object>>::iterator it;
+		using EditedObjectVector = std::vector<EditedObjectData<Object>>;
 
-			void resetToLastElement(std::vector<EditedObjectData<Object>>* newObjLayer) {
+		template<RenderObject Object>
+		struct SelectedObjectData {
+			EditedObjectData<Object>* obj        = nullptr;
+			EditedObjectVector<Object>* objLayer = nullptr;
+			EditedObjectVector<Object>::iterator it;
+
+			void resetToLastElement(EditedObjectVector<Object>* newObjLayer) {
 				obj      = &newObjLayer->back();
 				objLayer = newObjLayer;
 				it       = std::prev(std::end(*newObjLayer));
+			}
+			void reset() {
+				obj      = nullptr;
+				objLayer = nullptr;
 			}
 		};
 
@@ -235,66 +240,16 @@ namespace nv {
 			}
 		}
 
-		template<RenderObject Object>
-		void makeOneLayerMoreVisible(Layers<EditedObjectData<Object>>& objLayers, int visibleLayer, Uint8 reducedOpacity) {
-			auto reduceOpacity = [&](auto range) {
-				for (auto& [layer, objLayer] : range) {
-					for (auto& editedObj : objLayer) {
-						editedObj.obj.setOpacity(reducedOpacity);
+		template<typename ObjectLayers>
+		void cameraMoveEditedObjects(int dx, int dy, ObjectLayers& objLayers) {
+			for (auto& [layer, objectLayer] : objLayers) {
+				forEachDataMember([&](auto& objs) {
+					for (auto& editedObj : objs) {
+						editedObj.obj.move(dx, dy);
 					}
-				}
-			};
-			
-			//set to full opacity in case it was already reduced before we called this function
-			for (auto& editedObj : objLayers[visibleLayer]) {
-				editedObj.obj.setOpacity(255);
+					return STAY_IN_LOOP;
+				}, objectLayer);
 			}
-
-			auto visibleLayerIt = objLayers.find(visibleLayer);
-			auto beforeVisibleLayer = ranges::subrange(objLayers.begin(), visibleLayerIt);
-			auto afterVisibleLayer = ranges::subrange(std::next(visibleLayerIt), objLayers.end());
-			reduceOpacity(beforeVisibleLayer);
-			reduceOpacity(afterVisibleLayer);
-		}
-		
-		template<RenderObject... Objects>
-		void renderCopy(const Layers<EditedObjectData<Objects>>&... objLayers) {
-			auto renderImpl = [&](const auto& layers) {
-				for (const auto& [layer, objLayer] : layers) {
-					for (const auto& editedObj : objLayer) {
-						editedObj.obj.render();
-					}
-				}
-			};
-			((renderImpl(objLayers)), ...);
-		}
-
-		template<RenderObject Object>
-		void saveObjects(const Layers<EditedObjectData<Object>>& objLayers, json& objLayersRoot) {
-			for (const auto& [layer, objs] : objLayers) {
-				auto& newLayerJson = objLayersRoot.emplace_back();
-				newLayerJson["layer"] = layer;
-				
-				auto& objsJson = newLayerJson["objects"];
-				objsJson = json::array();
-				for (const auto& editedObj : objs) {
-					auto& objJson = objsJson.emplace_back();
-					editedObj.obj.save(objJson);
-					objJson["name"] = editedObj.name;
-				}
-			}
-		}
-
-		template<RenderObject... Objects>
-		void cameraMove(int dx, int dy, Layers<EditedObjectData<Objects>>&... objLayers) {
-			auto moveImpl = [&](auto& layers) {
-				for (auto& [layer, objLayer] : layers) {
-					for (auto& objData : objLayer) {
-						objData.obj.move(dx, dy);
-					}
-				}
-			};
-			((moveImpl(objLayers)), ...);
 		}
 	}
 }

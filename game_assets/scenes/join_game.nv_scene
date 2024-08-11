@@ -1,66 +1,111 @@
 {
-  "rects": [
+  "objects": [
     {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
+        {
+          "name": "join_game_space",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -130,
+                -233,
+                2700,
+                1920
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -130,
+                -233,
+                2700,
+                1920
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\join_game_space.png"
+        }
+      ],
       "layer": 0,
-      "objects": [
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [],
+      "layer": 1,
+      "struct nv::Rect": [
         {
           "color": [
             255,
             255,
             255,
-            255
-          ],
-          "name": "port_input_rect",
-          "sdl_rect": [
-            1001,
-            647,
-            500,
-            50
-          ]
-        },
-        {
-          "color": [
-            255,
-            255,
-            255,
-            255
-          ],
-          "name": "ip_address_input_rect",
-          "sdl_rect": [
-            1000,
-            394,
-            500,
-            50
-          ]
-        },
-        {
-          "color": [
-            255,
-            255,
-            255,
-            255
+            100
           ],
           "name": "join_button_rect",
           "sdl_rect": [
-            993,
-            863,
-            520,
+            920,
+            1166,
+            600,
+            80
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
             100
+          ],
+          "name": "ip_address_input_rect",
+          "sdl_rect": [
+            965,
+            432,
+            500,
+            80
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            100
+          ],
+          "name": "port_input_rect",
+          "sdl_rect": [
+            967,
+            870,
+            500,
+            80
           ]
         }
       ]
-    }
-  ],
-  "sprites": [
+    },
     {
-      "layer": 0,
-      "objects": []
-    }
-  ],
-  "text": [
-    {
-      "layer": 0,
-      "objects": [
+      "class nv::Sprite": [],
+      "class nv::Text": [
         {
           "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
@@ -72,14 +117,15 @@
               255,
               255
             ],
+            "name": "",
             "sdl_rect": [
-              1066,
-              331,
-              375,
+              1101,
+              363,
+              219,
               51
             ]
           },
-          "value": "Host IPv4 Address"
+          "value": "IP Address"
         },
         {
           "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
@@ -92,34 +138,15 @@
               255,
               255
             ],
+            "name": "",
             "sdl_rect": [
-              1152,
-              592,
-              190,
+              1164,
+              810,
+              83,
               51
             ]
           },
-          "value": "Host Port"
-        },
-        {
-          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
-          "font_size": 45,
-          "name": "join",
-          "ren": {
-            "color": [
-              255,
-              255,
-              255,
-              255
-            ],
-            "sdl_rect": [
-              999,
-              888,
-              501,
-              51
-            ]
-          },
-          "value": "Join the Galactic Conflict"
+          "value": "Port"
         },
         {
           "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
@@ -132,11 +159,12 @@
               255,
               255
             ],
+            "name": "",
             "sdl_rect": [
-              1001,
-              647,
-              501,
-              51
+              979,
+              883,
+              0,
+              0
             ]
           },
           "value": ""
@@ -152,63 +180,62 @@
               255,
               255
             ],
+            "name": "",
             "sdl_rect": [
-              1000,
-              394,
-              501,
-              51
+              978,
+              446,
+              0,
+              0
             ]
           },
           "value": ""
-        }
-      ]
-    }
-  ],
-  "texture_objects": [
-    {
-      "layer": 0,
-      "objects": [
+        },
         {
-          "name": "join_game_space",
-          "texture_object_data": [
-            {
-              "color": [
-                255,
-                255,
-                255,
-                255
-              ],
-              "sdl_rect": [
-                -75,
-                -30,
-                2700,
-                2000
-              ]
-            },
-            {
-              "color": [
-                255,
-                255,
-                255,
-                255
-              ],
-              "sdl_rect": [
-                -75,
-                -30,
-                2700,
-                2000
-              ]
-            },
-            [
-              0,
-              0
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
             ],
-            0.0,
-            0
-          ],
-          "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\join_game_space.png"
+            "name": "",
+            "sdl_rect": [
+              1019,
+              120,
+              371,
+              51
+            ]
+          },
+          "value": "Cosmic Encounter"
+        },
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              969,
+              1181,
+              514,
+              51
+            ]
+          },
+          "value": "Join the Galactic Conflict!"
         }
-      ]
+      ],
+      "class nv::Texture": [],
+      "layer": 2,
+      "struct nv::Rect": []
     }
   ]
 }

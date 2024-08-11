@@ -10,7 +10,7 @@ void SceneEditor::loadSprite() {
 	try {
 		std::ifstream file{ *filePath };
 		auto json = json::parse(file);
-		auto& currSpriteLayer = m_spriteLayers[m_currLayer];
+		auto& currSpriteLayer = std::get<EditedObjectVector<Sprite>>(m_objectLayers[m_currLayer]);
 		currSpriteLayer.emplace_back(m_renderer, json, m_texMap);
 		m_selectedSpriteData.resetToLastElement(&currSpriteLayer);
 	} catch (json::exception e) {
@@ -19,12 +19,39 @@ void SceneEditor::loadSprite() {
 }
 
 void SceneEditor::createRect() {
-	auto& currRectLayer = m_rectLayers[m_currLayer];
-	auto& lastRect = currRectLayer.emplace_back(m_renderer, 0, 0, 0, 0).obj;
+	auto& rectLayer = std::get<EditedObjectVector<Rect>>(m_objectLayers[m_currLayer]);
+	auto& lastRect = rectLayer.emplace_back(m_renderer, 0, 0, 0, 0).obj;
 	lastRect.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
 	lastRect.setSize(200, 100);
 	m_showingRightClickOptions = false;
-	m_selectedRectData.resetToLastElement(&currRectLayer);
+	m_selectedRectData.resetToLastElement(&rectLayer);
+}
+
+void SceneEditor::reduceOpacityOfOtherLayers() {
+	auto reduceOpacityImpl = [](auto&& objLayers) {
+		for (auto& [layer, objLayer] : objLayers) {
+			forEachDataMember([](auto& objs) {
+				for (auto& editedObj : objs) {
+					editedObj.obj.setOpacity(100);
+				}
+				return STAY_IN_LOOP;
+			}, objLayer);
+		}
+	};
+
+	//set to full opacity in case it was already reduced before we called this function
+	forEachDataMember([](auto& objs) {
+		for (auto& editedObj : objs) {
+			editedObj.obj.setOpacity(255);
+		}
+		return STAY_IN_LOOP;
+	}, m_objectLayers[m_currLayer]);
+
+	auto visibleLayerIt = m_objectLayers.find(m_currLayer); //call find to get iterator
+	auto beforeVisibleLayer = ranges::subrange(m_objectLayers.begin(), visibleLayerIt);
+	auto afterVisibleLayer = ranges::subrange(std::next(visibleLayerIt), m_objectLayers.end());
+	reduceOpacityImpl(beforeVisibleLayer);
+	reduceOpacityImpl(afterVisibleLayer);
 }
 
 void SceneEditor::showFontOptions() {
@@ -45,20 +72,27 @@ void SceneEditor::showFontOptions() {
 
 	if (selectedFont == nullptr && ImGui::Button("Open Font")) {
 		auto path = openFilePath();
-		if (path) {
+		if (path) { 
 			m_fontPath = *path;
-			auto loadedFont = loadFont(m_fontPath, m_fontSize);
+
+			convertFullToRegularPath(m_fontPath);
+
+			if (m_fontMap.contains(m_fontPath)) { //loading a duplicate font would invalidate pointers to original font
+				std::println("Error: font map already contains {}", m_fontPath);
+				return;
+			}
+			auto loadedFont = loadFont(*path, m_fontSize); //load with *path because we need the full path
 			if (loadedFont == nullptr) {
 				std::println("{}", TTF_GetError());
 			} else {
 				selectedFont = loadedFont.get();
-				m_fontMap.emplace(m_fontPath, std::move(loadedFont));
+				m_fontMap.emplace(m_fontPath + std::to_string(m_fontSize), std::move(loadedFont));
 			}
 		}
 	}
 
 	if (selectedFont != nullptr) {
-		auto& currLayer = m_textLayers[m_currLayer];
+		auto& currLayer = std::get<EditedObjectVector<Text>>(m_objectLayers[m_currLayer]);
 		currLayer.emplace_back(m_renderer, "generic text"sv, m_fontPath, m_fontSize, selectedFont);
 		auto& insertedTex = currLayer.back();
 		insertedTex.obj.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
@@ -74,21 +108,22 @@ void SceneEditor::createTextures() noexcept {
 	if (!texPaths) {
 		return;
 	}
-	auto& texLayer = m_texObjLayers[m_currLayer];
-	for (const auto& texPath : *texPaths) {
+	auto& texLayer = std::get<EditedObjectVector<Texture>>(m_objectLayers[m_currLayer]);
+	for (auto& texPath : *texPaths) {
 		texLayer.emplace_back(
 			m_renderer,
 			texPath,
 			loadSharedTexture(m_renderer, texPath),
 			TextureData{}
 		);
+		convertFullToRegularPath(texPath);
 		texLayer.back().obj.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
 		texLayer.back().obj.scale(200, 200);
 		texLayer.back().width  = 200;
 		texLayer.back().height = 200;
 		texLayer.back().name   = fileName(texPath);
 	}
-	m_selectedTexObjData.resetToLastElement(&texLayer);
+	m_selectedTextureData.resetToLastElement(&texLayer);
 }
 
 void SceneEditor::showRightClickOptions() noexcept {
@@ -124,21 +159,26 @@ void nv::editor::SceneEditor::save() const noexcept {
 	}
 
 	json root;
+	json& objectsRoot = root["objects"];
 
-	auto spritesJson = json::array();
-	auto texObjsJson = json::array();
-	auto textJson    = json::array();
-	auto rectsJson   = json::array();
+	auto saveObjectsImpl = [&](json& layerRoot, const auto& objs) {
+		auto& objsJson = layerRoot[typeid(ValueType<decltype(objs)>::obj).name()];
+		objsJson = json::array();
+		for (const auto& editedObj : objs) {
+			auto& objJson = objsJson.emplace_back();
+			editedObj.obj.save(objJson);
+			objJson["name"] = editedObj.name;
+		}
+	};
+	for (const auto& [layer, objs] : m_objectLayers) {
+		auto& newLayerJson = objectsRoot.emplace_back();
+		newLayerJson["layer"] = layer;
 
-	saveObjects(m_spriteLayers, spritesJson);
-	saveObjects(m_texObjLayers, texObjsJson);
-	saveObjects(m_textLayers, textJson);
-	saveObjects(m_rectLayers, rectsJson);
-
-	root["sprites"]         = std::move(spritesJson);
-	root["texture_objects"] = std::move(texObjsJson);
-	root["text"]            = std::move(textJson);
-	root["rects"]           = std::move(rectsJson);
+		forEachDataMember([&](const auto& objs) {
+			saveObjectsImpl(newLayerJson, objs);
+			return STAY_IN_LOOP;
+		}, objs);
+	}
 
 	//write json to the file
 	std::ofstream file{ *filename };
@@ -151,7 +191,15 @@ void nv::editor::SceneEditor::showSceneOptions() noexcept {
 	ImGui::SetNextWindowSize({ 150, 100 });
 	ImGui::Begin("Scene");
 	if (ImGui::InputInt("Layer", &m_currLayer)) {
-		makeOneLayerMoreVisible(m_spriteLayers, m_currLayer, 50);
+		//make sure that there are no pointers to previous objects in other layers in selected object data
+		auto tiedSelectedObjs = std::tie(m_selectedSpriteData, m_selectedTextureData, m_selectedTextData, m_selectedRectData);
+		forEachDataMember([this](auto& selectedObj) {
+			selectedObj.reset();
+			return STAY_IN_LOOP;
+		}, tiedSelectedObjs);
+		m_selectedObjType = SelectedObjectType::None; //we can't have a selected object in a different layer
+
+		reduceOpacityOfOtherLayers();
 	}
 	if (ImGui::Button("Save")) {
 		save();
@@ -177,7 +225,7 @@ void nv::editor::SceneEditor::editLayers() {
 		editImpl("Sprite", m_selectedSpriteData);
 		break;
 	case SelectedObjectType::Texture:
-		editImpl("Texture Object", m_selectedTexObjData);
+		editImpl("Texture Object", m_selectedTextureData);
 		break;
 	case SelectedObjectType::Text:
 		editImpl("Text", m_selectedTextData);
@@ -187,26 +235,20 @@ void nv::editor::SceneEditor::editLayers() {
 		break;
 	}
 
-	auto select = [this](auto& objLayer, auto& selectedObjData, SelectedObjectType objType) {
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-			auto selectedObj = selectObj(objLayer, convertPair<SDL_Point>(ImGui::GetMousePos()));
-			if (selectedObj != objLayer.end()) {
-				selectedObjData.obj = &(*selectedObj);
-				selectedObjData.objLayer = &objLayer;
-				selectedObjData.it = selectedObj;
-				m_selectedObjType = objType;
-			}
-		}
-	};
-	select(m_spriteLayers[m_currLayer], m_selectedSpriteData, SelectedObjectType::Sprite);
-	select(m_texObjLayers[m_currLayer], m_selectedTexObjData, SelectedObjectType::Texture);
-	select(m_textLayers[m_currLayer], m_selectedTextData, SelectedObjectType::Text);
-	select(m_rectLayers[m_currLayer], m_selectedRectData, SelectedObjectType::Rect);
+	auto tiedObjData = std::tie(m_selectedSpriteData, m_selectedTextureData, m_selectedTextData, m_selectedRectData);
+	forEachDataMember([&, this](auto& objs, auto& selectedObjData) {
+		selectImpl(objs, selectedObjData);
+		return STAY_IN_LOOP;
+	}, m_objectLayers[m_currLayer], tiedObjData);
 }
 
 SceneEditor::SceneEditor(SDL_Renderer* renderer)
 	: m_renderer{ renderer }
 { 
+	m_selectedObjMap.get<Sprite>()  = SelectedObjectType::Sprite;
+	m_selectedObjMap.get<Texture>() = SelectedObjectType::Texture;
+	m_selectedObjMap.get<Text>()    = SelectedObjectType::Text;
+	m_selectedObjMap.get<Rect>()    = SelectedObjectType::Rect;
 }
 
 nv::editor::EditorDest SceneEditor::imguiRender() {
@@ -222,21 +264,28 @@ nv::editor::EditorDest SceneEditor::imguiRender() {
 		showFontOptions();
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_LeftArrow)) {
-		cameraMove(-5, 0, m_spriteLayers, m_texObjLayers);
+		cameraMoveEditedObjects(-5, 0, m_objectLayers);
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_RightArrow)) {
-		cameraMove(5, 0, m_spriteLayers, m_texObjLayers);
+		cameraMoveEditedObjects(5, 0, m_objectLayers);
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_UpArrow)) {
-		cameraMove(0, -5, m_spriteLayers, m_texObjLayers);
+		cameraMoveEditedObjects(0, -5, m_objectLayers);
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_DownArrow)) {
-		cameraMove(0, 5, m_spriteLayers, m_texObjLayers);
+		cameraMoveEditedObjects(0, 5, m_objectLayers);
 	}
 	editLayers();
 	return EditorDest::None;
 }
 
 void nv::editor::SceneEditor::sdlRender() const noexcept {
-	renderCopy(m_texObjLayers, m_spriteLayers, m_rectLayers, m_textLayers);
+	for (const auto& [layer, objLayer] : m_objectLayers) {
+		forEachDataMember([](const auto& objLayer) {
+			for (const auto& editedObj : objLayer) {
+				editedObj.obj.render();
+			}
+			return STAY_IN_LOOP;
+		}, objLayer);
+	}
 }

@@ -37,7 +37,6 @@ namespace nv {
 		}
 
 		bool operator()() {
-			std::println("Moving\n");
 			if (!m_startedMoving) {
 				m_xStart = chrono::system_clock::now();
 				m_yStart = chrono::system_clock::now();
@@ -63,10 +62,4 @@ namespace nv {
 			return m_xDistTravelled >= m_xDist && m_yDistTravelled >= m_yDist;
 		}
 	};
-
-	/*template<RenderObject Object, typename XRateRep, typename XRatePeriod, typename YRateRep, typename YRatePeriod>
-	MoveScheduler(Object& obj, EventHandler& evtHandler,
-		PixelRate<XRateRep, XRatePeriod> xRate,
-		PixelRate<YRateRep, YRatePeriod> yRate, int xDist, int yDist) ->
-		MoveScheduler<Object, XRateRep, XRatePeriod, YRateRep, YRatePeriod>;*/
 }

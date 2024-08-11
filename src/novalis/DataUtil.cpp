@@ -28,6 +28,18 @@ void from_json(const nlohmann::json& j, SDL_Point& p) {
 	std::tie(p.x, p.y) = j.get<std::tuple<int, int>>();
 }
 
+std::string& nv::convertFullToRegularPath(std::string& path) {
+	auto relativePathSize = relativePath("").size();
+	path.erase(path.begin(), path.begin() + relativePathSize);
+	return path;
+}
+
+std::string nv::convertFullToRegularPath(std::string_view path) {
+	std::string pathStr = path.data();
+	convertFullToRegularPath(pathStr);
+	return pathStr;
+}
+
 const std::string& nv::workingDirectory() {
 	static auto path = [] {
 		auto path = std::filesystem::current_path().string() + "/";
@@ -38,7 +50,7 @@ const std::string& nv::workingDirectory() {
 }
 
 /*Have thread local string to prevent dangling pointers when relativePath is assigned to string_view*/
-std::string nv::relativePath(std::string_view relativePath) {
+const std::string& nv::relativePath(std::string_view relativePath) {
 	thread_local std::string global;
 	global = workingDirectory() + relativePath.data();
 	return global;

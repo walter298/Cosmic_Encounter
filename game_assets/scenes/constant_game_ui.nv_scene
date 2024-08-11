@@ -1,100 +1,9 @@
 {
-  "rects": [
+  "objects": [
     {
-      "layer": 0,
-      "objects": [
-        {
-          "color": [
-            255,
-            255,
-            255,
-            255
-          ],
-          "name": "name",
-          "sdl_rect": [
-            32,
-            19,
-            200,
-            100
-          ]
-        },
-        {
-          "color": [
-            255,
-            255,
-            255,
-            255
-          ],
-          "name": "name",
-          "sdl_rect": [
-            29,
-            628,
-            200,
-            100
-          ]
-        }
-      ]
-    }
-  ],
-  "sprites": [
-    {
-      "layer": 0,
-      "objects": []
-    }
-  ],
-  "text": [
-    {
-      "layer": 0,
-      "objects": [
-        {
-          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
-          "font_size": 41,
-          "name": "name",
-          "ren": {
-            "color": [
-              255,
-              255,
-              255,
-              255
-            ],
-            "name": "",
-            "sdl_rect": [
-              67,
-              46,
-              138,
-              46
-            ]
-          },
-          "value": "Players"
-        },
-        {
-          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
-          "font_size": 41,
-          "name": "name",
-          "ren": {
-            "color": [
-              255,
-              255,
-              255,
-              255
-            ],
-            "name": "",
-            "sdl_rect": [
-              78,
-              654,
-              97,
-              46
-            ]
-          },
-          "value": "Warp"
-        }
-      ]
-    }
-  ],
-  "texture_objects": [
-    {
-      "layer": 0,
-      "objects": [
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
         {
           "name": "deep_space",
           "texture_object_data": [
@@ -107,10 +16,10 @@
               ],
               "name": "",
               "sdl_rect": [
-                -28,
-                -51,
+                -21,
+                -4,
                 2700,
-                2000
+                1700
               ]
             },
             {
@@ -122,10 +31,10 @@
               ],
               "name": "",
               "sdl_rect": [
-                -28,
-                -51,
+                -21,
+                -4,
                 2700,
-                2000
+                1700
               ]
             },
             [
@@ -137,7 +46,16 @@
           ],
           "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\deep_space.png"
         }
-      ]
+      ],
+      "layer": 0,
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [],
+      "layer": 1,
+      "struct nv::Rect": []
     }
   ]
 }

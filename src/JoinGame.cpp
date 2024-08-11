@@ -40,11 +40,14 @@ static sys::error_code connectToGame(const nv::Text& ipAddrInput, const nv::Text
 void joinGame(SDL_Renderer* renderer, Socket& sock, nv::TextureMap& texMap, nv::FontMap& fontMap) {
     nv::Scene scene{ "Cosmic_Encounter/game_assets/scenes/join_game.nv_scene", renderer, texMap, fontMap };
 
-    auto& ipAddrInputText = scene.find(scene.text.at(0), "ip_address_input");
-    auto& portInputText   = scene.find(scene.text.at(0), "port_input");
+    constexpr int RECT_LAYER = 1;
+    constexpr int TEXT_LAYER = 2;
+
+    auto& ipAddrInputText = scene.find<nv::Text>(TEXT_LAYER, "ip_address_input");
+    auto& portInputText   = scene.find<nv::Text>(TEXT_LAYER, "port_input");
 
     //connection button
-    auto& joinButtonRect = scene.find(scene.rects.at(0), "join_button_rect");
+    auto& joinButtonRect = scene.find<nv::Rect>(RECT_LAYER, "join_button_rect");
     nv::Button joinButton{ 
         joinButtonRect,
         [&] {
@@ -58,11 +61,11 @@ void joinGame(SDL_Renderer* renderer, Socket& sock, nv::TextureMap& texMap, nv::
         [&] { joinButtonRect.setRenderColor(34, 139, 34, 255); },
         [&] { joinButtonRect.setRenderColor(255, 255, 255, 255); }
     };
-    scene.eventHandler.addMouseEvent(std::move(joinButton));
+    scene.addEvent(std::move(joinButton));
 
     //text inputs
-    scene.eventHandler.addTextInput({ scene.find(scene.rects.at(0), "ip_address_input_rect"), ipAddrInputText });
-    scene.eventHandler.addTextInput({ scene.find(scene.rects.at(0), "port_input_rect"), portInputText });
+    scene.addTextInput({ scene.find<nv::Rect>(RECT_LAYER, "ip_address_input_rect"), ipAddrInputText });
+    scene.addTextInput({ scene.find<nv::Rect>(RECT_LAYER, "port_input_rect"), portInputText });
 
     scene();
 }

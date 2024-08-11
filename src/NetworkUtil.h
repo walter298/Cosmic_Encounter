@@ -9,6 +9,8 @@
 #include <type_traits>
 #include <vector>
 
+#include <SDKDDKVer.h> //windows version macros for boost.asio
+
 #define BOOST_ASIO_DISABLE_HANDLER_TYPE_REQUIREMENTS
 
 #include <boost/asio.hpp>

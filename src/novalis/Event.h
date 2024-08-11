@@ -1,21 +1,10 @@
-#ifndef EVENT_HANDLER_H
-#define EVENT_HANDLER_H
+#pragma once
 
-#include <chrono>
-#include <vector>
-#include <map>
 #include <functional>
-#include <type_traits>
-#include <string>
 
-#include <SDL2/SDL.h>
+#include <boost/unordered/unordered_flat_map.hpp>
 
-#include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
-
-#include "DataUtil.h"
-#include "ID.h"
+#include <SDL2/SDL_scancode.h>
 
 namespace nv {
 	template<typename... Args> 
@@ -39,8 +28,6 @@ namespace nv {
 
 	using MouseEvent = Event<MouseData>;
 
-	using Keymap        = boost_con::flat_map<SDL_Scancode, bool>;
+	using Keymap        = boost::unordered_flat_map<SDL_Scancode, bool>;
 	using KeyboardEvent = Event<const Keymap&>;
 }
-
-#endif

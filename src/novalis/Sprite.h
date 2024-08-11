@@ -9,7 +9,6 @@
 #include "Texture.h"
 
 namespace nv {
-	struct Scene;
 	namespace editor { 
 		class SceneEditor; 
 		class SpriteEditor;
@@ -17,7 +16,7 @@ namespace nv {
 
 	class Sprite : public NamedObject {
 	private:
-		Layers<TextureObject> m_texObjLayers;
+		Layers<Texture> m_texObjLayers;
 		int m_currLayer = 0;
 	public:
 		Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap);
@@ -50,4 +49,6 @@ namespace nv {
 		friend class editor::SceneEditor;
 		friend class editor::SpriteEditor;
 	};
+
+	using SpriteRef = std::reference_wrapper<Sprite>;
 }

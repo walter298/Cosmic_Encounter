@@ -11,11 +11,9 @@ namespace nv {
 			TextureMap m_texMap;
 			FontMap m_fontMap;
 			
-			Layers<EditedObjectData<Sprite>> m_spriteLayers;
-			Layers<EditedObjectData<TextureObject>> m_texObjLayers;
-			Layers<EditedObjectData<Text>> m_textLayers;
-			Layers<EditedObjectData<Rect>> m_rectLayers;
-
+			ObjectLayers<EditedObjectData<Sprite>, EditedObjectData<Texture>, 
+				EditedObjectData<Text>, EditedObjectData<Rect>> m_objectLayers;
+			
 			enum class SelectedObjectType {
 				Sprite,
 				Texture,
@@ -24,8 +22,10 @@ namespace nv {
 				None
 			};
 			SelectedObjectType m_selectedObjType = SelectedObjectType::None;
+			TypeMap<SelectedObjectType, Sprite, Texture, Text, Rect> m_selectedObjMap;
+
 			SelectedObjectData<Sprite> m_selectedSpriteData;
-			SelectedObjectData<TextureObject> m_selectedTexObjData;
+			SelectedObjectData<Texture> m_selectedTextureData;
 			SelectedObjectData<Text> m_selectedTextData;
 			SelectedObjectData<Rect> m_selectedRectData;
 
@@ -38,6 +38,7 @@ namespace nv {
 			bool m_showingRightClickOptions = false;
 			ImVec2 m_rightClickWinPos{ 0.0f, 0.0f };
 
+			void reduceOpacityOfOtherLayers();
 			void createRect();
 			void loadSprite();
 			void showFontOptions();
@@ -45,6 +46,20 @@ namespace nv {
 			void showRightClickOptions() noexcept;
 			void save() const noexcept;
 			void showSceneOptions() noexcept;
+
+			template<typename Object>
+			void selectImpl(EditedObjectVector<Object>& objLayer, SelectedObjectData<Object>& selectedObjData) {
+				if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+					auto selectedObj = selectObj(objLayer, convertPair<SDL_Point>(ImGui::GetMousePos()));
+					if (selectedObj != objLayer.end()) {
+						selectedObjData.obj = &(*selectedObj);
+						selectedObjData.objLayer = &objLayer;
+						selectedObjData.it = selectedObj;
+						m_selectedObjType = m_selectedObjMap.get<Object>();
+					}
+				}
+			}
+
 			void editLayers();
 		public:
 			SceneEditor(SDL_Renderer* renderer);

@@ -10,13 +10,14 @@ namespace nv {
 		private:
 			SDL_Renderer* m_renderer;
 
-			Layers<EditedObjectData<TextureObject>> m_texLayers;
-			SelectedObjectData<TextureObject> m_selectedTexObj;
+			Layers<EditedObjectData<Texture>> m_texLayers;
+			SelectedObjectData<Texture> m_selectedTexObj;
 			bool m_isTexSelected = false;
 
 			int m_currLayer = 0;
 			int m_currLayoutLayer = 0;
 
+			void reduceOpacityOfOtherLayers();
 			void open(SDL_Renderer* renderer);
 			void save();
 			void saveAsTextureObject();
