@@ -10,6 +10,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 
+#include "data_util/BasicConcepts.h"
 #include "Event.h"
 #include "Texture.h"
 
@@ -19,7 +20,7 @@ namespace nv {
 
 	FontRAII loadFont(std::string_view fontPath, int fontSize);
 
-	class Text : public NamedObject {
+	class Text : public ObjectBase<Text> {
 	private:
 		SDL_Renderer* m_renderer;
 		TTF_Font* m_font;

@@ -1,8 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include <boost/geometry.hpp>
 
-#include "DataUtil.h"
+#include <SDL2/SDL_rect.h>
 
 namespace nv {
 	class CollisionShape {

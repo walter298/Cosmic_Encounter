@@ -4,13 +4,15 @@
 #include <iostream>
 #include <memory>
 
+#include "data_util/BasicConcepts.h"
+
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_rect.h>
 
-#include "DataUtil.h"
+#include "ID.h"
 
 namespace nv {
-	struct Rect : public NamedObject {
+	struct Rect : public ObjectBase<Rect> {
 		SDL_Renderer* renderer = nullptr;
 	
 		static bool isInRegion(int mx, int my, int x, int y, int w, int h) noexcept;

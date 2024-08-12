@@ -1,5 +1,7 @@
 #include "Text.h"
 
+#include "data_util/File.h"
+
 #include <print>
 
 nv::FontRAII nv::loadFont(std::string_view fontPath, int fontSize) {

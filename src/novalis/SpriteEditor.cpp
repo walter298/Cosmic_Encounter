@@ -1,8 +1,9 @@
 #include "SpriteEditor.h"
 
-#include "Sprite.h"
-
 #include <fstream>
+
+#include "data_util/BasicJsonSerialization.h"
+#include "Sprite.h"
 
 using nv::editor::SpriteEditor;
 

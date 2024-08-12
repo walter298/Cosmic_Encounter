@@ -5,7 +5,7 @@
 
 #include <SDL2/SDL_image.h>
 
-#include "DataUtil.h"
+#include "data_util/BasicConcepts.h"
 #include "Texture.h"
 
 namespace nv {
@@ -14,7 +14,7 @@ namespace nv {
 		class SpriteEditor;
 	}
 
-	class Sprite : public NamedObject {
+	class Sprite : public ObjectBase<Sprite> {
 	private:
 		Layers<Texture> m_texObjLayers;
 		int m_currLayer = 0;

@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <mutex>
 
+#include "novalis/data_util/BasicJsonSerialization.h"
+#include "novalis/data_util/File.h"
 #include "novalis/Scene.h"
 
 #include "Game.h"
@@ -81,7 +83,7 @@ namespace {
 	{
 		nv::Texture alien{
 			lobby.renderer,
-			nv::parseFile(nv::relativePath(getAlienTexPath(pRenderInfo.alien))),
+			nv::parseJson(nv::relativePath(getAlienTexPath(pRenderInfo.alien))),
 			lobby.texMap
 		};
 		alienPosSetter.setPos(alien);

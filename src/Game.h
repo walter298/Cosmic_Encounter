@@ -7,7 +7,7 @@
 
 #include <boost/functional/hash.hpp>
 
-#include "novalis/DataUtil.h"
+#include "novalis/data_util/File.h"
 
 #include "Deck.h"
 #include "NetworkUtil.h"

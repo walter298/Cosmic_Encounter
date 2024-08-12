@@ -1,5 +1,7 @@
 #include "Rect.h"
 
+#include "data_util/BasicJsonSerialization.h"
+
 bool nv::Rect::isInRegion(int mx, int my, int x, int y, int w, int h) noexcept {
 	return mx > x && mx < x + w &&
 		my > y && my < y + h;
@@ -87,7 +89,7 @@ void nv::Rect::save(json& json) const {
 
 void nv::to_json(json& j, const Rect& r) {
 	j["sdl_rect"] = r.rect;
-	j["color"] = r.color;
+	j["color"]    = r.color;
 	j["name"] = r.getName();
 }
 

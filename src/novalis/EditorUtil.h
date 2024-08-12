@@ -17,6 +17,8 @@
 #include <imgui_impl_sdlrenderer2.h>
 #include <imgui_stdlib.h>
 
+#include "data_util/BasicConcepts.h"
+
 #include "Text.h"
 
 namespace nv {
@@ -237,18 +239,6 @@ namespace nv {
 			if (ImGui::Button("Delete")) {
 				editedObj.objLayer->erase(editedObj.it);
 				editedObj.obj = nullptr;
-			}
-		}
-
-		template<typename ObjectLayers>
-		void cameraMoveEditedObjects(int dx, int dy, ObjectLayers& objLayers) {
-			for (auto& [layer, objectLayer] : objLayers) {
-				forEachDataMember([&](auto& objs) {
-					for (auto& editedObj : objs) {
-						editedObj.obj.move(dx, dy);
-					}
-					return STAY_IN_LOOP;
-				}, objectLayer);
 			}
 		}
 	}

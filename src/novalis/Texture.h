@@ -9,6 +9,7 @@
 #include <SDL2/SDL_image.h>
 
 #include "Rect.h"
+#include "ID.h"
 
 namespace nv {
 	using TextureRAII = std::unique_ptr<SDL_Texture, void(*)(SDL_Texture*)>;
@@ -27,7 +28,7 @@ namespace nv {
 		SDL_RendererFlip flip = SDL_FLIP_NONE;
 	};
 
-	class Texture : public NamedObject {
+	class Texture : public ObjectBase<Texture> {
 	private:
 		SDL_Renderer* m_renderer;
 		std::variant<SharedTexture, SDL_Texture*> m_texVariant;

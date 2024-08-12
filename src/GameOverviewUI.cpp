@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "novalis/data_util/File.h"
 #include "novalis/Scene.h"
 
 #include "Destiny.h"

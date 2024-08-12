@@ -2,6 +2,9 @@
 
 #include <print>
 
+#include "data_util/BasicJsonSerialization.h"
+#include "data_util/File.h"
+
 nv::TextureRAII nv::loadTexture(SDL_Renderer* renderer, std::string_view texPath) noexcept {
 	return TextureRAII{ IMG_LoadTexture(renderer, texPath.data()), SDL_DestroyTexture };
 }

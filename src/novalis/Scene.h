@@ -6,6 +6,9 @@
 
 #include <nlohmann/json.hpp>
 
+#include "data_util/Algorithms.h"
+#include "data_util/Reflection.h"
+
 #include "Button.h"
 #include "ID.h"
 #include "Event.h"
@@ -23,7 +26,7 @@ namespace nv {
 		SDL_Event m_SDLEvt{};
 
 		template<typename EventT>
-		using Events = std::vector<std::pair<EventT, ID>>;
+		using Events = std::vector<std::pair<EventT, ID<EventT>>>;
 
 		Keymap m_keyMap;
 		const Uint8* m_keystate = SDL_GetKeyboardState(nullptr);
@@ -69,38 +72,49 @@ namespace nv {
 			return unrefwrap(objects.back());
 		}
 
+	private:
+		template<typename Object, typename Objects, typename Transform>
+		void eraseImpl(ID<Object> id, Objects& objects, Transform transform) {
+			auto objIt = binaryFind(objects, id, transform);
+			assert(objIt != objects.end());
+			objects.erase(objIt);
+		}
+	public:
 		template<typename EventType>
-		void removeEvent(ID id) {
-			auto& events = std::get<std::vector<EventType>>(m_callableEvents);
-			auto evtIt = binaryFind(events, id, &EventType::second);
-			assert(evtIt != events.end());
-			events.erase(evtIt);
+		void removeEvent(ID<EventType> id) {
+			eraseImpl(id, std::get<Events<EventType>>(m_callableEvents), &std::pair<EventType, ID<EventType>>::second);
+		}
+		template<typename Object>
+		void removeObject(ID<Object> id, int layer) {
+			eraseImpl(id, std::get<std::vector<Object>>(m_objectLayers.at(layer)), &ObjectBase::getID);
 		}
 	private:
-		template<typename Events, typename Func>
-		void pushCancellableEvent(Events& events, Func&& func, ID id) {
-			events.emplace_back([this, events = std::ref(events), func = std::forward<Func>(func), id = id](const auto&... args) mutable {
-				if (func(args...)) {
-					removeEvent<ValueType<Events>>(id);
-				}
-			}, id);
-		}
-
-		template<typename T> 
+		template<typename T>
 		struct GetEventsType;
 
-		template<typename... Ts> 
+		template<typename... Ts>
 		struct GetEventsType<std::tuple<Ts...>> {
 			using type = Events<Event<Ts...>>;
 		};
+
+		template<typename Func>
+		using GetIDFromFunc = typename GetEventsType<typename FunctionTraits<std::decay_t<Func>>::args>::type::value_type::second_type;
+	private:
+		template<typename Events, typename Func>
+		void pushCancellableEvent(Events& events, Func&& func, GetIDFromFunc<Func> id) {
+			events.emplace_back([this, events = std::ref(events), func = std::forward<Func>(func), id = id](const auto&... args) mutable {
+				if (func(args...)) {
+					removeEvent(id);
+				}
+			}, id);
+		}
 	public:
 		template<typename Func>
-		ID addEvent(Func&& func) {
-			ID id;
-
+		auto addEvent(Func&& func) {
 			using FuncArgs = typename FunctionTraits<std::decay_t<Func>>::args;
 			using EventsType = typename GetEventsType<FuncArgs>::type;
 
+			GetIDFromFunc<Func> id;
 			auto& events = std::get<EventsType>(m_callableEvents);
 
 			if constexpr (std::same_as<ResultOfNonOverloaded<Func>, bool>) {
@@ -110,7 +124,7 @@ namespace nv {
 			}
 			return id;
 		}
-		ID addTextInput(nv::TextInput&& textInput);
+		ID<TextInput> addTextInput(nv::TextInput&& textInput);
 
 		void operator()();
 

@@ -8,8 +8,6 @@
 
 #include <nlohmann/json.hpp>
 
-#include "DataUtil.h"
-
 namespace nv {
 	struct CameraDelta {
 		int dx = 0;
@@ -17,9 +15,6 @@ namespace nv {
 		using DeltaTimeT = std::chrono::milliseconds;
 		DeltaTimeT time{ 0 };
 	};
-
-	void from_json(const nlohmann::json& j, CameraDelta& camDelta);
-	void to_json(nlohmann::json& j, const CameraDelta& camDelta);
 
 	class CameraPath {
 	private:
@@ -29,6 +24,4 @@ namespace nv {
 		CameraPath(const std::string& path);
 		const Path& getPath() const noexcept;
 	};
-
-	
 }

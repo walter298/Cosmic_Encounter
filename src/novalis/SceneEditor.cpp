@@ -1,5 +1,7 @@
 #include "SceneEditor.h"
 
+#include "data_util/File.h"
+
 using nv::editor::SceneEditor;
 
 void SceneEditor::loadSprite() {
@@ -90,6 +92,8 @@ void SceneEditor::showFontOptions() {
 			}
 		}
 	}
+
+	using namespace std::literals;
 
 	if (selectedFont != nullptr) {
 		auto& currLayer = std::get<EditedObjectVector<Text>>(m_objectLayers[m_currLayer]);
@@ -264,16 +268,16 @@ nv::editor::EditorDest SceneEditor::imguiRender() {
 		showFontOptions();
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_LeftArrow)) {
-		cameraMoveEditedObjects(-5, 0, m_objectLayers);
+		//cameraMoveEditedObjects(-5, 0, m_objectLayers);
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_RightArrow)) {
-		cameraMoveEditedObjects(5, 0, m_objectLayers);
+		//cameraMoveEditedObjects(5, 0, m_objectLayers);
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_UpArrow)) {
-		cameraMoveEditedObjects(0, -5, m_objectLayers);
+		//cameraMoveEditedObjects(0, -5, m_objectLayers);
 	}
 	if (ImGui::IsKeyDown(ImGuiKey_DownArrow)) {
-		cameraMoveEditedObjects(0, 5, m_objectLayers);
+		//cameraMoveEditedObjects(0, 5, m_objectLayers);
 	}
 	editLayers();
 	return EditorDest::None;

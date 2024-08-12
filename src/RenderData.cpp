@@ -1,5 +1,8 @@
 #include "RenderData.h"
 
+#include "novalis/data_util/File.h"
+#include "novalis/data_util/BasicJsonSerialization.h"
+
 namespace {
 	CardMap loadCardMap(SDL_Renderer* renderer) {
 		CardMap ret;

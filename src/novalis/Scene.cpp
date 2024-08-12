@@ -133,8 +133,8 @@ nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMa
 	sceneFile.close();
 }
 
-nv::ID nv::Scene::addTextInput(nv::TextInput&& textInput) {
-	ID id;
+nv::ID<nv::TextInput> nv::Scene::addTextInput(nv::TextInput&& textInput) {
+	ID<TextInput> id;
 	m_textInputs.emplace_back(std::move(textInput), id);
 	return id;
 }

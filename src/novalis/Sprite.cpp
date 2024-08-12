@@ -1,5 +1,8 @@
 #include "Sprite.h"
 
+#include "data_util/BasicJsonSerialization.h"
+#include "data_util/File.h"
+
 nv::Sprite::Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap) {
 	auto uniqueTexIndices = json["texture_object_layers"].get<JsonFormat>();
 	for (const auto& [layer, texObjs] : uniqueTexIndices) {

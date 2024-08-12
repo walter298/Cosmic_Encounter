@@ -46,7 +46,7 @@ namespace {
 		return std::tie(acceptButtonRect, keepDrawingButtonRect);
 	}
 
-	std::pair<nv::ID, nv::ID> initButtons(Socket& sock, nv::Scene& mainUi) {
+	auto initButtons(Socket& sock, nv::Scene& mainUi) {
 		auto [acceptButtonRect, keepDrawingButtonRect] = toggleButtons(mainUi, true);
 
 		auto makeButton = [&](nv::Rect& rect, int code) {
@@ -58,17 +58,21 @@ namespace {
 			});
 		};
 
-		return std::pair{
+		auto id1 = makeButton(acceptButtonRect, ACCEPTED_COLOR);
+		auto id2 = makeButton(keepDrawingButtonRect, DECIDED_TO_KEEP_DRAWING);
+
+		/*return std::pair{
 			makeButton(acceptButtonRect, ACCEPTED_COLOR),
 			makeButton(keepDrawingButtonRect, DECIDED_TO_KEEP_DRAWING)
-		};
+		};*/
+		return std::pair{ 0, 0 };
 	}
 
 	nv::Rect& readDrawnColor(Socket& sock, nv::Scene& mainUi, const ColorMap& colors, Color pColor, bool takingTurn) {
 		Color drawnColor;
 		sock.read(drawnColor);
 
-		//toggleButtons(mainUi, pColor == drawnColor && takingTurn);
+		toggleButtons(mainUi, pColor == drawnColor && takingTurn);
 
 		auto colorRect = colors.at(drawnColor).second;
 		auto& colorBack = mainUi.find<nv::TextureRef>(0, "destiny_back").get();
@@ -96,6 +100,9 @@ void showDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& colors, Color 
 			});
 		}
 	});
+	if (takingTurn) {
+		initButtons(sock, mainUi);
+	}
 
 	mainUi();
 	mainUi.deoverlay();
