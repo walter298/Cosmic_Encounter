@@ -33,18 +33,17 @@ namespace {
 
 void showGameOverview(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap, GameRenderData& gameRenderData) {
 	nv::Scene mainUi{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/constant_game_ui.nv_scene"), renderer, texMap, fontMap };
-	nv::Scene destiny{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/destiny.nv_scene"), renderer, texMap, fontMap };
-
+	
 	std::vector<Card> cards;
 	std::vector<Color> turnOrder;
+
+	std::println("Reading cards and turn order");
 	sock.read(cards, turnOrder);
 
 	showCards(mainUi, cards, gameRenderData.cardMap);
 
 	size_t colorTurnIdx = 0;
 
-	mainUi.overlay(destiny);
-	
-	showDestiny(sock, mainUi, gameRenderData.colorMap, gameRenderData.pColor, gameRenderData.pColor == turnOrder[colorTurnIdx]);
-	mainUi();
+	std::println("Showing destiny");
+	showDestiny(sock, renderer, texMap, fontMap, gameRenderData.colorMap, gameRenderData.pColor == turnOrder[colorTurnIdx]);
 }

@@ -25,13 +25,23 @@ void nv::Scene::selectTextInput() {
 }
 
 void nv::Scene::executeEvents() {
-	auto runEvents = [](auto& events, const auto&... inputs) {
-		for (auto& [evt, ID] : events) {
+	auto runEvents = [](auto& eventData, const auto&... inputs) {
+		eventData.events;
+		for (auto& [evt, ID] : eventData.events) {
 			evt(inputs...);
+		}
+		for (auto it = eventData.cancellableEvents.begin(); it != eventData.cancellableEvents.end(); it++) {
+			auto& evt = it->first;
+			if (evt(inputs...)) {
+				eventData.cancelledEventIterators.push_back(it);
+			}
+		}
+		if (!eventData.cancelledEventIterators.empty()) {
+			eraseMultipleIterators(eventData.cancellableEvents, eventData.cancelledEventIterators);
 		}
 	};
 	
-	runEvents(std::get<0>(m_callableEvents));
+	runEvents(std::get<EventData<>>(m_eventData));
 
 	int deltaX = 0;
 	int deltaY = 0;
@@ -78,7 +88,7 @@ void nv::Scene::executeEvents() {
 	}
 	m_mouseData.deltaX = deltaX;
 	m_mouseData.deltaY = deltaY;
-	runEvents(std::get<Events<MouseEvent>>(m_callableEvents), m_mouseData);
+	runEvents(std::get<EventData<MouseData>>(m_eventData), m_mouseData);
 
 	//text editing
 	if (m_currEditedTextInput == nullptr) {
@@ -106,9 +116,8 @@ nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMa
 
 	auto loadObjectLayer = [&, this](const json& objsJson, auto& objs, auto&... args) {
 		objs.reserve(objsJson.size());
-		std::println("Reserving {} {}s", objsJson.size(), typeid(ValueType<decltype(objs)>).name());
 		for (const auto& objJson : objsJson) {
-			objs.emplace_back(renderer, objJson, args...);
+			objs.emplace(renderer, objJson, args...);
 		}
 	};
 
@@ -163,12 +172,14 @@ void nv::Scene::operator()() {
 void nv::Scene::overlay(Scene& scene) {
 	/*you can't overlay an already overlayed scene on another scene as 
 	references don't get pushed*/
+	
 	auto overlayImpl = [](auto& thisObjectLayer, auto& otherObjectLayer) {
 		forEachDataMember([](auto& thisObjects, auto& otherObjects) { 
 			auto refView = ranges::transform_view(otherObjects, [](auto& obj) {
 				return std::ref(obj);
 			});
-			thisObjects.append_range(refView);
+			
+			thisObjects.insert(refView.begin(), refView.end());
 			return STAY_IN_LOOP; 
 		}, thisObjectLayer, otherObjectLayer);
 	};

@@ -42,8 +42,9 @@ namespace nv {
 
 		void move(int dx, int dy) noexcept;
 		void move(SDL_Point p) noexcept;
-		void setPos(int x, int y);
-		void setPos(SDL_Point p);
+		void setPos(int x, int y) noexcept;
+		void setPos(SDL_Point p) noexcept;
+		SDL_Point getPos() const noexcept;
 		void scale(int dw, int dh) noexcept;
 		void scale(SDL_Point p) noexcept;
 		bool containsCoord(int x, int y) const noexcept;

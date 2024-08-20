@@ -31,8 +31,7 @@ namespace {
 			break;
 		}
 		//invalid texture path
-		assert(false);
-		std::unreachable();
+		std::abort();
 	}
 
 	nv::Rect getColorRect(SDL_Renderer* renderer, Color color) {

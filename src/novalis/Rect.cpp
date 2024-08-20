@@ -47,9 +47,11 @@ void nv::Rect::setPos(int x, int y) noexcept {
 	rect.x = x;
 	rect.y = y;
 }
-void nv::Rect::setPos(SDL_Point p) noexcept
-{
+void nv::Rect::setPos(SDL_Point p) noexcept {
 	setPos(p.x, p.y);
+}
+SDL_Point nv::Rect::getPos() const noexcept {
+	return SDL_Point{ rect.x, rect.y };
 }
 void nv::Rect::setSize(int w, int h) noexcept {
 	rect.w = w;

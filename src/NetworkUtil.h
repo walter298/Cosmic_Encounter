@@ -41,13 +41,13 @@ concept Aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
 
 template<std::integral Integral>
 void parseValueFromString(std::string_view dataStr, Integral& integral) {
-	//std::println("Parsing number from {}", dataStr);
+	std::println("Parsing number from {}", dataStr);
 	integral = boost::lexical_cast<Integral>(dataStr);
 }
 
 template<ranges::viewable_range Range>
 void parseValueFromString(std::string_view str, Range& range) {
-	//std::println("Parsing container: {}", str);
+	std::println("Parsing container: {}", str);
 
 	auto begin = str.begin();
 	auto size = boost::lexical_cast<size_t>(dataSubstr(begin, str.end(), CONTAINER_ELEM_END));
@@ -91,10 +91,10 @@ void readMsg(std::string_view) = delete; //you have to pass in at least one argu
 
 template<typename... Args>
 void readMsg(std::string_view str, Args&... args) {
+	std::println("Parsing: {}", str);
 	auto begin = str.begin();
 	auto parse = [&](auto& arg) {
 		auto dataStr = dataSubstr(begin, str.end(), VALUE_END_CHR);
-		std::println("Parsing this value: {}", dataStr);
 		parseValueFromString(dataStr, arg);
 	};
 	((parse(args)), ...);
@@ -146,8 +146,6 @@ private:
 	std::reference_wrapper<tcp::socket> m_sock;
 	std::string m_data;
 	std::string::iterator m_begin = m_data.end();
-
-	std::string_view parseLatestMessage();
 public:
 	InputBuffer(tcp::socket& sock);
 	std::string_view read();
@@ -163,7 +161,7 @@ public:
 		m_data.clear();
 		writeMsg(m_data, std::forward<Args>(args)...);
 		asio::write(sock, asio::buffer(m_data));
-		//std::println("Sent {}", m_data);
+		std::println("Sent {}", m_data);
 	}
 
 	template<typename... Args>
@@ -196,7 +194,7 @@ public:
 	template<typename... Args>
 	void read(Args&... args) {
 		auto msg = m_inbox.read();
-		std::println("Entire Message: {}", msg);
+		std::println("Parsing {}", msg);
 		readMsg(msg, args...);
 	}
 

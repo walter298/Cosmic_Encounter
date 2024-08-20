@@ -14,9 +14,9 @@ namespace nv {
 		Rect m_rect;
 		std::reference_wrapper<const Rect> m_rectRef;
 
-		Event<> m_onClicked;
-		Event<> m_onHovered;
-		Event<> m_onUnhovered;
+		Event<void> m_onClicked;
+		Event<void> m_onHovered;
+		Event<void> m_onUnhovered;
 
 		bool m_previouslyHovered = false;
 		bool m_previouslyUnhovered = false;
@@ -27,8 +27,8 @@ namespace nv {
 		bool m_rightReleased = false;
 		bool m_middleReleased = false;
 	public:
-		Button(const Rect& rect, Event<>&& onClicked, Event<> onHovered, Event<>&& onUnhovered) noexcept;
-		Button(ExternalRect, const Rect& rect, Event<>&& onClicked, Event<> onHovered, Event<>&& onUnhovered) noexcept;
+		Button(const Rect& rect, Event<void>&& onClicked, Event<void>&& onHovered, Event<void>&& onUnhovered) noexcept;
+		Button(ExternalRect, const Rect& rect, Event<void>&& onClicked, Event<void>&& onHovered, Event<void>&& onUnhovered) noexcept;
 
 		void operator()(MouseData mouseBtnData);
 	};

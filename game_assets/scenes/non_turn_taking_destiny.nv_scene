@@ -1,0 +1,104 @@
+{
+  "objects": [
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
+        {
+          "name": "destiny_space",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -43,
+                -119,
+                2700,
+                1700
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -43,
+                -119,
+                2700,
+                1700
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\destiny_space.png"
+        }
+      ],
+      "layer": 0,
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
+        {
+          "name": "destiny_back",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                1052,
+                501,
+                200,
+                200
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                1052,
+                501,
+                200,
+                200
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\cards\\card_backs\\destiny_back.png"
+        }
+      ],
+      "layer": 1,
+      "struct nv::Rect": []
+    }
+  ]
+}

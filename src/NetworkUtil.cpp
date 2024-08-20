@@ -36,35 +36,55 @@ void Socket::disconnect() {
 	m_sock.close();
 }
 
-std::string_view InputBuffer::parseLatestMessage() {
-	//parse new message
-	auto msgEndBeginIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM);
-	std::string_view ret{ m_begin, msgEndBeginIt };
-
-	m_begin = msgEndBeginIt + 1; //update data begin
-
-	return ret;
-}
-
 InputBuffer::InputBuffer(tcp::socket& sock)
 	: m_sock{ sock }
 {
 }
 
 std::string_view InputBuffer::read() {
-	if (m_begin == m_data.end()) {
+	//if all messages have been parsed, then listen for incoming data
+	if (m_begin == m_data.end()) {  
 		m_data.clear();
 		asio::read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM);
 		m_begin = m_data.begin();
 	}
-	return parseLatestMessage();
+
+	auto poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM);
+
+	//if not an entire message was sent, read for more bytes until one is
+	if (poundIt == m_data.end()) {
+		asio::read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM);
+		poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM); //re-search for '#'
+	}
+
+
+	std::string_view str{ m_begin, poundIt };
+
+	m_begin = poundIt + 1; //update data begin to the first char of the next message
+	
+	std::println("{}", str);
+
+	return str;
 }
 
 asio::awaitable<std::string_view> InputBuffer::asyncRead() {
+	//if all messages have been parsed, then listen for incoming data
 	if (m_begin == m_data.end()) {
 		m_data.clear();
 		co_await asio::async_read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM, asio::use_awaitable);
 		m_begin = m_data.begin();
 	}
-	co_return parseLatestMessage();
+	auto poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM);
+
+	//if not an entire message was sent, read for more bytes until one is
+	if (poundIt == m_data.end()) {
+		co_await asio::async_read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM, asio::use_awaitable);
+		poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM); //re-search for '#'
+	}
+
+	std::string_view str{ m_begin, poundIt };
+
+	m_begin = poundIt + 1; //update data begin to the first char of the next message
+
+	co_return str;
 }

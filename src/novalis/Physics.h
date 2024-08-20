@@ -1,5 +1,7 @@
 #pragma once
 
+#include "data_util/DataStructures.h"
+
 #include "Collision.h"
 
 #include <print>

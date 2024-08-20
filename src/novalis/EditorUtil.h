@@ -9,8 +9,7 @@
 #include <string>
 #include <thread> //sleep
 
-#include <Windows.h>
-#include <ShlObj.h>
+#include <plf_hive.h>
 
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
@@ -62,7 +61,7 @@ namespace nv {
 					if (evt.type == SDL_QUIT) {
 						return EditorDest::Quit;
 					} else if (evt.type == SDL_KEYDOWN) {
-						if (evt.key.keysym.scancode == SDL_SCANCODE_MINUS) {
+						if (evt.key.keysym.scancode == SDL_SCANCODE_F5) {
 							return EditorDest::Home;
 						}
 					}
@@ -121,8 +120,8 @@ namespace nv {
 			return Ret{ static_cast<Converted>(pair.x), static_cast<Converted>(pair.y) };
 		}
 
-		template<typename EditedObject>
-		auto selectObj(std::vector<EditedObject>& objs, SDL_Point mousePos) {
+		template<typename Objects>
+		auto selectObj(Objects& objs, SDL_Point mousePos) {
 			return ranges::find_if(objs, [&](const auto& editedObj) {
 				return editedObj.obj.containsCoord(mousePos);
 			});
@@ -151,19 +150,19 @@ namespace nv {
 		};
 
 		template<RenderObject Object>
-		using EditedObjectVector = std::vector<EditedObjectData<Object>>;
+		using EditedObjectHive = plf::hive<EditedObjectData<Object>>;
 
 		template<RenderObject Object>
 		struct SelectedObjectData {
 			EditedObjectData<Object>* obj        = nullptr;
-			EditedObjectVector<Object>* objLayer = nullptr;
-			EditedObjectVector<Object>::iterator it;
+			EditedObjectHive<Object>* objLayer = nullptr;
+			EditedObjectHive<Object>::iterator it;
 
-			void resetToLastElement(EditedObjectVector<Object>* newObjLayer) {
+			/*void resetToLastElement(EditedObjectHive<Object>* newObjLayer) {
 				obj      = &newObjLayer->back();
 				objLayer = newObjLayer;
 				it       = std::prev(std::end(*newObjLayer));
-			}
+			}*/
 			void reset() {
 				obj      = nullptr;
 				objLayer = nullptr;
@@ -229,9 +228,9 @@ namespace nv {
 			//duplication 
 			if constexpr (std::copyable<Object>) {
 				if (ImGui::Button("Duplicate")) {
-					editedObj.objLayer->push_back(*editedObj.obj);
-					editedObj.obj = &editedObj.objLayer->back();
-					editedObj.it = std::prev(editedObj.objLayer->end());
+					auto it = editedObj.objLayer->insert(*editedObj.obj);
+					editedObj.obj = &(*it);
+					editedObj.it = it;
 				}
 			}
 

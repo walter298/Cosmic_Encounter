@@ -1,8 +1,9 @@
 #include "Server.h"
 
-#include <iostream> //cin
+#include <iostream> cin
 #include <print>
 
+#include "Destiny.h"
 #include "Game.h"
 #include "Lobby.h"
 
@@ -10,112 +11,130 @@ namespace ranges = std::ranges;
 namespace views = std::views;
 
 namespace {
-	template<ranges::viewable_range PlayerRange, typename... Args>
+	template<typename PlayerRange, typename... Args>
 	void broadcast(PlayerRange&& players, Args&&... args) {
 		std::tuple argsTuple{ std::forward<Args>(args)... };
 		for (auto&& player : players) {
 			std::apply([&](const auto&... tupleArgs) {
-				std::unwrap_reference_t<Player&>(player).sock.send(tupleArgs...);
+				nv::unrefwrap(player).sock.send(tupleArgs...);
 			}, argsTuple);
 		}
 	}
 
-	template<std::ranges::viewable_range Range, std::convertible_to<size_t>... Idxs>
-	auto excludeElems(Range& range, Idxs... idxs) {
-		return range | views::enumerate | views::filter([&](auto&& elemIdxPair) {
-			return ((std::get<0>(elemIdxPair) != idxs) && ...);
-		}) | views::transform([](auto&& elemIdxPair) {
-			return std::ref(std::get<1>(elemIdxPair));
-		});
-	}
-}
+	struct Defense {
+		Player* player = nullptr;
+		size_t colonyIdx = 0;
+	};
 
-static bool acceptedOwnColorBeingDrawn(Player& turnTaker, size_t& colonyIdx) {
-	if (std::ranges::any_of(turnTaker.colonies,
-		[](const auto& colony) { return colony.hasEnemyShips; })) {
+	bool acceptedOwnColorBeingDrawn(Player& turnTaker, size_t& colonyIdx) {
 		bool accepted = false;
-		Color color{};
-		turnTaker.sock.read(accepted, color, colonyIdx);
+		turnTaker.sock.read(accepted); //todo: choose specific colony to attack
 		return accepted;
-	} else {
-		return false;
 	}
-}
 
-struct Defense {
-	Player* player;
-	size_t colonyIdx = 0;
-};
+	DestinyResponseFromTurnTaker broadcastDestinyColor(Players& players, Player& turnTaker, Color colorDrawn, bool finalColor,
+			bool allowedToKeepDrawing, bool mustKeepDrawing) 
+	{
+		NonTurnTakerDestinyMessage nttdm;
+		nttdm.drawnColor = colorDrawn;
 
-static Defense getDefense(Player& turnTaker, GameState& gameState) {
-	Player* defensivePlayer = nullptr;
-	size_t colonyIdx = 0;
+		//send mandatory drawn color info to all non-turn-takers
+		nttdm.finalColor = finalColor;
 
-	while (true) {
+		broadcast(nv::ExcludeIndices(players, turnTaker.index), nttdm);
+
+		TurnTakerDestinyMessage ttdm;
+		ttdm.drawnColor = colorDrawn;
+
+		//send mandatory drawn color info to the turn-taker 
+		ttdm.allowedToKeepDrawing = allowedToKeepDrawing;
+		ttdm.mustKeepDrawing = mustKeepDrawing;
+		turnTaker.sock.send(ttdm);
+
+		DestinyResponseFromTurnTaker resp;
+		turnTaker.sock.read(resp);
+
+		return resp;
+	}
+
+	bool hasToKeepRedrawing(Player& turnTaker, GameState& gameState, Defense& defense) {
 		auto colorDrawn = gameState.destinyDeck.discardTop();
-		broadcast(gameState.players, colorDrawn);
+
+		//get the defensive player
+		defense.player = &(*std::ranges::find_if(gameState.players, [&](const auto& player) {
+			return player.color == turnTaker.color;
+		}));
 
 		if (colorDrawn != turnTaker.color) { //player does not have a choice to keep drawing if another color is drawn
-			defensivePlayer = &*ranges::find_if(gameState.players, [&](const auto& player) { 
-				return player.color == turnTaker.color; 
-			});
-			break;
-		} else if (acceptedOwnColorBeingDrawn(turnTaker, colonyIdx)) {
-			break;
+			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, true, false, false);
+			return false;// we are not redrawing a mandatory color
+		} else if (std::ranges::any_of(turnTaker.colonies, [](const auto& colony) { return colony.hasEnemyShips; })) {
+			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, false, true, false);
+			return acceptedOwnColorBeingDrawn(turnTaker, defense.colonyIdx);// turn-taker can choose to redraw own color of system contains enemy ships
+		} else {
+			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, false, false, true);
+			return true; //turn-taker MUST redraw if own color is drawn but system doesn't have enemy ships
 		}
 	}
-	return { defensivePlayer, colonyIdx };
-}
 
-static Players acceptConnections(size_t pCount, tcp::acceptor& acceptor, std::random_device& rbg) {
-	std::println("Waiting for players to join");
+	Defense getDefense(Player& turnTaker, GameState& gameState) {
+		Defense defense;
 
-	assert(pCount < 6);
+		while (hasToKeepRedrawing(turnTaker, gameState, defense)) {}
 
-	Players players;
-	players.reserve(pCount);
-
-	std::array availableColors = { Red, Green, Blue, Black, Purple };
-	std::array availableAliens = { Pacifist, Virus, Pacifist, Virus, Pacifist };
-
-	ranges::shuffle(availableColors, rbg);
-	ranges::shuffle(availableAliens, rbg);
-
-	//combine availableColors and availableAliens
-	std::vector<PlayerRenderData> pRenderDataV;
-	pRenderDataV.append_range(
-		ranges::zip_view(availableAliens, availableColors) |
-		views::transform([](auto&& pair) { 
-			return PlayerRenderData{ std::get<0>(pair), std::get<1>(pair) }; 
-		})
-	);
-	
-	//accept connections
-	for (size_t i = 0; i < pCount; i++) {
-		auto& player = players.emplace_back(Socket{ acceptor.accept() }, availableColors[i]);
-		
-		/*send the newly joined player his or her color and alien,
-		and the colors and aliens of each other player who has already joined*/
-		player.sock.send(pCount, pRenderDataV | views::take(i + 1));
-
-		//send each other player the new color and alien
-		broadcast(players | views::take(i), pRenderDataV[i]);
+		return defense;
 	}
-	
-	return players;
-}
 
-static std::vector<Color> loadDestinyDeck(const Players& players) {
-	std::vector<Color> colors{ players.size() * 3 };
-	size_t playerIdx = 0;
+	Players acceptConnections(size_t pCount, tcp::acceptor& acceptor, std::random_device& rbg) {
+		std::println("Waiting for players to join");
 
-	ranges::generate(colors, [&] {
-		auto color = players[playerIdx].color;
-		playerIdx += ((playerIdx + 1) % players.size());
-		return color;
-	});
+		assert(pCount < 6);
 
-	return colors;
+		Players players;
+		players.reserve(pCount);
+
+		std::array availableColors = { Red, Green, Blue, Black, Purple };
+		std::array availableAliens = { Pacifist, Virus, Pacifist, Virus, Pacifist };
+
+		ranges::shuffle(availableColors, rbg);
+		ranges::shuffle(availableAliens, rbg);
+
+		//combine availableColors and availableAliens
+		std::vector<PlayerRenderData> pRenderDataV;
+		pRenderDataV.append_range(
+			ranges::zip_view(availableAliens, availableColors) |
+			views::transform([](auto&& pair) {
+				return PlayerRenderData{ std::get<0>(pair), std::get<1>(pair) };
+			})
+		);
+
+		//accept connections
+		for (size_t i = 0; i < pCount; i++) {
+			auto& player = players.emplace_back(acceptor.accept(), availableColors[i], i);
+
+			/*send the newly joined player his or her color and alien,
+			and the colors and aliens of each other player who has already joined*/
+			player.sock.send(pCount, pRenderDataV | views::take(i + 1));
+
+			//send each other player the new color and alien
+			broadcast(players | views::take(i), pRenderDataV[i]);
+		}
+
+		return players;
+	}
+
+	std::vector<Color> loadDestinyDeck(const Players& players) {
+		std::vector<Color> colors{ players.size() * 3 };
+		size_t playerIdx = 0;
+
+		ranges::generate(colors, [&] {
+			auto color = players[playerIdx].color;
+			playerIdx += ((playerIdx + 1) % players.size());
+			return color;
+		});
+
+		return colors;
+	}
 }
 
 void host(size_t pCount, const tcp::endpoint& endpoint) {
@@ -130,6 +149,7 @@ void host(size_t pCount, const tcp::endpoint& endpoint) {
 	tcp::acceptor acceptor{ ctx, endpoint };
 	
 	GameState gameState;
+	
 	gameState.players = acceptConnections(pCount, acceptor, gameState.rbg);
 
 	std::println("Press enter to start the game");

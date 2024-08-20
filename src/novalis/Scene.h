@@ -4,9 +4,12 @@
 #include <print>
 #include <tuple>
 
+#include <plf_hive.h>
+
 #include <nlohmann/json.hpp>
 
 #include "data_util/Algorithms.h"
+#include "data_util/DataStructures.h"
 #include "data_util/Reflection.h"
 
 #include "Button.h"
@@ -25,15 +28,26 @@ namespace nv {
 		
 		SDL_Event m_SDLEvt{};
 
-		template<typename EventT>
-		using Events = std::vector<std::pair<EventT, ID<EventT>>>;
+		template<typename Object>
+		using IDObjects = std::vector<std::pair<Object, ID<Object>>>;
+
+		template<typename Ret, typename... EventParams>
+		using Events = IDObjects<Event<Ret, EventParams...>>;
+
+		template<typename... EventArgs>
+		struct EventData {
+			Events<void, EventArgs...> events;
+			Events<bool, EventArgs...> cancellableEvents;
+
+			std::vector<typename Events<bool, EventArgs...>::iterator> cancelledEventIterators;
+		};
 
 		Keymap m_keyMap;
 		const Uint8* m_keystate = SDL_GetKeyboardState(nullptr);
 
-		std::tuple<Events<Event<>>, Events<MouseEvent>, Events<KeyboardEvent>> m_callableEvents;
+		std::tuple<EventData<>, EventData<MouseData>, EventData<const Keymap&>> m_eventData;
 
-		Events<TextInput> m_textInputs;
+		IDObjects<TextInput> m_textInputs;
 		TextInput* m_currEditedTextInput = nullptr;
 		std::string m_textInputBuff;
 		void selectTextInput();
@@ -54,7 +68,7 @@ namespace nv {
 		auto& find(this auto&& self, int layer, std::string_view name) 
 			requires(RenderObject<std::unwrap_reference_t<Object>&>) 
 		{
-			decltype(auto) objs = std::get<std::vector<Object>>(self.m_objectLayers.at(layer));
+			decltype(auto) objs = std::get<plf::hive<Object>>(self.m_objectLayers.at(layer));
 			auto objIt = ranges::find_if(objs, [&](const auto& obj) { 
 				return unrefwrap(obj).getName() == name;
 			});
@@ -64,14 +78,12 @@ namespace nv {
 		}
 
 		template<typename Object>
-		decltype(auto) addObject(Object&& object, int layer) 
+		auto addObject(Object&& object, int layer) 
 			requires(RenderObject<std::unwrap_reference_t<Object&>>) 
 		{
-			decltype(auto) objects = std::get<std::vector<std::remove_cvref_t<Object>>>(m_objectLayers[layer]);
-			objects.push_back(std::forward<Object>(object));
-			return unrefwrap(objects.back());
+			decltype(auto) objects = std::get<plf::hive<std::remove_cvref_t<Object>>>(m_objectLayers[layer]);
+			return StableRef{ objects, objects.insert(std::forward<Object>(object)) };
 		}
-
 	private:
 		template<typename Object, typename Objects, typename Transform>
 		void eraseImpl(ID<Object> id, Objects& objects, Transform transform) {
@@ -82,45 +94,38 @@ namespace nv {
 	public:
 		template<typename EventType>
 		void removeEvent(ID<EventType> id) {
-			eraseImpl(id, std::get<Events<EventType>>(m_callableEvents), &std::pair<EventType, ID<EventType>>::second);
-		}
-		template<typename Object>
-		void removeObject(ID<Object> id, int layer) {
-			eraseImpl(id, std::get<std::vector<Object>>(m_objectLayers.at(layer)), &ObjectBase::getID);
-		}
-	private:
-		template<typename T>
-		struct GetEventsType;
+			using EventTypeTPs     = typename GetTemplateTypes<EventType>::Types; //will be of "one" type like void(int, int)
+			using EventInfo        = FunctionTraits<std::tuple_element_t<0, EventTypeTPs>>;
+			using EventArgs        = typename EventInfo::Args;
+			using EventRet         = typename EventInfo::Ret;
+			using MatchedEventData = typename GetParameterizedTypeFromTuple<EventData, EventArgs>::type;
 
-		template<typename... Ts>
-		struct GetEventsType<std::tuple<Ts...>> {
-			using type = Events<Event<Ts...>>;
-		};
-
-		template<typename Func>
-		using GetIDFromFunc = typename GetEventsType<typename FunctionTraits<std::decay_t<Func>>::args>::type::value_type::second_type;
-	private:
-		template<typename Events, typename Func>
-		void pushCancellableEvent(Events& events, Func&& func, GetIDFromFunc<Func> id) {
-			events.emplace_back([this, events = std::ref(events), func = std::forward<Func>(func), id = id](const auto&... args) mutable {
-				if (func(args...)) {
-					removeEvent(id);
-				}
-			}, id);
+			auto& eventData = std::get<MatchedEventData>(m_eventData);
+			auto getID = &std::pair<EventType, ID<EventType>>::second;
+			if constexpr (std::same_as<EventRet, bool>) {
+				eraseImpl(id, eventData.cancellableEvents, getID);
+			} else {
+				eraseImpl(id, eventData.events, getID);
+			}
 		}
-	public:
+	
 		template<typename Func>
 		auto addEvent(Func&& func) {
-			using FuncArgs = typename FunctionTraits<std::decay_t<Func>>::args;
-			using EventsType = typename GetEventsType<FuncArgs>::type;
+			using FuncInfo = FunctionTraits<std::decay_t<Func>>;
+			using FuncArgs = typename FuncInfo::Args;
+			using FuncRet  = typename FuncInfo::Ret;
+			using FuncSig  = typename FuncInfo::Sig;
 
-			GetIDFromFunc<Func> id;
-			auto& events = std::get<EventsType>(m_callableEvents);
+			using IDSpecialization = ID<typename GetParameterizedTypeFromTuple<Event, FuncSig>::type>;
+			IDSpecialization id;
 
-			if constexpr (std::same_as<ResultOfNonOverloaded<Func>, bool>) {
-				pushCancellableEvent(events, std::forward<Func>(func), id);
+			using EventDataSpecialization = typename GetParameterizedTypeFromTuple<EventData, FuncArgs>::type;
+			auto& eventData = std::get<EventDataSpecialization>(m_eventData);
+
+			if constexpr (std::same_as<FuncRet, bool>) {
+				eventData.cancellableEvents.emplace_back(std::forward<Func>(func), id);
 			} else {
-				events.emplace_back(std::forward<Func>(func), id);
+				eventData.events.emplace_back(std::forward<Func>(func), id);
 			}
 			return id;
 		}

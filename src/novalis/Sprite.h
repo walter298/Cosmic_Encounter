@@ -16,12 +16,12 @@ namespace nv {
 
 	class Sprite : public ObjectBase<Sprite> {
 	private:
-		Layers<Texture> m_texObjLayers;
+		boost_con::flat_map<int, std::vector<Texture>> m_texObjLayers;
 		int m_currLayer = 0;
 	public:
 		Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap);
 
-		using JsonFormat = Layers<std::pair<std::string, TextureData>>;
+		using JsonFormat = boost_con::flat_map<int, std::vector<std::pair<std::string, TextureData>>>;
 
 		TextureData& getTexData(size_t texIdx);
 

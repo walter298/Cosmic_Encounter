@@ -10,7 +10,7 @@ namespace nv {
 		private:
 			SDL_Renderer* m_renderer;
 
-			Layers<EditedObjectData<Texture>> m_texLayers;
+			boost_con::flat_map<int, plf::hive<nv::editor::EditedObjectData<Texture>>> m_texLayers;
 			SelectedObjectData<Texture> m_selectedTexObj;
 			bool m_isTexSelected = false;
 

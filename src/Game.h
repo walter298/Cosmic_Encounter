@@ -67,10 +67,13 @@ enum Alien : size_t {
 };
 
 struct Player {
+	Player(tcp::socket&& sock, Color color, size_t index);
+
 	Socket sock;
 	Color color;
 	std::vector<Card> hand;
 	std::array<Colony, 5> colonies;
+	size_t index = 0;
 };
 
 using Players = std::vector<Player>;

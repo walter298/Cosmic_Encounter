@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
 
 #include "BasicConcepts.h"
 
@@ -37,5 +38,29 @@ namespace nv {
 		return ranges::lower_bound(range, value, [](const Value& v1, const Value& v2) {
 			return v1 < v2;
 		}, [&](auto& elem) { return std::invoke(pm, elem); });
+	}
+
+	template<typename Object>
+	void eraseMultipleIterators(std::vector<Object>& vec, std::vector<typename std::vector<Object>::iterator>& iterators) {
+		assert(!vec.empty() && !iterators.empty());
+
+		std::ptrdiff_t elemsPastDoomedIt = 1;
+		auto doomedIndirectIt = iterators.begin();
+		auto currEnd = *doomedIndirectIt;
+
+		while (std::next(doomedIndirectIt) != iterators.end()) {
+			auto moveRangeBegin = currEnd + elemsPastDoomedIt; //vec::iterator
+			auto moveRangeEnd = *std::next(doomedIndirectIt); //vec::iterator
+
+			if (ranges::distance(moveRangeBegin, moveRangeEnd) > 0) {
+				ranges::move(moveRangeBegin, moveRangeEnd, currEnd);
+				currEnd += ranges::distance(moveRangeBegin, moveRangeEnd);
+			}
+			doomedIndirectIt++;
+			elemsPastDoomedIt++;
+		}
+		ranges::move(std::next(iterators.back()), vec.end(), currEnd);
+		vec.erase(vec.begin() + (vec.size() - iterators.size()), vec.end());
+		iterators.clear();
 	}
 }

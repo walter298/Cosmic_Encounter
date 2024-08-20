@@ -69,12 +69,16 @@ void nv::Text::move(SDL_Point p) noexcept {
 	move(p.x, p.y);
 }
 
-void nv::Text::setPos(int x, int y) {
+void nv::Text::setPos(int x, int y) noexcept {
 	m_ren.setPos(x, y);
 }
 
-void nv::Text::setPos(SDL_Point p) {
+void nv::Text::setPos(SDL_Point p) noexcept {
 	setPos(p.x, p.y);
+}
+
+SDL_Point nv::Text::getPos() const noexcept {
+	return m_ren.getPos();
 }
 
 void nv::Text::scale(int dw, int dh) noexcept {

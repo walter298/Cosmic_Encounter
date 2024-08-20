@@ -6,6 +6,8 @@
 
 #include <boost/container/flat_map.hpp>
 
+#include <plf_hive.h>
+
 #include <nlohmann/json.hpp>
 
 #include <SDL2/SDL_rect.h> //SDL_Point
@@ -47,7 +49,7 @@ namespace nv {
 	concept RenderObjectRange = ranges::viewable_range<Range> && RenderObject<typename Range::value_type>;
 
 	template<typename... Ts>
-	using ObjectLayers = boost_con::flat_map<int, std::tuple<std::vector<Ts>...>>;
+	using ObjectLayers = boost_con::flat_map<int, std::tuple<plf::hive<Ts>...>>;
 
 	template<typename T>
 	concept Aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
@@ -59,7 +61,7 @@ namespace nv {
 	using Subrange = ranges::subrange<typename std::vector<T>::iterator>;
 
 	template<typename T>
-	using Layers = boost_con::flat_map<int, std::vector<T>>;
+	using Layers = boost_con::flat_map<int, plf::hive<T>>;
 
 	template<typename Range>
 	using ValueType = typename std::remove_cvref_t<Range>::value_type;

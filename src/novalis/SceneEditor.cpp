@@ -12,21 +12,20 @@ void SceneEditor::loadSprite() {
 	try {
 		std::ifstream file{ *filePath };
 		auto json = json::parse(file);
-		auto& currSpriteLayer = std::get<EditedObjectVector<Sprite>>(m_objectLayers[m_currLayer]);
-		currSpriteLayer.emplace_back(m_renderer, json, m_texMap);
-		m_selectedSpriteData.resetToLastElement(&currSpriteLayer);
+		auto& currSpriteLayer = std::get<EditedObjectHive<Sprite>>(m_objectLayers[m_currLayer]);
+		currSpriteLayer.emplace(m_renderer, json, m_texMap);
 	} catch (json::exception e) {
 		std::println("{}", e.what());
 	}
 }
 
 void SceneEditor::createRect() {
-	auto& rectLayer = std::get<EditedObjectVector<Rect>>(m_objectLayers[m_currLayer]);
-	auto& lastRect = rectLayer.emplace_back(m_renderer, 0, 0, 0, 0).obj;
+	auto& rectLayer = std::get<EditedObjectHive<Rect>>(m_objectLayers[m_currLayer]);
+	auto& lastRect = rectLayer.emplace(m_renderer, 0, 0, 0, 0)->obj;
 	lastRect.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
 	lastRect.setSize(200, 100);
 	m_showingRightClickOptions = false;
-	m_selectedRectData.resetToLastElement(&rectLayer);
+	//m_selectedRectData.resetToLastElement(&rectLayer);
 }
 
 void SceneEditor::reduceOpacityOfOtherLayers() {
@@ -96,12 +95,12 @@ void SceneEditor::showFontOptions() {
 	using namespace std::literals;
 
 	if (selectedFont != nullptr) {
-		auto& currLayer = std::get<EditedObjectVector<Text>>(m_objectLayers[m_currLayer]);
-		currLayer.emplace_back(m_renderer, "generic text"sv, m_fontPath, m_fontSize, selectedFont);
-		auto& insertedTex = currLayer.back();
+		auto& currLayer = std::get<EditedObjectHive<Text>>(m_objectLayers[m_currLayer]);
+		auto texIt = currLayer.emplace(m_renderer, "generic text"sv, m_fontPath, m_fontSize, selectedFont);
+		auto& insertedTex = *texIt;
 		insertedTex.obj.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
 		m_showingFontOptions = false;
-		m_selectedTextData.resetToLastElement(&currLayer);
+		//m_selectedTextData.resetToLastElement(&currLayer);
 	}
 
 	ImGui::End();
@@ -112,22 +111,22 @@ void SceneEditor::createTextures() noexcept {
 	if (!texPaths) {
 		return;
 	}
-	auto& texLayer = std::get<EditedObjectVector<Texture>>(m_objectLayers[m_currLayer]);
+	auto& texLayer = std::get<EditedObjectHive<Texture>>(m_objectLayers[m_currLayer]);
 	for (auto& texPath : *texPaths) {
-		texLayer.emplace_back(
+		auto it = texLayer.emplace(
 			m_renderer,
 			texPath,
 			loadSharedTexture(m_renderer, texPath),
 			TextureData{}
 		);
 		convertFullToRegularPath(texPath);
-		texLayer.back().obj.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
-		texLayer.back().obj.scale(200, 200);
-		texLayer.back().width  = 200;
-		texLayer.back().height = 200;
-		texLayer.back().name   = fileName(texPath);
+		auto& editedObj = *it;
+		editedObj.obj.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
+		editedObj.obj.scale(200, 200);
+		editedObj.width  = 200;
+		editedObj.height = 200;
+		editedObj.name   = fileName(texPath);
 	}
-	m_selectedTextureData.resetToLastElement(&texLayer);
 }
 
 void SceneEditor::showRightClickOptions() noexcept {

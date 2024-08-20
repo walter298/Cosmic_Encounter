@@ -1,5 +1,8 @@
 #include "EditorUtil.h"
 
+#include <Windows.h>
+#include <ShlObj.h>
+
 std::optional<std::string> nv::editor::openFilePath() {
 	WCHAR buffer[MAX_PATH];
 	OPENFILENAME ofn = {};
@@ -21,7 +24,7 @@ std::optional<std::vector<std::string>> nv::editor::openFilePaths() {
 	std::vector<std::string> ret;
 
 	OPENFILENAME ofn;
-	wchar_t szFile[MAX_PATH * 100]; // Buffer for file names
+	wchar_t szFile[MAX_PATH]; // Buffer for file names
 
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);

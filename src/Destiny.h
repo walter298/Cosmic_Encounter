@@ -5,7 +5,22 @@
 #include "NetworkUtil.h"
 #include "RenderData.h"
 
-inline constexpr int ACCEPTED_COLOR = 0;
-inline constexpr int DECIDED_TO_KEEP_DRAWING = 1;
+struct TurnTakerDestinyMessage {
+	Color drawnColor{};
+	bool allowedToKeepDrawing = false;
+	bool mustKeepDrawing = false;
+};
 
-void showDestiny(Socket& sock, nv::Scene& mainUi, const ColorMap& colors, Color pColor, bool takingTurn);
+struct NonTurnTakerDestinyMessage {
+	Color drawnColor{};
+	bool finalColor = 0;
+};
+
+enum DestinyResponseFromTurnTaker {
+	AcceptedColor,
+	DecidedToKeepDrawing
+};
+
+inline constexpr int ENDING_DESTINY_PHASE    = 2;
+
+void showDestiny(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap, const ColorMap& colorMap, bool takingTurn);

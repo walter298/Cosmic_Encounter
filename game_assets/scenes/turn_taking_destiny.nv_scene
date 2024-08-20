@@ -1,0 +1,192 @@
+{
+  "objects": [
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
+        {
+          "name": "destiny_space",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -43,
+                -119,
+                2700,
+                1700
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -43,
+                -119,
+                2700,
+                1700
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\destiny_space.png"
+        }
+      ],
+      "layer": 0,
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
+        {
+          "name": "destiny_back",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                1052,
+                501,
+                200,
+                200
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                1052,
+                501,
+                200,
+                200
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\cards\\card_backs\\destiny_back.png"
+        }
+      ],
+      "layer": 1,
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [],
+      "layer": 2,
+      "struct nv::Rect": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "keep_drawing_button_rect",
+          "sdl_rect": [
+            1212,
+            802,
+            280,
+            70
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "accept_button_rect",
+          "sdl_rect": [
+            896,
+            801,
+            165,
+            70
+          ]
+        }
+      ]
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 40,
+          "name": "accept_button_text",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              913,
+              813,
+              123,
+              45
+            ]
+          },
+          "value": "Accept"
+        },
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 40,
+          "name": "keep_drawing_button_text",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              1223,
+              814,
+              250,
+              45
+            ]
+          },
+          "value": "Keep Drawing"
+        }
+      ],
+      "class nv::Texture": [],
+      "layer": 3,
+      "struct nv::Rect": []
+    }
+  ]
+}

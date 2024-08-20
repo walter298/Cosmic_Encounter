@@ -1,12 +1,12 @@
 #include "Button.h"
 
-nv::Button::Button(const Rect& otherRect, Event<>&& onClicked, Event<> onHovered, Event<>&& onUnhovered) noexcept
+nv::Button::Button(const Rect& otherRect, Event<void>&& onClicked, Event<void>&& onHovered, Event<void>&& onUnhovered) noexcept
 	: m_rect{ otherRect }, m_rectRef{ m_rect }, m_onClicked{ std::move(onClicked) }, 
 	m_onHovered{ std::move(onHovered) }, m_onUnhovered{ std::move(onUnhovered) }
 {
 }
 
-nv::Button::Button(ExternalRect, const Rect& rect, Event<>&& onClicked, Event<> onHovered, Event<>&& onUnhovered) noexcept
+nv::Button::Button(ExternalRect, const Rect& rect, Event<void>&& onClicked, Event<void>&& onHovered, Event<void>&& onUnhovered) noexcept
 	: m_rectRef{ rect }, m_onClicked{ std::move(onClicked) }, 
 	m_onHovered{ std::move(onHovered) }, m_onUnhovered{ std::move(onUnhovered) }
 {

@@ -31,7 +31,6 @@ namespace nv {
 		};
 	}
 
-
 	template<size_t Idx, typename T>
 	using GetType = typename detail::GetTypeImpl<std::is_aggregate_v<std::remove_cvref<T>>, Idx, T>::type;
 
@@ -83,33 +82,38 @@ namespace nv {
 
 	template<typename T>
 	struct FunctionTraits { //primary template assumes function call operator
-		using args = FunctionTraits<decltype(&T::operator())>::args;
+		using Args = typename FunctionTraits<decltype(&T::operator())>::Args;
+		using Ret  = typename FunctionTraits<decltype(&T::operator())>::Ret;
+		using Sig  = typename FunctionTraits<decltype(&T::operator())>::Sig;
 	};
 
-	template<typename R, typename... Args>
-	struct FunctionTraits<R(Args...)> { //specialization for functions that haven't decayed
-		using args = std::tuple<Args...>;
+	template<typename R, typename... Ts>
+	struct FunctionTraits<R(Ts...)> { //specialization for functions that haven't decayed
+		using Args = std::tuple<Ts...>;
+		using Ret  = R;
+		using Sig  = std::tuple<R, Ts...>;
 	};
 
-	template<typename R, typename... Args>
-	struct FunctionTraits<R(*)(Args...)> { //specialization for function pointers
-		using args = std::tuple<Args...>;
+	template<typename R, typename... Ts>
+	struct FunctionTraits<R(*)(Ts...)> { //specialization for function pointers
+		using Args = std::tuple<Ts...>;
+		using Ret  = R;
+		using Sig = std::tuple<R, Ts...>;
 	};
 
-	template<typename C, typename R, typename... Args>
-	struct FunctionTraits<R(C::*)(Args...) const> { //specialization for const member functions
-		using args = std::tuple<Args...>;
+	template<typename C, typename R, typename... Ts>
+	struct FunctionTraits<R(C::*)(Ts...) const> { //specialization for const member functions
+		using Args = std::tuple<Ts...>;
+		using Ret  = R;
+		using Sig = std::tuple<R, Ts...>;
 	};
 
-	template<typename C, typename R, typename... Args>
-	struct FunctionTraits<R(C::*)(Args...)> { //specialization for mutable member functions
-		using args = std::tuple<Args...>;
+	template<typename C, typename R, typename... Ts>
+	struct FunctionTraits<R(C::*)(Ts...)> { //specialization for mutable member functions
+		using Args = std::tuple<Ts...>;
+		using Ret  = R;
+		using Sig = std::tuple<R, Ts...>;
 	};
-
-	template<typename Func>
-	using ResultOfNonOverloaded = decltype(
-		std::apply(std::declval<std::decay_t<Func>>(), std::declval<typename FunctionTraits<Func>::args>())
-	);
 
 	template<typename Value, typename... Keys>
 	class TypeMap {
@@ -172,8 +176,7 @@ namespace nv {
 			if constexpr (pred(obj)) {
 				whenFound(obj);
 				return BREAK_FROM_LOOP;
-			}
-			else {
+			} else {
 				return STAY_IN_LOOP;
 			}
 		}, tuple);
@@ -221,11 +224,141 @@ namespace nv {
 	struct IsReferenceWrapper<std::reference_wrapper<T>> : public std::true_type {};
 
 	template<typename T>
-	auto& unrefwrap(T& t) {
+	constexpr auto& unrefwrap(T& t) {
 		if constexpr (IsReferenceWrapper<std::remove_cvref_t<T>>::value) {
 			return t.get();
 		} else {
 			return t;
 		}
 	}
+
+	template<template<typename... Ts> typename T, typename... Ts>
+	struct GetParameterizedTypeFromTuple {};
+
+	template<template<typename... Ts> typename Parameterized, typename... Ts2>
+	struct GetParameterizedTypeFromTuple<Parameterized, std::tuple<Ts2...>> {
+		using type = Parameterized<Ts2...>;
+	};
+
+	template<typename Parameterized>
+	struct GetTemplateTypes {};
+
+	template<template<typename... GTs> typename Parameterized, typename... Ts>
+	struct GetTemplateTypes<Parameterized<Ts...>> {
+		using Types = std::tuple<Ts...>;
+	};
+
+	namespace detail {
+		//this is moronic: compiler is too stupid to deduce an nttp pack of 0 length in an integer sequence
+		template<size_t currentTypeIdx, typename BuiltUpType, typename T>
+		constexpr auto excludeMembers(BuiltUpType builtUp, T&& t, std::integer_sequence<size_t>) {
+			if constexpr (currentTypeIdx == memberCount<T>()) {
+				return builtUp;
+			} else {
+				return excludeMembers<currentTypeIdx + 1>(std::tuple_cat(builtUp, std::tie(std::get<currentTypeIdx>(t))), t, std::integer_sequence<size_t>{});
+			}
+		}
+
+		template<size_t currentTypeIdx, typename BuiltUpType, typename T, size_t currentExcludedTypeIdx, size_t... excludedTypeIdxs>
+		constexpr auto excludeMembers(BuiltUpType builtUp, T&& t, std::integer_sequence<size_t, currentExcludedTypeIdx, excludedTypeIdxs...>) {
+			if constexpr (currentTypeIdx == memberCount<T>()) {
+				return builtUp;
+			} else if constexpr (currentExcludedTypeIdx == currentTypeIdx) {
+				return excludeMembers<currentTypeIdx + 1>(
+					builtUp,
+					t,
+					std::integer_sequence<size_t, excludedTypeIdxs...>{}
+				);
+			} else {
+				return excludeMembers<currentTypeIdx + 1>(
+					std::tuple_cat(builtUp, std::tie(std::get<currentTypeIdx>(t))),
+					t,
+					std::integer_sequence<size_t, currentExcludedTypeIdx, excludedTypeIdxs...>{}
+				);
+			}
+		}
+	}
+
+	template<typename T, size_t... excludedTypeIdxs>
+	constexpr auto excludeMembers(T&& t, std::integer_sequence<size_t, excludedTypeIdxs...>) {
+		return detail::excludeMembers<0>(std::tuple{}, t, std::integer_sequence<size_t, excludedTypeIdxs...>{});
+	}
+
+	template<typename Container, std::integral... ExcludedIdxs> requires(sizeof...(ExcludedIdxs) > 0)
+	class ExcludeIndices {
+	private:
+		Container& m_container;
+
+		using ExcludedIndicesArray = std::array<size_t, sizeof...(ExcludedIdxs)>;
+		ExcludedIndicesArray m_excludedIdxs;
+	public:
+		ExcludeIndices(Container& con, ExcludedIdxs... excludedIdxs)
+			: m_container{ con }, m_excludedIdxs{ static_cast<size_t>(excludedIdxs)... }
+		{
+		}
+
+		class Iterator {
+		private:
+			using ContainerIterator = typename Container::iterator;
+			ContainerIterator m_it;
+			size_t m_containerIdx;
+
+			ExcludedIndicesArray& m_excludedIdxs;
+			size_t m_excludedIdxArrIdx = 0;
+		public:
+			Iterator(ContainerIterator it, size_t index, ExcludedIndicesArray& excludedIdxs)
+				: m_it{ it }, m_excludedIdxs{ excludedIdxs }, m_containerIdx{ index }
+			{
+			}
+
+			decltype(auto) operator*(this auto&& self) {
+				return *self.m_it;
+			}
+
+			auto& operator++() {
+				m_it++;
+				m_containerIdx++;
+				while (m_excludedIdxArrIdx < sizeof...(ExcludedIdxs) && m_excludedIdxs[m_excludedIdxArrIdx] < m_containerIdx) {
+					m_excludedIdxArrIdx++;
+				}
+				while (m_excludedIdxArrIdx < sizeof...(ExcludedIdxs) && m_excludedIdxs[m_excludedIdxArrIdx] == m_containerIdx) {
+					m_it++;
+					m_containerIdx++;
+					m_excludedIdxArrIdx++;
+				}
+				return *this;
+			}
+
+			auto& operator++(int) {
+				return this->operator++();
+			}
+
+			bool operator==(const Iterator& other) const {
+				return m_it == other.m_it;
+			}
+			bool operator!=(const Iterator& other) const {
+				return m_it != other.m_it;
+			}
+		};
+
+		Iterator begin() {
+			auto beginIt = ranges::begin(m_container);
+			Iterator it{
+				beginIt,
+				0,
+				m_excludedIdxs
+			};
+			if (0 == m_excludedIdxs[0]) {
+				it++;
+			}
+			return it;
+		}
+		Iterator end() {
+			return Iterator{
+				ranges::end(m_container),
+				ranges::size(m_container),
+				m_excludedIdxs
+			};
+		}
+	};
 }

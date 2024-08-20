@@ -34,6 +34,7 @@ namespace nv {
 		void scale(SDL_Point p) noexcept;
 		void setPos(int x, int y) noexcept;
 		void setPos(SDL_Point p) noexcept;
+		SDL_Point getPos() const noexcept;
 		void setSize(int w, int h) noexcept;
 		void setSize(SDL_Point p) noexcept;
 		SDL_Point getSize() const noexcept;
