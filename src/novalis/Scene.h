@@ -65,7 +65,7 @@ namespace nv {
 		Scene(std::string_view path, SDL_Renderer* renderer, TextureMap& texMap, FontMap& fontMap);
 
 		template<typename Object>
-		auto& find(this auto&& self, int layer, std::string_view name) 
+		auto find(this auto&& self, int layer, std::string_view name)
 			requires(RenderObject<std::unwrap_reference_t<Object>&>) 
 		{
 			decltype(auto) objs = std::get<plf::hive<Object>>(self.m_objectLayers.at(layer));
@@ -73,8 +73,8 @@ namespace nv {
 				return unrefwrap(obj).getName() == name;
 			});
 			assert(objIt != objs.end());
-		
-			return *objIt;
+			
+			return StableRef{ objs, objIt };
 		}
 
 		template<typename Object>

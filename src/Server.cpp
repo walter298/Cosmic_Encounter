@@ -82,6 +82,9 @@ namespace {
 
 		while (hasToKeepRedrawing(turnTaker, gameState, defense)) {}
 
+		turnTaker.sock.read(defense.colonyIdx);
+		broadcast(nv::ExcludeIndices(gameState.players, turnTaker.index), defense.colonyIdx);
+
 		return defense;
 	}
 

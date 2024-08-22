@@ -1,0 +1,338 @@
+{
+  "objects": [
+    {
+      "class nv::Sprite": [
+        {
+          "name": "ufo_cursor",
+          "texture_object_layers": [
+            [
+              0,
+              [
+                [
+                  "Cosmic_Encounter\\game_assets\\images\\ufos\\black_ufo.png",
+                  [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        479,
+                        94,
+                        100,
+                        100
+                      ]
+                    },
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        479,
+                        94,
+                        0,
+                        0
+                      ]
+                    },
+                    [
+                      0,
+                      0
+                    ],
+                    0.0,
+                    0
+                  ]
+                ]
+              ]
+            ],
+            [
+              1,
+              [
+                [
+                  "Cosmic_Encounter\\game_assets\\images\\ufos\\blue_ufo.png",
+                  [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        100,
+                        100
+                      ]
+                    },
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        0,
+                        0
+                      ]
+                    },
+                    [
+                      0,
+                      0
+                    ],
+                    0.0,
+                    0
+                  ]
+                ]
+              ]
+            ],
+            [
+              2,
+              [
+                [
+                  "Cosmic_Encounter\\game_assets\\images\\ufos\\green_ufo.png",
+                  [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        100,
+                        100
+                      ]
+                    },
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        0,
+                        0
+                      ]
+                    },
+                    [
+                      0,
+                      0
+                    ],
+                    0.0,
+                    0
+                  ]
+                ]
+              ]
+            ],
+            [
+              3,
+              [
+                [
+                  "Cosmic_Encounter\\game_assets\\images\\ufos\\purple_ufo.png",
+                  [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        100,
+                        100
+                      ]
+                    },
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        0,
+                        0
+                      ]
+                    },
+                    [
+                      0,
+                      0
+                    ],
+                    0.0,
+                    0
+                  ]
+                ]
+              ]
+            ],
+            [
+              4,
+              [
+                [
+                  "Cosmic_Encounter\\game_assets\\images\\ufos\\red_ufo.png",
+                  [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        100,
+                        100
+                      ]
+                    },
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        0,
+                        0
+                      ]
+                    },
+                    [
+                      0,
+                      0
+                    ],
+                    0.0,
+                    0
+                  ]
+                ]
+              ]
+            ],
+            [
+              5,
+              [
+                [
+                  "Cosmic_Encounter\\game_assets\\images\\ufos\\white_ufo.png",
+                  [
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        100,
+                        100
+                      ]
+                    },
+                    {
+                      "color": [
+                        255,
+                        255,
+                        255,
+                        255
+                      ],
+                      "name": "",
+                      "sdl_rect": [
+                        833,
+                        723,
+                        0,
+                        0
+                      ]
+                    },
+                    [
+                      0,
+                      0
+                    ],
+                    0.0,
+                    0
+                  ]
+                ]
+              ]
+            ]
+          ]
+        }
+      ],
+      "class nv::Text": [],
+      "class nv::Texture": [],
+      "layer": 10,
+      "struct nv::Rect": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "go_back_button_rect",
+          "sdl_rect": [
+            1164,
+            86,
+            187,
+            70
+          ]
+        }
+      ]
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 39,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              255
+            ],
+            "name": "",
+            "sdl_rect": [
+              1182,
+              99,
+              151,
+              44
+            ]
+          },
+          "value": "Go Back"
+        }
+      ],
+      "class nv::Texture": [],
+      "layer": 11,
+      "struct nv::Rect": []
+    }
+  ]
+}

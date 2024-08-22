@@ -25,7 +25,7 @@ void SceneEditor::createRect() {
 	lastRect.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
 	lastRect.setSize(200, 100);
 	m_showingRightClickOptions = false;
-	//m_selectedRectData.resetToLastElement(&rectLayer);
+	m_selectedRectData.resetToRandomElement(&rectLayer);
 }
 
 void SceneEditor::reduceOpacityOfOtherLayers() {
@@ -100,7 +100,7 @@ void SceneEditor::showFontOptions() {
 		auto& insertedTex = *texIt;
 		insertedTex.obj.setPos(NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2);
 		m_showingFontOptions = false;
-		//m_selectedTextData.resetToLastElement(&currLayer);
+		m_selectedTextData.resetToRandomElement(&currLayer);
 	}
 
 	ImGui::End();

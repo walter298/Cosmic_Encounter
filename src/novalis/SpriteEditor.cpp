@@ -106,7 +106,8 @@ void nv::editor::SpriteEditor::insertTextures(SDL_Renderer* renderer) {
 			);
 			defaultPos.ren.rect.x += 300;
 		}
-		//m_selectedTexObj.resetToLastElement(&currLayer);
+		
+		m_selectedTexObj.resetToRandomElement(&currLayer);
 		m_isTexSelected = true;
 	}
 }
@@ -136,7 +137,6 @@ void SpriteEditor::showSpriteOptions(SDL_Renderer* renderer) {
 	//select layer
 	if (ImGui::InputInt("Layer", &m_currLayer)) {
 		auto tupleWrapper = std::tie(m_texLayers);
-		//makeOneLayerMoreVisible(std::tie(m_texLayers), m_currLayer, 100);
 	}
 
 	//insert textures
@@ -181,11 +181,14 @@ nv::editor::EditorDest SpriteEditor::imguiRender() {
 		}
 	} 
 	if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-		auto selectedObj = selectObj(currLayer, convertPair<SDL_Point>(ImGui::GetMousePos()));
-		if (selectedObj != currLayer.end()) {
-			m_selectedTexObj.obj      = &(*selectedObj);
+		auto mouse = convertPair<SDL_Point>(ImGui::GetMousePos());
+		auto selectedObjIt = ranges::find_if(currLayer, [&](const auto& tex) {
+			return tex.obj.containsCoord(mouse);
+		});
+		if (selectedObjIt != currLayer.end()) {
+			m_selectedTexObj.obj      = &(*selectedObjIt);
 			m_selectedTexObj.objLayer = &currLayer;
-			m_selectedTexObj.it       = selectedObj;
+			m_selectedTexObj.it       = selectedObjIt;
 			m_isTexSelected = true;
 		} 
 	}

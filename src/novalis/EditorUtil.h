@@ -9,8 +9,6 @@
 #include <string>
 #include <thread> //sleep
 
-#include <plf_hive.h>
-
 #include <imgui.h>
 #include <imgui_impl_sdl2.h>
 #include <imgui_impl_sdlrenderer2.h>
@@ -120,12 +118,12 @@ namespace nv {
 			return Ret{ static_cast<Converted>(pair.x), static_cast<Converted>(pair.y) };
 		}
 
-		template<typename Objects>
-		auto selectObj(Objects& objs, SDL_Point mousePos) {
+		/*template<typename Object>
+		auto selectObj(EditedObjectHive<Object>& objs, SDL_Point mousePos) {
 			return ranges::find_if(objs, [&](const auto& editedObj) {
 				return editedObj.obj.containsCoord(mousePos);
 			});
-		}
+		}*/
 
 		template<RenderObject Object>
 		struct EditedObjectData {
@@ -154,15 +152,15 @@ namespace nv {
 
 		template<RenderObject Object>
 		struct SelectedObjectData {
-			EditedObjectData<Object>* obj        = nullptr;
+			EditedObjectData<Object>* obj      = nullptr;
 			EditedObjectHive<Object>* objLayer = nullptr;
 			EditedObjectHive<Object>::iterator it;
 
-			/*void resetToLastElement(EditedObjectHive<Object>* newObjLayer) {
-				obj      = &newObjLayer->back();
+			void resetToRandomElement(EditedObjectHive<Object>* newObjLayer) {
+				obj      = &(*newObjLayer->begin());
 				objLayer = newObjLayer;
-				it       = std::prev(std::end(*newObjLayer));
-			}*/
+				it       = newObjLayer->begin();
+			}
 			void reset() {
 				obj      = nullptr;
 				objLayer = nullptr;

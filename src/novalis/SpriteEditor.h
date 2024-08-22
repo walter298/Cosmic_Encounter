@@ -1,7 +1,5 @@
 #pragma once
 
-#include <unordered_map>
-
 #include "EditorUtil.h"
 
 namespace nv {
@@ -10,7 +8,7 @@ namespace nv {
 		private:
 			SDL_Renderer* m_renderer;
 
-			boost_con::flat_map<int, plf::hive<nv::editor::EditedObjectData<Texture>>> m_texLayers;
+			boost_con::flat_map<int, plf::hive<EditedObjectData<Texture>>> m_texLayers;
 			SelectedObjectData<Texture> m_selectedTexObj;
 			bool m_isTexSelected = false;
 

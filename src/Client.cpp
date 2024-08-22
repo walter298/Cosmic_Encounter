@@ -10,6 +10,7 @@
 #include "novalis/Instance.h"
 #include "novalis/Sound.h"
 
+#include "Destiny.h"
 #include "Game.h"
 #include "GameOverviewUI.h"
 #include "JoinGame.h"
@@ -41,6 +42,24 @@ void play() {
 	//join lobby
 	auto gameRenderData = runLobby(sock, instance.renderer, texMap, fontMap);
 	
+	TurnTakingDestiny turnTakingDestiny{ sock, instance.renderer, texMap, fontMap, gameRenderData.colorMap };
+	NonTurnTakingDestiny nonTurnTakingDestiny{ sock, instance.renderer, texMap, fontMap, gameRenderData.colorMap };
+
+	//get the cards and the turn order
+	std::vector<Card> cards;
+	std::vector<Color> turnOrder;
+	sock.read(cards, turnOrder);
+
+	size_t colorIdx = 0;
+	while (true) {
+		if (gameRenderData.pColor == turnOrder[colorIdx]) {
+			turnTakingDestiny();
+		} else {
+			nonTurnTakingDestiny();
+		}
+		colorIdx = (colorIdx + 1) % turnOrder.size();
+	}
+
 	//show the game 
 	showGameOverview(sock, instance.renderer, texMap, fontMap, gameRenderData);
 

@@ -15,7 +15,7 @@ namespace nv {
 	public:
 		SDL_Window* window     = nullptr;
 		SDL_Renderer* renderer = nullptr;
-
+		
 		Instance(std::string_view windowTitle) noexcept;
 		Instance(Instance&&) = delete;
 		~Instance() noexcept;

@@ -1,7 +1,5 @@
 #include "Destiny.h"
 
-#include <atomic>
-
 #include "novalis/Physics.h"
 
 #include "Game.h"
@@ -12,33 +10,9 @@ namespace {
 	constexpr int DRAWN_COLOR_LAYER = 4;
 	constexpr int DESTINY_BACK_LAYER = 1;
 
-	auto getAcceptButton(nv::Scene& mainUi) {
-		static auto& acceptButtonRect = mainUi.find<nv::Rect>(RECT_LAYER, "accept_button_rect");
-		static auto& acceptButtonText = mainUi.find<nv::Text>(TEXT_LAYER, "accept_button_text");
-		return std::tie(acceptButtonRect, acceptButtonText);
-	}
-	auto getKeepDrawingButton(nv::Scene& mainUi) {
-		static auto& keepDrawingButtonRect = mainUi.find<nv::Rect>(RECT_LAYER, "keep_drawing_button_rect");
-		static auto& keepDrawingButtonText = mainUi.find<nv::Text>(TEXT_LAYER, "keep_drawing_button_text");
-		return std::tie(keepDrawingButtonRect, keepDrawingButtonText);
-	}
-	void toggleButton(nv::Rect& rect, nv::Text& text, bool showing) {
-		static const auto originalRectPos = rect.getPos();
-		static const auto originalTextPos = text.getPos();
-		static constexpr SDL_Point OUT_OF_SCENE{ 5000, 5000 };
-
-		if (showing) {
-			rect.setPos(originalRectPos);
-			text.setPos(originalTextPos);
-		} else {
-			rect.setPos(OUT_OF_SCENE);
-			text.setPos(OUT_OF_SCENE);
-		}
-	}
-
 	auto getColorRectMover(nv::Scene& ui, Color drawnColor, const ColorMap& colorMap) {
 		auto colorRect = colorMap.at(drawnColor).second;
-		auto& colorBack = ui.find<nv::Texture>(DESTINY_BACK_LAYER, "destiny_back");
+		auto& colorBack = ui.find<nv::Texture>(DESTINY_BACK_LAYER, "destiny_back").get();
 		colorRect.setPos(colorBack.getPos());
 		colorRect.setSize(colorBack.getSize());
 
@@ -53,108 +27,120 @@ namespace {
 			0
 		};
 	}
+}
 
-	void readDrawnColorForTurnTaker(Socket& sock, nv::Scene& ui, const ColorMap& colors, nv::Rect& acceptButtonRect,
-		nv::Text& acceptButtonText, nv::Rect& keepDrawingButtonRect, nv::Text& keepDrawingButtonText) 
-	{
-		TurnTakerDestinyMessage destinyResult;
-		sock.read(destinyResult);
+asio::awaitable<void> NonTurnTakingDestiny::asyncReadColorsFromServer() {
+	Color color;
+	co_await m_sock.asyncRead(color);
 
-		ui.addEvent(getColorRectMover(ui, destinyResult.drawnColor, colors));
+	std::scoped_lock lock{ m_mutex };
+	m_drawnColors.push_back(color);
+}
 
-		if (destinyResult.mustKeepDrawing) {
-			toggleButton(acceptButtonRect, acceptButtonText, false);
-			toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
-		} else if (destinyResult.allowedToKeepDrawing) {
-			toggleButton(acceptButtonRect, acceptButtonText, true);
-			toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
-		} else {
-			toggleButton(acceptButtonRect, acceptButtonText, true);
-			toggleButton(keepDrawingButtonRect, keepDrawingButtonText, false);
+NonTurnTakingDestiny::NonTurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap,
+	nv::FontMap& fontMap, const ColorMap& colorMap) 
+	: m_sock{ sock }, 
+	m_scene { nv::relativePath("Cosmic_Encounter/game_assets/scenes/turn_taking_destiny.nv_scene"), renderer, texMap, fontMap }
+{
+	m_scene.addEvent([&, this] {
+		std::scoped_lock lock{ m_mutex };
+		if (!m_drawnColors.empty() && !m_wasFinalColorSent) {
+			m_scene.addEvent(getColorRectMover(m_scene, m_drawnColors.back(), colorMap));
+			m_drawnColors.pop_back();
+		} else if (m_wasFinalColorSent) {
+			m_scene.addEvent(nv::EventChain{
+				getColorRectMover(m_scene, m_drawnColors.back(), colorMap),
+				[&] { m_scene.running = false; return true; }
+			});
 		}
-	}
+	});
+}
 
-	void showDestinyForTurnTaker(Socket& sock, nv::Scene& ui, const ColorMap& colorMap) {
-		//button to accept the color being drawn
-		auto [acceptButtonRect, acceptButtonText] = getAcceptButton(ui);
+void NonTurnTakingDestiny::operator()() {
+	m_drawnColors.clear();
+	m_wasFinalColorSent = false;
+	asio::co_spawn(m_sock.getExecutor(), asyncReadColorsFromServer(), asio::use_awaitable);
+	m_scene();
+}
 
-		//map accept and reject buttons to their respective rects
-		auto acceptBtnID = ui.addEvent(nv::Button{
-			nv::usingExternalRect,
-			acceptButtonRect,
-			[&] { sock.send(AcceptedColor); ui.running = false; },
-			[&] { acceptButtonRect.setRenderColor(34, 139, 34, 255); },
-			[&] { acceptButtonRect.setRenderColor(34, 139, 34, 255); }
-		});
+void TurnTakingDestiny::readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acceptButtonText, nv::Rect& keepDrawingButtonRect,
+	nv::Text& keepDrawingButtonText, const ColorMap& colorMap) {
+	TurnTakerDestinyMessage destinyResult;
+	m_sock.read(destinyResult);
 
-		//by default, redrawing colors is not an option
-		auto [keepDrawingButtonRect, keepDrawingButtonText] = getKeepDrawingButton(ui);
+	m_scene.addEvent(getColorRectMover(m_scene, destinyResult.drawnColor, colorMap));
+
+	if (destinyResult.mustKeepDrawing) {
+		toggleButton(acceptButtonRect, acceptButtonText, false);
+		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
+	} else if (destinyResult.allowedToKeepDrawing) {
+		toggleButton(acceptButtonRect, acceptButtonText, true);
+		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
+	} else {
+		toggleButton(acceptButtonRect, acceptButtonText, true);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, false);
-
-		bool wasColorDrawn = false;
-
-		auto keepDrawingBtnID = ui.addEvent(nv::Button{
-		nv::usingExternalRect,
-		keepDrawingButtonRect,
-			[&] { sock.send(DecidedToKeepDrawing); wasColorDrawn = false; },
-			[&] { keepDrawingButtonRect.setRenderColor(34, 139, 34, 255); },
-			[&] { keepDrawingButtonRect.setRenderColor(34, 139, 34, 255); }
-		});
-		auto cardMoveEvtID = ui.addEvent([&] {
-			if (!wasColorDrawn) {
-				wasColorDrawn = true;
-				readDrawnColorForTurnTaker(sock, ui, colorMap, acceptButtonRect, acceptButtonText, keepDrawingButtonRect, keepDrawingButtonText);
-			}
-		});
-		ui();
-		ui.removeEvent(keepDrawingBtnID);
-		ui.removeEvent(cardMoveEvtID);
-	}
-
-	std::mutex mutex;
-
-	asio::awaitable<void> asyncReadColorsFromServer(Socket& sock, std::vector<Color>& drawnColors, bool& wasFinalColorSent) {
-		while (true) {
-			NonTurnTakerDestinyMessage destiny;
-			co_await sock.asyncRead(destiny);
-			
-			std::scoped_lock lock{ mutex };
-			drawnColors.push_back(destiny.drawnColor);
-
-			if (destiny.finalColor) {
-				wasFinalColorSent = true;
-				break;
-			}
-		} 
-	}
-
-	void showDestinyForNonTurnTaker(Socket& sock, nv::Scene& ui, const ColorMap& colorMap) {
-		bool wasFinalColorSent = false;
-		std::vector<Color> drawnColors;
-		asio::co_spawn(sock.getExecutor(), asyncReadColorsFromServer(sock, drawnColors, wasFinalColorSent), asio::use_awaitable);
-
-		ui.addEvent([&] {
-			std::unique_lock lock{ mutex };
-			if (!drawnColors.empty() && !wasFinalColorSent) {
-				ui.addEvent(getColorRectMover(ui, drawnColors.back(), colorMap));
-				drawnColors.pop_back();
-			} else if (wasFinalColorSent) {
-				ui.addEvent(nv::EventChain{
-					getColorRectMover(ui, drawnColors.back(), colorMap),
-					[&] { ui.running = false; return true; }
-				});
-			}
-		});
-		ui();
 	}
 }
 
-void showDestiny(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap, const ColorMap& colorMap, bool takingTurn) {
-	if (takingTurn) {
-		static nv::Scene ui{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/turn_taking_destiny.nv_scene"), renderer, texMap, fontMap };
-		showDestinyForTurnTaker(sock, ui, colorMap);
+void TurnTakingDestiny::toggleButton(nv::Rect& rect, nv::Text& text, bool showing) {
+	static const auto originalRectPos = rect.getPos();
+	static const auto originalTextPos = text.getPos();
+	static constexpr SDL_Point OUT_OF_SCENE{ 5000, 5000 };
+
+	if (showing) {
+		rect.setPos(originalRectPos);
+		text.setPos(originalTextPos);
 	} else {
-		static nv::Scene ui{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/non_turn_taking_destiny.nv_scene"), renderer, texMap, fontMap };
-		showDestinyForNonTurnTaker(sock, ui, colorMap);
+		rect.setPos(OUT_OF_SCENE);
+		text.setPos(OUT_OF_SCENE);
 	}
+}
+
+TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap,
+	nv::FontMap& fontMap, const ColorMap& colorMap)
+	: m_sock{ sock },
+	m_scene{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/turn_taking_destiny.nv_scene"), renderer, texMap, fontMap }
+{
+	//button to accept the color being drawn
+	auto& acceptButtonRect = m_scene.find<nv::Rect>(RECT_LAYER, "accept_button_rect").get();
+	auto& acceptButtonText = m_scene.find<nv::Text>(TEXT_LAYER, "accept_button_text").get();
+
+	//map accept and reject buttons to their respective rects
+	m_scene.addEvent(nv::Button{
+		nv::usingExternalRect,
+		acceptButtonRect,
+		[this] { m_sock.send(AcceptedColor); m_scene.running = false; },
+		[&] { acceptButtonRect.setRenderColor(34, 139, 34, 255); },
+		[&] { acceptButtonRect.setRenderColor(34, 139, 34, 255); }
+	});
+
+	//by default, redrawing colors is not an option
+	auto& keepDrawingButtonRect = m_scene.find<nv::Rect>(RECT_LAYER, "keep_drawing_button_rect").get();
+	auto& keepDrawingButtonText = m_scene.find<nv::Text>(TEXT_LAYER, "keep_drawing_button_text").get();
+	toggleButton(keepDrawingButtonRect, keepDrawingButtonText, false);
+
+	m_scene.addEvent(nv::Button{
+		nv::usingExternalRect,
+		keepDrawingButtonRect,
+		[this] { m_sock.send(DecidedToKeepDrawing); m_wasColorDrawn = false; },
+		[&] { keepDrawingButtonRect.setRenderColor(34, 139, 34, 255); },
+		[&] { keepDrawingButtonRect.setRenderColor(255, 255, 255, 255); }
+	});
+	m_scene.addEvent([&] {
+		if (!m_wasColorDrawn) {
+			m_wasColorDrawn = true;
+			readDrawnColor(
+				acceptButtonRect,
+				acceptButtonText,
+				keepDrawingButtonRect,
+				keepDrawingButtonText,
+				colorMap
+			);
+		}
+	});
+}
+
+void TurnTakingDestiny::operator()() {
+	m_wasColorDrawn = false;
+	m_scene();
 }

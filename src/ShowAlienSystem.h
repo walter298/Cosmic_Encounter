@@ -2,4 +2,7 @@
 
 #include "novalis/Scene.h"
 
-void showAlienSystem(nv::Scene& ui);
+#include "Game.h"
+
+nv::Scene& getPlanetSelector(nv::Scene& showHomeSystem);
+size_t selectPlanet(nv::Scene& planetSelector, Color color);

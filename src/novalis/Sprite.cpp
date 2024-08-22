@@ -24,6 +24,10 @@ nv::TextureData& nv::Sprite::getTexData(size_t texIdx) {
 	return m_texObjLayers[m_currLayer][texIdx].texData;
 }
 
+void nv::Sprite::setTextureLayer(int layer) noexcept {
+	m_currLayer = layer;
+}
+
 void nv::Sprite::setPos(int destX, int destY) noexcept {
 	for (auto& [layer, texObjs] : m_texObjLayers) {
 		auto [x, y] = texObjs[0].getPos();
@@ -63,13 +67,16 @@ void nv::Sprite::rotate(double angle, SDL_Point p) {}
 
 void nv::Sprite::setRotationCenter() noexcept {}
 
-bool nv::Sprite::containsCoord(int x, int y) const noexcept {
-	return ranges::any_of(m_texObjLayers.at(m_currLayer), [&](const auto& texData) { 
-		return texData.containsCoord(x, y);
-	});
+std::optional<size_t> nv::Sprite::containsCoord(int x, int y) const noexcept {
+	for (const auto& [idx, tex] : views::enumerate(m_texObjLayers.at(m_currLayer))) {
+		if (tex.containsCoord(x, y)) {
+			return static_cast<size_t>(idx);
+		}
+	}
+	return std::nullopt;
 }
 
-bool nv::Sprite::containsCoord(SDL_Point p) const noexcept {
+std::optional<size_t> nv::Sprite::containsCoord(SDL_Point p) const noexcept {
 	return containsCoord(p.x, p.y);
 }
 

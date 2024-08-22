@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <string_view>
+#include <optional>
 
 #include <SDL2/SDL_image.h>
 
@@ -24,6 +25,7 @@ namespace nv {
 		using JsonFormat = boost_con::flat_map<int, std::vector<std::pair<std::string, TextureData>>>;
 
 		TextureData& getTexData(size_t texIdx);
+		void setTextureLayer(int layer) noexcept;
 
 		void setPos(int destX, int destY) noexcept;
 		void setPos(SDL_Point p) noexcept;
@@ -37,8 +39,8 @@ namespace nv {
 		void rotate(double angle, SDL_Point p);
 		void setRotationCenter() noexcept;
 
-		bool containsCoord(int x, int y) const noexcept;
-		bool containsCoord(SDL_Point p) const noexcept;
+		std::optional<size_t> containsCoord(int x, int y) const noexcept;
+		std::optional<size_t> containsCoord(SDL_Point p) const noexcept;
 
 		void setOpacity(Uint8 opacity);
 

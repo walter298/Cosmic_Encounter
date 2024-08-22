@@ -43,7 +43,4 @@ void showGameOverview(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texM
 	showCards(mainUi, cards, gameRenderData.cardMap);
 
 	size_t colorTurnIdx = 0;
-
-	std::println("Showing destiny");
-	showDestiny(sock, renderer, texMap, fontMap, gameRenderData.colorMap, gameRenderData.pColor == turnOrder[colorTurnIdx]);
 }

@@ -43,11 +43,11 @@ void joinGame(SDL_Renderer* renderer, Socket& sock, nv::TextureMap& texMap, nv::
     constexpr int RECT_LAYER = 1;
     constexpr int TEXT_LAYER = 2;
 
-    auto& ipAddrInputText = scene.find<nv::Text>(TEXT_LAYER, "ip_address_input");
-    auto& portInputText   = scene.find<nv::Text>(TEXT_LAYER, "port_input");
+    auto& ipAddrInputText = scene.find<nv::Text>(TEXT_LAYER, "ip_address_input").get();
+    auto& portInputText   = scene.find<nv::Text>(TEXT_LAYER, "port_input").get();
 
     //connection button
-    auto& joinButtonRect = scene.find<nv::Rect>(RECT_LAYER, "join_button_rect");
+    auto& joinButtonRect = scene.find<nv::Rect>(RECT_LAYER, "join_button_rect").get();
     nv::Button joinButton{ 
         joinButtonRect,
         [&] {
@@ -64,8 +64,8 @@ void joinGame(SDL_Renderer* renderer, Socket& sock, nv::TextureMap& texMap, nv::
     scene.addEvent(std::move(joinButton));
 
     //text inputs
-    scene.addTextInput({ scene.find<nv::Rect>(RECT_LAYER, "ip_address_input_rect"), ipAddrInputText });
-    scene.addTextInput({ scene.find<nv::Rect>(RECT_LAYER, "port_input_rect"), portInputText });
+    scene.addTextInput({ scene.find<nv::Rect>(RECT_LAYER, "ip_address_input_rect").get(), ipAddrInputText});
+    scene.addTextInput({ scene.find<nv::Rect>(RECT_LAYER, "port_input_rect").get(), portInputText});
 
     scene();
 }
