@@ -30,17 +30,22 @@ namespace {
 }
 
 asio::awaitable<void> NonTurnTakingDestiny::asyncReadColorsFromServer() {
-	Color color;
-	co_await m_sock.asyncRead(color);
+	bool finalColorNotDrawn = true;
+	while (finalColorNotDrawn) {
+		NonTurnTakerDestinyMessage msg;
+		co_await m_sock.asyncRead(msg);
+		finalColorNotDrawn = msg.finalColor;
 
-	std::scoped_lock lock{ m_mutex };
-	m_drawnColors.push_back(color);
+		std::scoped_lock lock{ m_mutex };
+		m_drawnColors.push_back(msg.drawnColor);
+		m_wasFinalColorSent = msg.finalColor;
+	}
 }
 
 NonTurnTakingDestiny::NonTurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap,
 	nv::FontMap& fontMap, const ColorMap& colorMap) 
 	: m_sock{ sock }, 
-	m_scene { nv::relativePath("Cosmic_Encounter/game_assets/scenes/turn_taking_destiny.nv_scene"), renderer, texMap, fontMap }
+	m_scene { nv::relativePath("Cosmic_Encounter/game_assets/scenes/non_turn_taking_destiny.nv_scene"), renderer, texMap, fontMap }
 {
 	m_scene.addEvent([&, this] {
 		std::scoped_lock lock{ m_mutex };
