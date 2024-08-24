@@ -15,6 +15,3 @@ public:
 
 	size_t operator()(Color color);
 };
-
-nv::Scene& getPlanetSelector(nv::Scene& showHomeSystem);
-size_t selectPlanet(nv::Scene& planetSelector, Color color);

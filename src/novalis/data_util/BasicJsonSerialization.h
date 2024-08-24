@@ -92,4 +92,6 @@ namespace nv {
 	}
 
 	json parseJson(std::string_view filename);
+
+	void printJsonKeys(const json& json);
 }

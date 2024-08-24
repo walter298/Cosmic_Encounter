@@ -8,7 +8,7 @@ PlanetSelector::PlanetSelector(nv::Scene& showHomeSystem)
 		showHomeSystem.fontMap
 	} 
 {
-	m_scene.addEvent([this, ufoCursor = m_scene.find<nv::SpriteRef>(UFO_CURSOR_LAYER, "ufo_cursor")](nv::MouseData mouse) mutable {
+	m_scene.addEvent([this, ufoCursor = m_scene.find<nv::Sprite>(UFO_CURSOR_LAYER, "ufo_cursor")](nv::MouseData mouse) mutable {
 		auto hoveredTexIdx = ufoCursor.get().containsCoord(mouse.x, mouse.y);
 		if (hoveredTexIdx) {
 			ufoCursor.get().setOpacity(255);

@@ -199,3 +199,16 @@ void nv::Scene::deoverlay() {
 		}, objRefs);
 	}
 }
+
+void nv::Scene::printElements() const {
+	for (auto& [layer, objs] : m_objectLayers) {
+		std::println("{}: ", layer);
+		forEachDataMember([](const auto& objs) {
+			for (const auto& obj : objs) {
+				std::print("{} ", unrefwrap(obj).getName());
+			}
+			std::println("");
+			return STAY_IN_LOOP;
+		}, objs);
+	}
+}

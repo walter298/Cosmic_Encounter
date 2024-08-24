@@ -72,7 +72,11 @@ namespace nv {
 			auto objIt = ranges::find_if(objs, [&](const auto& obj) { 
 				return unrefwrap(obj).getName() == name;
 			});
-			assert(objIt != objs.end());
+			if (objIt == objs.end()) {
+				std::println("Error: could not find {} at layer {}", name, layer);
+				self.printElements();
+				exit(-5555);
+			}
 			
 			return StableRef{ objs, objIt };
 		}
@@ -135,6 +139,8 @@ namespace nv {
 
 		void overlay(Scene& scene);
 		void deoverlay();
+
+		void printElements() const;
 	};
 }
 

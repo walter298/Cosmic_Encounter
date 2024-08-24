@@ -1,6 +1,7 @@
 #include "BasicJsonSerialization.h"
 
 #include <fstream>
+#include <print>
 
 template<std::integral T>
 using Quad = std::tuple<T, T, T, T>;
@@ -32,4 +33,10 @@ nlohmann::json nv::parseJson(std::string_view filename) {
 	std::ifstream file{ filename.data() };
 	assert(file.is_open());
 	return json::parse(file);
+}
+
+void nv::printJsonKeys(const json& json) {
+	for (const auto& key : json.items()) {
+		std::println("{}", key.key().c_str());
+	}
 }

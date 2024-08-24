@@ -43,10 +43,5 @@ namespace {
 }
 
 GameRenderData::GameRenderData(SDL_Renderer* renderer, nv::TextureMap& texMap) 
-	: planets{ 
-		renderer,
-		nv::parseJson(nv::relativePath("Cosmic_Encounter/game_assets/sprites/planets.nv_sprite")),
-		texMap
-	}, cardMap{ loadCardMap(renderer) }
 {
 }

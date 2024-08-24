@@ -83,7 +83,6 @@ SDL_Point nv::Text::getPos() const noexcept {
 
 void nv::Text::scale(int dw, int dh) noexcept {
 	m_ren.scale(dw, dh);
-	std::println("{} {}", m_ren.rect.w, m_ren.rect.h);
 }
 
 void nv::Text::scale(SDL_Point p) noexcept {

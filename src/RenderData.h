@@ -8,7 +8,6 @@ using CardMap  = std::unordered_map<Card, nv::Texture>;
 using ColorMap = std::unordered_map<Color, std::pair<nv::Texture, nv::Rect>>;
 
 struct GameRenderData {
-	nv::Sprite planets;
 	std::vector<nv::Texture> pCards;
 	CardMap cardMap;
 	ColorMap colorMap;
