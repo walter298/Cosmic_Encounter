@@ -15,6 +15,7 @@
 #include "GameOverviewUI.h"
 #include "JoinGame.h"
 #include "Lobby.h"
+#include "ShowAlienSystem.h"
 
 namespace ranges = std::ranges;
 namespace views  = std::views;
@@ -35,7 +36,7 @@ void play() {
 	nv::FontMap fontMap;
 
 	nv::Music music{ nv::relativePath("Cosmic_Encounter/game_assets/music/mars.wav") };
-	music.play(9000000);
+	//music.play(9000000);
 
 	joinGame(instance.renderer, sock, texMap, fontMap);
 	
@@ -45,6 +46,14 @@ void play() {
 	TurnTakingDestiny turnTakingDestiny{ sock, instance.renderer, texMap, fontMap, gameRenderData.colorMap };
 	NonTurnTakingDestiny nonTurnTakingDestiny{ sock, instance.renderer, texMap, fontMap, gameRenderData.colorMap };
 
+	nv::Scene systemViewer{
+		nv::relativePath("Cosmic_Encounter/game_assets/scenes/home_system.nv_scene"),
+		instance.renderer,
+		texMap,
+		fontMap
+	};
+	PlanetSelector planetSelector{ systemViewer };
+
 	//get the cards and the turn order
 	std::vector<Card> cards;
 	std::vector<Color> turnOrder;
@@ -53,10 +62,13 @@ void play() {
 	size_t colorIdx = 0;
 	while (true) {
 		if (gameRenderData.pColor == turnOrder[colorIdx]) {
-			turnTakingDestiny();
+			auto color     = turnTakingDestiny();
+			auto colonyIdx = planetSelector(color);
+			sock.send(colonyIdx);
 		} else {
 			nonTurnTakingDestiny();
 		}
+		exit(5555);
 		colorIdx = (colorIdx + 1) % turnOrder.size();
 	}
 

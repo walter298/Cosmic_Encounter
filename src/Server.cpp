@@ -1,6 +1,6 @@
 #include "Server.h"
 
-#include <iostream> cin
+#include <iostream>
 #include <print>
 
 #include "Destiny.h"
@@ -42,10 +42,10 @@ namespace {
 		nttdm.finalColor = finalColor;
 
 		broadcast(nv::ExcludeIndices(players, turnTaker.index), nttdm);
-
+		
 		TurnTakerDestinyMessage ttdm;
 		ttdm.drawnColor = colorDrawn;
-
+		
 		//send mandatory drawn color info to the turn-taker 
 		ttdm.allowedToKeepDrawing = allowedToKeepDrawing;
 		ttdm.mustKeepDrawing = mustKeepDrawing;

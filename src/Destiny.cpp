@@ -74,6 +74,7 @@ void TurnTakingDestiny::readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acc
 	m_sock.read(destinyResult);
 
 	m_scene.addEvent(getColorRectMover(m_scene, destinyResult.drawnColor, colorMap));
+	m_currColor = destinyResult.drawnColor;
 
 	if (destinyResult.mustKeepDrawing) {
 		toggleButton(acceptButtonRect, acceptButtonText, false);
@@ -145,7 +146,8 @@ TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::T
 	});
 }
 
-void TurnTakingDestiny::operator()() {
+Color TurnTakingDestiny::operator()() {
 	m_wasColorDrawn = false;
 	m_scene();
+	return m_currColor;
 }

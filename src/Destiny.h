@@ -43,6 +43,7 @@ private:
 	Socket& m_sock;
 	nv::Scene m_scene;
 	bool m_wasColorDrawn = false;
+	Color m_currColor{};
 
 	void readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acceptButtonText, nv::Rect& keepDrawingButtonRect, 
 		nv::Text& keepDrawingButtonText, const ColorMap& colorMap);
@@ -50,5 +51,5 @@ private:
 	void toggleButton(nv::Rect& rect, nv::Text& text, bool showing);
 public:
 	TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap, const ColorMap& colorMap);
-	void operator()();
+	Color operator()();
 };
