@@ -61,7 +61,7 @@
             255,
             255,
             255,
-            100
+            255
           ],
           "name": "join_button_rect",
           "sdl_rect": [
@@ -76,7 +76,7 @@
             255,
             255,
             255,
-            100
+            255
           ],
           "name": "ip_address_input_rect",
           "sdl_rect": [
@@ -91,7 +91,7 @@
             255,
             255,
             255,
-            100
+            255
           ],
           "name": "port_input_rect",
           "sdl_rect": [

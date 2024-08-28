@@ -17,18 +17,17 @@
 * player count
 */
 int main(int argc, char** argv) {
-	try {
+	/*try {
 		testPlanetSelector();
 	} catch (nlohmann::json::exception& e) {
 		std::println("{}", e.what());
-	}
+	}*/
 	//nv::editor::runEditors();
 
-	/*tcp::endpoint ep{ ip::make_address_v4("192.168.7.250"), 5555 };
+	tcp::endpoint ep{ ip::make_address_v4("192.168.7.250"), 5555 };
 	std::jthread serverThread{ host, 2, std::ref(ep) };
 	
 	play();
 
-	serverThread.join();*/
-
+	serverThread.join();
 }

@@ -130,7 +130,7 @@ TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::T
 		keepDrawingButtonRect,
 		[this] { m_sock.send(DecidedToKeepDrawing); m_wasColorDrawn = false; },
 		[&] { keepDrawingButtonRect.setRenderColor(34, 139, 34, 255); },
-		[&] { keepDrawingButtonRect.setRenderColor(255, 255, 255, 255); }
+		[&] { keepDrawingButtonRect.setRenderColor(255, 255, 255,255); }
 	});
 	m_scene.addEvent([&] {
 		if (!m_wasColorDrawn) {

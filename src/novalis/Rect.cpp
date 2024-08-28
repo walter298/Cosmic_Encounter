@@ -78,14 +78,18 @@ void nv::Rect::setOpacity(uint8_t a) {
 void nv::Rect::render() const noexcept {
 	assert(renderer != nullptr);
 
+	if (color.a == 0) {
+		return;
+	}
+
 	//get original render data
 	Uint8 r; Uint8 b; Uint8 g; Uint8 a;
 	SDL_GetRenderDrawColor(renderer, &r, &b, &g, &a); 
 	SDL_BlendMode originalBlendMode;
 	SDL_GetRenderDrawBlendMode(renderer, &originalBlendMode);
 
-	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 	SDL_RenderFillRect(renderer, &rect);
 
 	//go back to original renderer state

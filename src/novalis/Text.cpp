@@ -31,6 +31,7 @@ nv::Text::Text(SDL_Renderer* renderer, std::string_view str, std::string_view fo
 {
 	changeText(str);
 	ren.renderer = renderer;
+	ren.setOpacity(0);
 }
 
 nv::Text::Text(SDL_Renderer* renderer, std::string_view str, int fontSize, TTF_Font* font)
@@ -57,6 +58,7 @@ nv::Text::Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap)
 	changeText(m_str);
 	ren = json["ren"].get<Rect>();
 	ren.renderer = renderer;
+	ren.setOpacity(0);
 	m_name = json["name"].get<std::string>();
 }
 
