@@ -28,24 +28,10 @@ namespace {
 		size_t colonyIdx = 0;
 	};
 
-	bool acceptedOwnColorBeingDrawn(Player& turnTaker, size_t& colonyIdx) {
-		bool accepted = false;
-		turnTaker.sock.read(accepted); //todo: choose specific colony to attack
-		return accepted;
-	}
-
 	DestinyResponseFromTurnTaker broadcastDestinyColor(Players& players, Player& turnTaker, Color colorDrawn, bool finalColor,
 			bool allowedToKeepDrawing, bool mustKeepDrawing) 
 	{
-		NonTurnTakerDestinyMessage nttdm;
-		nttdm.drawnColor = colorDrawn;
-
-		//send mandatory drawn color info to all non-turn-takers
-		nttdm.finalColor = finalColor;
-
-		broadcast(nv::ExcludeIndices(players, turnTaker.index), nttdm);
-		
-		TurnTakerDestinyMessage ttdm;
+		DestinyDrawInfo ttdm;
 		ttdm.drawnColor = colorDrawn;
 		
 		//send mandatory drawn color info to the turn-taker 
@@ -54,6 +40,8 @@ namespace {
 		turnTaker.sock.send(ttdm);
 
 		DestinyResponseFromTurnTaker resp;
+		broadcast(players, resp);
+
 		turnTaker.sock.read(resp);
 
 		return resp;
@@ -71,8 +59,8 @@ namespace {
 			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, true, false, false);
 			return false;// we are not redrawing a mandatory color
 		} else if (std::ranges::any_of(turnTaker.colonies, [](const auto& colony) { return colony.hasEnemyShips; })) {
-			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, false, true, false);
-			return acceptedOwnColorBeingDrawn(turnTaker, defense.colonyIdx);// turn-taker can choose to redraw own color of system contains enemy ships
+			auto resp = broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, false, true, false);
+			return resp == DecidedToKeepDrawing;
 		} else {
 			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, false, false, true);
 			return true; //turn-taker MUST redraw if own color is drawn but system doesn't have enemy ships
@@ -89,7 +77,7 @@ namespace {
 
 		return defense;
 	}
-
+	
 	Players acceptConnections(size_t pCount, tcp::acceptor& acceptor, std::random_device& rbg) {
 		std::println("Waiting for players to join");
 
@@ -163,7 +151,7 @@ void host(size_t pCount, const tcp::endpoint& endpoint) {
 	//tell everyone the game is starting
 	broadcast(gameState.players, STARTING_GAME);
 
-	//send each player his or her 8 cards and the turn order
+	//send each player his 8 cards and the turn order
 	for (auto& player : gameState.players) {
 		gameState.deck.draw(player.hand, 8);
 		player.sock.send(player.hand, gameState.players | views::transform([](const auto& player) {

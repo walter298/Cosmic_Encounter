@@ -18,9 +18,8 @@ namespace {
 
 		using namespace std::literals;
 
-		auto obj = ui.addObject(colorRect, DRAWN_COLOR_LAYER);
 		return nv::MoveScheduler{
-			obj.get(),
+			ui.addObject(colorRect, DRAWN_COLOR_LAYER).get(),
 			nv::PixelRate{ 15, 20ms },
 			nv::PixelRate{ 55, 50ms },
 			400,
@@ -30,15 +29,19 @@ namespace {
 }
 
 asio::awaitable<void> NonTurnTakingDestiny::asyncReadColorsFromServer() {
-	bool finalColorNotDrawn = true;
-	while (finalColorNotDrawn) {
-		NonTurnTakerDestinyMessage msg;
-		co_await m_sock.asyncRead(msg);
-		finalColorNotDrawn = msg.finalColor;
+	while (true) {
+		//get the color drawn 
+		DestinyDrawInfo destiny;
+		co_await m_sock.asyncRead(destiny);
+
+		std::println("Read destiny!");
 
 		std::scoped_lock lock{ m_mutex };
-		m_drawnColors.push_back(msg.drawnColor);
-		m_wasFinalColorSent = msg.finalColor;
+		m_drawnColors.push_back(destiny.drawnColor);
+		if (!destiny.mustKeepDrawing && !destiny.allowedToKeepDrawing) {
+			m_wasFinalColorSent = false;
+			break;
+		}
 	}
 }
 
@@ -64,13 +67,13 @@ NonTurnTakingDestiny::NonTurnTakingDestiny(Socket& sock, SDL_Renderer* renderer,
 void NonTurnTakingDestiny::operator()() {
 	m_drawnColors.clear();
 	m_wasFinalColorSent = false;
-	asio::co_spawn(m_sock.getExecutor(), asyncReadColorsFromServer(), asio::use_awaitable);
+	asio::co_spawn(m_sock.getExecutor(), asyncReadColorsFromServer(), asio::detached);
 	m_scene();
 }
 
 void TurnTakingDestiny::readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acceptButtonText, nv::Rect& keepDrawingButtonRect,
 	nv::Text& keepDrawingButtonText, const ColorMap& colorMap) {
-	TurnTakerDestinyMessage destinyResult;
+	DestinyDrawInfo destinyResult;
 	m_sock.read(destinyResult);
 
 	m_scene.addEvent(getColorRectMover(m_scene, destinyResult.drawnColor, colorMap));

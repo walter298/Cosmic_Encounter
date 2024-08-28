@@ -5,15 +5,10 @@
 #include "NetworkUtil.h"
 #include "RenderData.h"
 
-struct TurnTakerDestinyMessage {
+struct DestinyDrawInfo {
 	Color drawnColor{};
 	bool allowedToKeepDrawing = false;
 	bool mustKeepDrawing = false;
-};
-
-struct NonTurnTakerDestinyMessage {
-	Color drawnColor{};
-	bool finalColor = 0;
 };
 
 enum DestinyResponseFromTurnTaker {
