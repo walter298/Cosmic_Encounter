@@ -32,6 +32,12 @@ namespace nv {
 	};
 
 	template<typename Object>
+	concept MoveableObject = requires(Object obj) {
+		obj.move(0, 0);
+		obj.move(SDL_Point{});
+	};
+
+	template<typename Object>
 	concept SizeableObject = requires(Object obj) {
 		obj.setSize(500, 500);
 		obj.setSize(SDL_Point{ 500, 500 });
@@ -57,8 +63,8 @@ namespace nv {
 	template<typename T, typename U>
 	concept SameAsDecayed = std::same_as<std::remove_cvref_t<T>, std::remove_cvref_t<U>>;
 
-	template<typename T>
-	using Subrange = ranges::subrange<typename std::vector<T>::iterator>;
+	template<ranges::viewable_range T>
+	using Subrange = decltype(ranges::subrange(std::begin(std::declval<T>()), std::end(std::declval<T>())));
 
 	template<typename T>
 	using Layers = boost_con::flat_map<int, plf::hive<T>>;
@@ -67,4 +73,10 @@ namespace nv {
 	using ValueType = typename std::remove_cvref_t<Range>::value_type;
 
 	using nlohmann::json;
+
+	template<typename T>
+	concept Map = requires(T t) {
+		std::cmp_less(std::declval<typename T::key_type>(), std::declval<typename T::key_type>());
+		t.emplace(std::declval<typename T::key_type>(), std::declval<typename T::value_type>());
+	};
 }

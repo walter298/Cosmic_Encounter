@@ -6,7 +6,6 @@
 #include "data_util/File.h"
 
 nv::Sprite::Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap) {
-	std::println("{}", json.dump(2));
 	m_name = json["name"].get<std::string>();
 
 	auto uniqueTexIndices = json["texture_object_layers"].get<JsonFormat>();
@@ -31,6 +30,10 @@ nv::TextureData& nv::Sprite::getTexData(size_t texIdx) {
 
 void nv::Sprite::setTextureLayer(int layer) noexcept {
 	m_currLayer = layer;
+}
+
+const std::vector<nv::Texture>& nv::Sprite::getTextures() const noexcept {
+	return m_texObjLayers.at(m_currLayer);
 }
 
 void nv::Sprite::setPos(int destX, int destY) noexcept {

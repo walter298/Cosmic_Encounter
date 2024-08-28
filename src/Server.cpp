@@ -3,6 +3,8 @@
 #include <iostream>
 #include <print>
 
+#include "novalis/data_util/Views.h"
+
 #include "Destiny.h"
 #include "Game.h"
 #include "Lobby.h"

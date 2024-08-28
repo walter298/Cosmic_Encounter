@@ -17,8 +17,7 @@ nv::Music::~Music()
 	Mix_FreeChunk(m_music);
 }
 
-void nv::Music::play(int loopCount) noexcept
-{
+void nv::Music::play(int loopCount) noexcept {
 	constexpr int NEXT_AVAILABLE_CHANNEL = -1;
 	if (m_valid) {
 		Mix_PlayChannel(NEXT_AVAILABLE_CHANNEL, m_music, loopCount);

@@ -28,12 +28,14 @@ namespace nv {
 		std::string m_str;
 		std::string m_fontPath;
 		int m_fontSize = 0;
-		Rect m_ren;
 		void changeText(std::string_view newText) noexcept;
 	public:
+		Rect ren;
 		SDL_Color color{ 0, 0, 0, 255 };
 
 		Text(SDL_Renderer* renderer, std::string_view str, std::string_view fontPath, int fontSize, TTF_Font* font);
+		Text(SDL_Renderer* renderer, std::string_view str, int fontSize, TTF_Font* font);
+
 		Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap);
 
 		void operator=(std::string_view str) noexcept;

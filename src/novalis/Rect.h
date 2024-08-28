@@ -23,6 +23,7 @@ namespace nv {
 		int borderThickness = 20;
 
 		Rect() = default;
+		Rect(SDL_Renderer* renderer) noexcept;
 		Rect(SDL_Renderer* renderer, int x, int y, int w, int h, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255, uint8_t a = 255);
 		Rect(SDL_Renderer* renderer, const json& json);
 

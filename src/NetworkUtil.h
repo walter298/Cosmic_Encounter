@@ -16,6 +16,9 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/pfr.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
+
+#include "novalis/data_util/BasicConcepts.h"
 
 namespace ranges = std::ranges;
 
@@ -46,7 +49,7 @@ void parseValueFromString(std::string_view dataStr, Integral& integral) {
 }
 
 template<ranges::viewable_range Range>
-void parseValueFromString(std::string_view str, Range& range) {
+void parseValueFromString(std::string_view str, Range& range) requires(!nv::Map<Range>) {
 	std::println("Parsing container: {}", str);
 
 	auto begin = str.begin();
@@ -62,6 +65,26 @@ void parseValueFromString(std::string_view str, Range& range) {
 	
 	for (size_t i = 0; i < size; i++) {
 		parseElem();
+	}
+}
+
+template<typename Key, typename Value>
+void parseValueFromString(std::string_view str, boost::unordered_flat_map<Key, Value>& map) {
+	struct KeyValuePair {
+		Key key;
+		Value value;
+	};
+	static_assert(std::is_aggregate_v<KeyValuePair>);
+
+	auto begin = str.begin();
+	auto size = boost::lexical_cast<size_t>(dataSubstr(begin, str.end(), CONTAINER_ELEM_END));
+
+	auto elemStrs = ranges::split_view(str, CONTAINER_ELEM_END);
+	for (const auto& elemStrSubrange : elemStrs) {
+		std::string_view elemStr{ elemStrSubrange.begin(), elemStrSubrange.end() };
+		KeyValuePair kvp;
+		parseValueFromString(elemStr, kvp);
+		map.emplace(std::move(kvp.key), std::move(kvp.value));
 	}
 }
 
@@ -116,6 +139,15 @@ std::string toString(const Range& range) {
 	ret.append(toString(ranges::size(range)) + CONTAINER_ELEM_END);
 	for (const auto& elem : range) {
 		ret.append(toString(elem) + CONTAINER_ELEM_END);
+	}
+	return ret;
+}
+
+template<nv::Map MapT>
+std::string toString(const MapT& map) {
+	std::string ret;
+	for (const auto& [key, value] : map) {
+		ret.append(toString(key) + FIELD_END_CHR + toString(value) + CONTAINER_ELEM_END);
 	}
 	return ret;
 }

@@ -11,6 +11,11 @@ bool nv::Rect::isInRegion(SDL_Point coord, int x, int y, int w, int h) noexcept 
 	return isInRegion(coord.x, coord.y, x, y, w, h);
 }
 
+nv::Rect::Rect(SDL_Renderer* renderer) noexcept
+	: renderer{ renderer }
+{
+}
+
 nv::Rect::Rect(SDL_Renderer* renderer, int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 	: renderer{ renderer }, rect{ x, y, w, h }, color{ r, g, b, a }
 {
@@ -73,12 +78,19 @@ void nv::Rect::setOpacity(uint8_t a) {
 void nv::Rect::render() const noexcept {
 	assert(renderer != nullptr);
 
+	//get original render data
 	Uint8 r; Uint8 b; Uint8 g; Uint8 a;
-	SDL_GetRenderDrawColor(renderer, &r, &b, &g, &a);
+	SDL_GetRenderDrawColor(renderer, &r, &b, &g, &a); 
+	SDL_BlendMode originalBlendMode;
+	SDL_GetRenderDrawBlendMode(renderer, &originalBlendMode);
 
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 	SDL_RenderFillRect(renderer, &rect);
+
+	//go back to original renderer state
 	SDL_SetRenderDrawColor(renderer, r, b, g, a);
+	SDL_SetRenderDrawBlendMode(renderer, originalBlendMode);
 }
 
 void nv::Rect::setRenderColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) noexcept {

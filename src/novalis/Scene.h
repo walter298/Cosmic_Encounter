@@ -24,7 +24,52 @@ namespace nv {
 	private:
 		void render();
 
-		ObjectLayers<Sprite, Texture, Text, Rect, SpriteRef, TextureRef, TextRef, RectRef> m_objectLayers;
+		struct TypeErasedBase {
+			virtual void render() const noexcept = 0;
+			virtual const std::string& getName() const noexcept = 0;
+		};
+		using TypeErasedBasePtr = std::unique_ptr<TypeErasedBase>;
+
+		struct TypeErasedMoveableBase : public virtual TypeErasedBase {
+			virtual void move(int, int) noexcept = 0;
+			virtual void move(SDL_Point) noexcept = 0;
+		};
+		using TypeErasedMoveableBasePtr = std::unique_ptr<TypeErasedMoveableBase>;
+
+		template<typename T, typename Base = TypeErasedBase>
+		struct TypeErasedDerived : public Base {
+			T obj;
+
+			template<typename U>
+			TypeErasedDerived(U&& u) : obj{ std::forward<U>(u) }
+			{
+			}
+
+			const std::string& getName() const noexcept override {
+				return unrefwrap(obj).getName();
+			}
+
+			void render() const noexcept override {
+				unrefwrap(obj).render();
+			}
+		};
+
+		template<typename T>
+		struct TypeErasedMoveableDerived : public TypeErasedDerived<T, TypeErasedMoveableBase> {
+			using TypeErasedDerived<T, TypeErasedMoveableBase>::TypeErasedDerived;
+
+			void move(int dx, int dy) noexcept override {
+				unrefwrap(this->obj).move(dx, dy);
+			}
+			void move(SDL_Point p) noexcept override {
+				unrefwrap(this->obj).move(p);
+			}
+		};
+		using TypeErasedMoveableBasePtr = std::unique_ptr<TypeErasedMoveableBase>;
+
+		ObjectLayers<Sprite, Texture, Text, Rect, SpriteRef, TextureRef, TextRef, RectRef, 
+					 TypeErasedBasePtr, TypeErasedMoveableBasePtr, TypeErasedBase*, TypeErasedMoveableBase*> 
+			m_objectLayers;
 		
 		SDL_Event m_SDLEvt{};
 
@@ -87,6 +132,20 @@ namespace nv {
 		{
 			decltype(auto) objects = std::get<plf::hive<std::remove_cvref_t<Object>>>(m_objectLayers[layer]);
 			return StableRef{ objects, objects.insert(std::forward<Object>(object)) };
+		}
+		template<typename Object>
+		auto addCustomObject(Object&& object, int layer) {
+			if constexpr (MoveableObject<std::remove_cvref_t<Object>>) {
+				auto& objs = std::get<plf::hive<TypeErasedMoveableBasePtr>>(m_objectLayers[layer]);
+				auto it = objs.insert(std::make_unique<TypeErasedMoveableDerived<Object>>(std::forward<Object>(object)));
+				std::println("{} custom moveable objects", objs.size());
+				return StableRef{ objs, it };
+			} else {
+				auto& objs = std::get<plf::hive<TypeErasedBasePtr>>(m_objectLayers[layer]);
+				auto it = objs.insert(std::make_unique<TypeErasedDerived<Object>>(std::forward<Object>(object)));
+				std::println("{} custom non-moveable objects", objs.size());
+				return StableRef{ objs, it };
+			}
 		}
 	private:
 		template<typename Object, typename Objects, typename Transform>

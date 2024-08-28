@@ -1,10 +1,11 @@
 #pragma once
 
+#include "novalis/data_util/Reflection.h"
 #include "novalis/Sprite.h"
 
 #include "Game.h"
 
-using CardMap  = std::unordered_map<Card, nv::Texture>;
+using CardMap  = std::unordered_map<Card, nv::Texture, nv::HashAggregate, nv::CompareAggregates>;
 using ColorMap = std::unordered_map<Color, std::pair<nv::Texture, nv::Rect>>;
 
 struct GameRenderData {

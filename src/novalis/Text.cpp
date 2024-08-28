@@ -12,7 +12,7 @@ void nv::Text::changeText(std::string_view newText) noexcept {
 	m_str = newText;
 	auto surface = TTF_RenderText_Solid(m_font, m_str.data(), { 0, 0, 0, 255 });
 	if (surface == nullptr) {
-		m_ren.setSize(0, 0);
+		ren.setSize(0, 0);
 		return;
 	}
 	auto w = surface->w;
@@ -22,7 +22,7 @@ void nv::Text::changeText(std::string_view newText) noexcept {
 		m_tex.release();
 	}
 	m_tex.reset(SDL_CreateTextureFromSurface(m_renderer, surface));
-	m_ren.setSize(w, h);
+	ren.setSize(w, h);
 	SDL_FreeSurface(surface);
 }
 
@@ -30,6 +30,12 @@ nv::Text::Text(SDL_Renderer* renderer, std::string_view str, std::string_view fo
 	: m_renderer{ renderer }, m_font{ font }, m_str{ str }, m_fontPath{ fontPath }, m_fontSize{ fontSize }
 {
 	changeText(str);
+	ren.renderer = renderer;
+}
+
+nv::Text::Text(SDL_Renderer* renderer, std::string_view str, int fontSize, TTF_Font* font)
+	: Text(renderer, str, "", fontSize, font)
+{
 }
 
 nv::Text::Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap) 
@@ -49,7 +55,8 @@ nv::Text::Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap)
 	}
 	m_str = json["value"].get<std::string>();
 	changeText(m_str);
-	m_ren = json["ren"].get<Rect>();
+	ren = json["ren"].get<Rect>();
+	ren.renderer = renderer;
 	m_name = json["name"].get<std::string>();
 }
 
@@ -62,7 +69,7 @@ std::string_view nv::Text::value() const noexcept {
 }
 
 void nv::Text::move(int dx, int dy) noexcept {
-	m_ren.move(dx, dy);
+	ren.move(dx, dy);
 }
 
 void nv::Text::move(SDL_Point p) noexcept {
@@ -70,7 +77,7 @@ void nv::Text::move(SDL_Point p) noexcept {
 }
 
 void nv::Text::setPos(int x, int y) noexcept {
-	m_ren.setPos(x, y);
+	ren.setPos(x, y);
 }
 
 void nv::Text::setPos(SDL_Point p) noexcept {
@@ -78,11 +85,11 @@ void nv::Text::setPos(SDL_Point p) noexcept {
 }
 
 SDL_Point nv::Text::getPos() const noexcept {
-	return m_ren.getPos();
+	return ren.getPos();
 }
 
 void nv::Text::scale(int dw, int dh) noexcept {
-	m_ren.scale(dw, dh);
+	ren.scale(dw, dh);
 }
 
 void nv::Text::scale(SDL_Point p) noexcept {
@@ -90,7 +97,7 @@ void nv::Text::scale(SDL_Point p) noexcept {
 }
 
 bool nv::Text::containsCoord(int x, int y) const noexcept {
-	return m_ren.containsCoord(x, y);
+	return ren.containsCoord(x, y);
 }
 
 bool nv::Text::containsCoord(SDL_Point p) const noexcept {
@@ -102,14 +109,15 @@ void nv::Text::setOpacity(uint8_t a) noexcept {
 }
 
 void nv::Text::render() const noexcept {
-	SDL_RenderCopy(m_renderer, m_tex.get(), nullptr, &m_ren.rect);
+	ren.render();
+	SDL_RenderCopy(m_renderer, m_tex.get(), nullptr, &ren.rect);
 }
 
 void nv::Text::save(json& json) const {
 	json["value"]     = m_str;
 	json["font_path"] = m_fontPath;
 	json["font_size"] = m_fontSize;
-	json["ren"]       = m_ren;
+	json["ren"]       = ren;
 }
 
 bool nv::TextInput::tooSoonToPop() const noexcept {

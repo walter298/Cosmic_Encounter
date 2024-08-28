@@ -6,7 +6,12 @@ void nv::Scene::render() {
 	for (const auto& [layer, objLayer] : m_objectLayers) {
 		forEachDataMember([](const auto& objs) {
 			for (const auto& obj : objs) {
-				unrefwrap(obj).render();
+				using Type = std::remove_cvref_t<decltype(obj)>;
+				if constexpr (IsClassTemplate<std::unique_ptr, Type>::value || std::is_pointer_v<Type>) {
+					obj->render();
+				} else {
+					unrefwrap(obj).render();
+				}
 			}
 			return STAY_IN_LOOP;
 		}, objLayer);
@@ -103,7 +108,10 @@ void nv::Scene::executeEvents() {
 
 namespace {
 	template<typename Range>
-	struct ContainsReferenceWrappers : public nv::IsReferenceWrapper<typename Range::value_type> {};
+	struct IsReferenceLayer : public std::disjunction<
+		nv::IsClassTemplate<std::reference_wrapper, typename Range::value_type>,
+		std::is_pointer<typename Range::value_type>
+	> {};
 }
 
 nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMap& texMap, FontMap& fontMap)
@@ -170,29 +178,45 @@ void nv::Scene::operator()() {
 }
 
 void nv::Scene::overlay(Scene& scene) {
-	/*you can't overlay an already overlayed scene on another scene as 
-	references don't get pushed*/
-	
-	auto overlayImpl = [](auto& thisObjectLayer, auto& otherObjectLayer) {
-		forEachDataMember([](auto& thisObjects, auto& otherObjects) { 
-			auto refView = ranges::transform_view(otherObjects, [](auto& obj) {
+	auto overlayImpl = [&, this](auto& thisObjectLayers, auto& otherObjectLayer) {
+		if (otherObjectLayer.empty()) {
+			return;
+		}
+		using Type = typename std::remove_cvref_t<decltype(otherObjectLayer)>::value_type;
+
+		if constexpr (IsClassTemplate<std::unique_ptr, Type>::value) {
+			auto ptrView = ranges::transform_view(otherObjectLayer, [](auto& obj) {
+				return obj.get();
+			});
+			using Ptr = std::tuple_element_t<0, typename GetTemplateTypes<Type>::Types>;
+			auto& objPtrs = std::get<plf::hive<Ptr*>>(thisObjectLayers);
+			objPtrs.insert(ptrView.begin(), ptrView.end());
+		} else if constexpr (std::is_pointer_v<Type> || IsClassTemplate<std::reference_wrapper, Type>::value) {
+			auto& objs = std::get<plf::hive<Type>>(thisObjectLayers);
+			objs.insert(otherObjectLayer.begin(), otherObjectLayer.end());
+		} else {
+			auto refView = ranges::transform_view(otherObjectLayer, [](auto& obj) {
 				return std::ref(obj);
 			});
-			
-			thisObjects.insert(refView.begin(), refView.end());
-			return STAY_IN_LOOP; 
-		}, thisObjectLayer, otherObjectLayer);
+			auto& objRefs = std::get<plf::hive<std::reference_wrapper<Type>>>(thisObjectLayers);
+			objRefs.insert(refView.begin(), refView.end());
+		}
 	};
 
-	for (auto& [layer, otherObjectLayer] : scene.m_objectLayers) {
-		auto objRefs = filterDataMembers<ContainsReferenceWrappers>(m_objectLayers[layer]);
-		overlayImpl(objRefs, otherObjectLayer);
+	for (auto& [layer, otherObjectLayers] : scene.m_objectLayers) {
+		std::println("Overlaying layer[{}]", layer);
+		auto& thisObjectLayers = m_objectLayers[layer];
+		auto& currLayer = m_objectLayers[layer];
+		forEachDataMember([&](auto& otherObjectLayer) {
+			overlayImpl(currLayer, otherObjectLayer);
+			return STAY_IN_LOOP;
+		}, otherObjectLayers);
 	}
 }
 
 void nv::Scene::deoverlay() {
 	for (auto& [layer, objLayer] : m_objectLayers) {
-		auto objRefs = filterDataMembers<ContainsReferenceWrappers>(m_objectLayers[layer]);
+		auto objRefs = filterDataMembers<IsReferenceLayer>(m_objectLayers[layer]);
 		forEachDataMember([](auto& objs) {
 			objs.clear();
 			return STAY_IN_LOOP;
@@ -201,14 +225,5 @@ void nv::Scene::deoverlay() {
 }
 
 void nv::Scene::printElements() const {
-	for (auto& [layer, objs] : m_objectLayers) {
-		std::println("{}: ", layer);
-		forEachDataMember([](const auto& objs) {
-			for (const auto& obj : objs) {
-				std::print("{} ", unrefwrap(obj).getName());
-			}
-			std::println("");
-			return STAY_IN_LOOP;
-		}, objs);
-	}
+	
 }

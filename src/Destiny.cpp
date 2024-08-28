@@ -11,7 +11,7 @@ namespace {
 	constexpr int DESTINY_BACK_LAYER = 1;
 
 	auto getColorRectMover(nv::Scene& ui, Color drawnColor, const ColorMap& colorMap) {
-		auto colorRect = colorMap.at(drawnColor).second;
+		auto colorRect = std::get<1>(colorMap.at(drawnColor));
 		auto& colorBack = ui.find<nv::Texture>(DESTINY_BACK_LAYER, "destiny_back").get();
 		colorRect.setPos(colorBack.getPos());
 		colorRect.setSize(colorBack.getSize());

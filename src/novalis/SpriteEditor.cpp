@@ -164,7 +164,7 @@ void SpriteEditor::showSpriteOptions(SDL_Renderer* renderer) {
 }
 
 SpriteEditor::SpriteEditor(SDL_Renderer* renderer) noexcept
-	: m_renderer{ renderer } //m_texDataEditor { { 0, 500 } }
+	: m_renderer{ renderer } 
 {
 }
 

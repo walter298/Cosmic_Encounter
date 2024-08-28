@@ -27,6 +27,8 @@ namespace nv {
 		TextureData& getTexData(size_t texIdx);
 		void setTextureLayer(int layer) noexcept;
 
+		const std::vector<nv::Texture>& getTextures() const noexcept;
+
 		void setPos(int destX, int destY) noexcept;
 		void setPos(SDL_Point p) noexcept;
 

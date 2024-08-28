@@ -1,6 +1,8 @@
 #pragma once
 
 #include <tuple>
+
+#include <boost/functional/hash.hpp>
 #include <boost/pfr.hpp>
 
 #include "BasicConcepts.h"
@@ -217,15 +219,15 @@ namespace nv {
 		detail::findCompImpl(comp, transform, whenFound, first, second, args...);
 	}
 
-	template<typename T>
-	struct IsReferenceWrapper : public std::false_type {};
+	template<template<typename...> typename ClassTemplate, typename>
+	struct IsClassTemplate : public std::false_type {};
 
-	template<typename T>
-	struct IsReferenceWrapper<std::reference_wrapper<T>> : public std::true_type {};
+	template<template<typename...> typename ClassTemplate, typename... Ts>
+	struct IsClassTemplate<ClassTemplate, ClassTemplate<Ts...>> : public std::true_type {};
 
 	template<typename T>
 	constexpr auto& unrefwrap(T& t) {
-		if constexpr (IsReferenceWrapper<std::remove_cvref_t<T>>::value) {
+		if constexpr (IsClassTemplate<std::reference_wrapper, std::remove_cvref_t<T>>::value) {
 			return t.get();
 		} else {
 			return t;
@@ -284,81 +286,29 @@ namespace nv {
 		return detail::excludeMembers<0>(std::tuple{}, t, std::integer_sequence<size_t, excludedTypeIdxs...>{});
 	}
 
-	template<typename Container, std::integral... ExcludedIdxs> requires(sizeof...(ExcludedIdxs) > 0)
-	class ExcludeIndices {
-	private:
-		Container& m_container;
-
-		using ExcludedIndicesArray = std::array<size_t, sizeof...(ExcludedIdxs)>;
-		ExcludedIndicesArray m_excludedIdxs;
-	public:
-		ExcludeIndices(Container& con, ExcludedIdxs... excludedIdxs)
-			: m_container{ con }, m_excludedIdxs{ static_cast<size_t>(excludedIdxs)... }
-		{
+	struct HashAggregate {
+		template<Aggregate Aggr>
+		size_t operator()(const Aggr& aggr) const noexcept {
+			size_t hashCode = 0;
+			pfr::for_each_field(aggr, [&](const auto& member) {
+				boost::hash_combine(hashCode, member);
+			});
+			return hashCode;
 		}
+	};
 
-		class Iterator {
-		private:
-			using ContainerIterator = typename Container::iterator;
-			ContainerIterator m_it;
-			size_t m_containerIdx;
-
-			ExcludedIndicesArray& m_excludedIdxs;
-			size_t m_excludedIdxArrIdx = 0;
-		public:
-			Iterator(ContainerIterator it, size_t index, ExcludedIndicesArray& excludedIdxs)
-				: m_it{ it }, m_excludedIdxs{ excludedIdxs }, m_containerIdx{ index }
-			{
-			}
-
-			decltype(auto) operator*(this auto&& self) {
-				return *self.m_it;
-			}
-
-			auto& operator++() {
-				m_it++;
-				m_containerIdx++;
-				while (m_excludedIdxArrIdx < sizeof...(ExcludedIdxs) && m_excludedIdxs[m_excludedIdxArrIdx] < m_containerIdx) {
-					m_excludedIdxArrIdx++;
+	struct CompareAggregates {
+		template<Aggregate Aggr1, Aggregate Aggr2>
+		bool operator()(const Aggr1 a, const Aggr2& b) const noexcept {
+			bool ret = true;
+			forEachDataMember([&](const auto& field1, const auto& field2) {
+				if (field1 == field2) {
+					ret = false;
+					return BREAK_FROM_LOOP;
 				}
-				while (m_excludedIdxArrIdx < sizeof...(ExcludedIdxs) && m_excludedIdxs[m_excludedIdxArrIdx] == m_containerIdx) {
-					m_it++;
-					m_containerIdx++;
-					m_excludedIdxArrIdx++;
-				}
-				return *this;
-			}
-
-			auto& operator++(int) {
-				return this->operator++();
-			}
-
-			bool operator==(const Iterator& other) const {
-				return m_it == other.m_it;
-			}
-			bool operator!=(const Iterator& other) const {
-				return m_it != other.m_it;
-			}
-		};
-
-		Iterator begin() {
-			auto beginIt = ranges::begin(m_container);
-			Iterator it{
-				beginIt,
-				0,
-				m_excludedIdxs
-			};
-			if (0 == m_excludedIdxs[0]) {
-				it++;
-			}
-			return it;
-		}
-		Iterator end() {
-			return Iterator{
-				ranges::end(m_container),
-				ranges::size(m_container),
-				m_excludedIdxs
-			};
+				return STAY_IN_LOOP;
+			}, a , b);
+			return ret;
 		}
 	};
 }

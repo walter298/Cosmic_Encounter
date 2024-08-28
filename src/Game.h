@@ -1,11 +1,8 @@
 #pragma once
 
-#include <fstream>
 #include <random>
-#include <string_view>
-#include <unordered_map>
 
-#include <boost/functional/hash.hpp>
+#include <boost/container/static_vector.hpp>
 
 #include "novalis/data_util/File.h"
 
@@ -20,43 +17,29 @@ struct Card {
 	};
 	Type type = Type::Attack;
 	int value = 0;
-
-	bool operator==(const Card& other) const noexcept;
 };
-
-namespace std {
-	template<>
-	struct hash<Card> {
-		size_t operator()(const Card& card) const {
-			size_t ret = 0;
-			boost::hash_combine(ret, card.type);
-			boost::hash_combine(ret, card.value);
-			return ret;
-		}
-	};
-}
 
 constexpr inline size_t COLOR_C = 5;
 
-struct Colony {
-	using ShipCounts = std::array<int, COLOR_C>;
-	ShipCounts ships{ 0, 0, 0, 0, 0 };
-	bool hasEnemyShips = false;
-};
-using Colonies = std::vector<Colony>;
-
-//offer messages for destiny stage
-constexpr inline char OWN_SYSTEM = 'a';
-constexpr inline char OTHER_SYSTEM = 'b';
-
-//used to index into Planet::ships and Game::Systems
+//used to index into Planet::ships and Game::Systems (DO NOT CHANGE THE ORDER OF VALUES!!)
 enum Color : size_t {
-	Red,
+	Black,
 	Blue,
 	Green,
-	Black,
-	Purple
+	Purple,
+	Red
 };
+
+struct Colony {
+	using ShipCounts = boost::unordered_flat_map<Color, int>;
+	ShipCounts ships;
+	bool hasEnemyShips = false;
+};
+using Colonies = boost::container::static_vector<Colony, 10>;
+
+//offer messages for destiny stage
+constexpr inline char OWN_SYSTEM   = 'a';
+constexpr inline char OTHER_SYSTEM = 'b';
 
 enum Alien : size_t {
 	Pacifist,
@@ -72,7 +55,7 @@ struct Player {
 	Socket sock;
 	Color color;
 	std::vector<Card> hand;
-	std::array<Colony, 5> colonies;
+	Colonies colonies;
 	size_t index = 0;
 };
 
