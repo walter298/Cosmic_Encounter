@@ -5,10 +5,17 @@
 #include "NetworkUtil.h"
 #include "RenderData.h"
 
+enum DestinyDrawChoice {
+	MustChoose,
+	MustRedraw,
+	CanRedrawOrChoose
+};
+
 struct DestinyDrawInfo {
+	DestinyDrawChoice drawChoice{};
 	Color drawnColor{};
-	bool allowedToKeepDrawing = false;
-	bool mustKeepDrawing = false;
+	/*bool allowedToKeepDrawing = false;
+	bool mustKeepDrawing = false;*/
 };
 
 enum DestinyResponseFromTurnTaker {

@@ -37,6 +37,8 @@ struct Colony {
 };
 using Colonies = boost::container::static_vector<Colony, 10>;
 
+Colonies makeStartingColonies(Color pColor);
+
 //offer messages for destiny stage
 constexpr inline char OWN_SYSTEM   = 'a';
 constexpr inline char OTHER_SYSTEM = 'b';

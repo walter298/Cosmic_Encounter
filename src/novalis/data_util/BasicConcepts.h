@@ -75,7 +75,7 @@ namespace nv {
 	using nlohmann::json;
 
 	template<typename T>
-	concept Map = requires(T t) {
+	concept Map = requires(std::remove_cvref_t<T> t) {
 		std::cmp_less(std::declval<typename T::key_type>(), std::declval<typename T::key_type>());
 		t.emplace(std::declval<typename T::key_type>(), std::declval<typename T::value_type>());
 	};

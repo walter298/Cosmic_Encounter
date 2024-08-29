@@ -26,7 +26,7 @@ void testPlanetSelector() {
 
 	ranges::generate(colonies, [] {
 		Colony ret;
-		ret.ships[Red] = 5;
+		ret.ships[Red]   = 5;
 		ret.ships[Green] = -343;
 		ret.ships[Black] = 56;
 		return ret;

@@ -28,21 +28,22 @@ namespace {
 		size_t colonyIdx = 0;
 	};
 
-	DestinyResponseFromTurnTaker broadcastDestinyColor(Players& players, Player& turnTaker, Color colorDrawn, bool finalColor,
-			bool allowedToKeepDrawing, bool mustKeepDrawing) 
+	DestinyResponseFromTurnTaker broadcastDestinyColor(Players& players, Player& turnTaker, Color colorDrawn, 
+		DestinyDrawChoice drawChoice) 
 	{
-		DestinyDrawInfo ttdm;
-		ttdm.drawnColor = colorDrawn;
+		DestinyDrawInfo drawInfo;
+		drawInfo.drawnColor = colorDrawn;
 		
 		//send mandatory drawn color info to the turn-taker 
-		ttdm.allowedToKeepDrawing = allowedToKeepDrawing;
-		ttdm.mustKeepDrawing = mustKeepDrawing;
-		turnTaker.sock.send(ttdm);
+		drawInfo.drawChoice = drawChoice;
+		broadcast(players, drawInfo);
 
 		DestinyResponseFromTurnTaker resp;
-		broadcast(players, resp);
-
 		turnTaker.sock.read(resp);
+		
+		if (drawChoice == CanRedrawOrChoose) {
+			broadcast(nv::ExcludeIndices(players, turnTaker.index), resp);
+		}
 
 		return resp;
 	}
@@ -56,13 +57,13 @@ namespace {
 		}));
 
 		if (colorDrawn != turnTaker.color) { //player does not have a choice to keep drawing if another color is drawn
-			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, true, false, false);
+			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, MustChoose);
 			return false;// we are not redrawing a mandatory color
 		} else if (std::ranges::any_of(turnTaker.colonies, [](const auto& colony) { return colony.hasEnemyShips; })) {
-			auto resp = broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, false, true, false);
+			auto resp = broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, CanRedrawOrChoose);
 			return resp == DecidedToKeepDrawing;
 		} else {
-			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, false, false, true);
+			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, MustRedraw);
 			return true; //turn-taker MUST redraw if own color is drawn but system doesn't have enemy ships
 		}
 	}
@@ -72,7 +73,11 @@ namespace {
 
 		while (hasToKeepRedrawing(turnTaker, gameState, defense)) {}
 
+		turnTaker.sock.send(turnTaker.colonies);
 		turnTaker.sock.read(defense.colonyIdx);
+
+		exit(-1); //this is where the game ends
+
 		broadcast(nv::ExcludeIndices(gameState.players, turnTaker.index), defense.colonyIdx);
 
 		return defense;

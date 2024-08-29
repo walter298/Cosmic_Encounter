@@ -34,13 +34,18 @@ asio::awaitable<void> NonTurnTakingDestiny::asyncReadColorsFromServer() {
 		DestinyDrawInfo destiny;
 		co_await m_sock.asyncRead(destiny);
 
-		std::println("Read destiny!");
-
-		std::scoped_lock lock{ m_mutex };
+		std::unique_lock lock{ m_mutex };
 		m_drawnColors.push_back(destiny.drawnColor);
-		if (!destiny.mustKeepDrawing && !destiny.allowedToKeepDrawing) {
-			m_wasFinalColorSent = false;
-			break;
+
+		if (destiny.drawChoice == CanRedrawOrChoose) {
+			lock.unlock(); //IMPORTANT: unlock mutex so we don't block while waiting for turn-taker response
+			DestinyResponseFromTurnTaker turnTakerResp{};
+			co_await m_sock.asyncRead(turnTakerResp);
+			if (turnTakerResp == AcceptedColor) {
+				lock.lock();
+				m_wasFinalColorSent = true;
+				break;
+			}
 		}
 	}
 }
@@ -79,15 +84,19 @@ void TurnTakingDestiny::readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acc
 	m_scene.addEvent(getColorRectMover(m_scene, destinyResult.drawnColor, colorMap));
 	m_currColor = destinyResult.drawnColor;
 
-	if (destinyResult.mustKeepDrawing) {
+	switch (destinyResult.drawChoice) {
+	case MustRedraw:
 		toggleButton(acceptButtonRect, acceptButtonText, false);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
-	} else if (destinyResult.allowedToKeepDrawing) {
-		toggleButton(acceptButtonRect, acceptButtonText, true);
-		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
-	} else {
+		break;
+	case MustChoose:
 		toggleButton(acceptButtonRect, acceptButtonText, true);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, false);
+		break;
+	case CanRedrawOrChoose:
+		toggleButton(acceptButtonRect, acceptButtonText, true);
+		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
+		break;
 	}
 }
 

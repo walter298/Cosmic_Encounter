@@ -134,7 +134,7 @@ decltype(auto) toString(String&& str) { //no need to parse string
 }
 
 template<std::ranges::viewable_range Range>
-std::string toString(const Range& range) {
+std::string toString(const Range& range) requires(!nv::Map<Range>) {
 	std::string ret;
 	ret.append(toString(ranges::size(range)) + CONTAINER_ELEM_END);
 	for (const auto& elem : range) {
@@ -238,7 +238,7 @@ public:
 	
 	template<typename... Args>
 	void send(Args&&... args) {
-		m_sendBuff.send(m_sock, args...);
+		m_sendBuff.send(m_sock, std::forward<Args>(args)...);
 	}
 
 	template<typename... Args>
