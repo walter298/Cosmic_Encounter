@@ -3,6 +3,8 @@
 #include <iostream>
 #include <print>
 
+#include <magic_enum.hpp>
+
 #include "novalis/data_util/Views.h"
 
 #include "Destiny.h"
@@ -14,11 +16,11 @@ namespace views = std::views;
 
 namespace {
 	template<typename PlayerRange, typename... Args>
-	void broadcast(PlayerRange&& players, Args&&... args) {
+	void broadcast(PlayerRange&& players, SocketHeader msg, Args&&... args) {
 		std::tuple argsTuple{ std::forward<Args>(args)... };
-		for (auto&& player : players) {
+		for (auto& player : players) {
 			std::apply([&](const auto&... tupleArgs) {
-				nv::unrefwrap(player).sock.send(tupleArgs...);
+				nv::unrefwrap(player).sock.send(msg, tupleArgs...);
 			}, argsTuple);
 		}
 	}
@@ -28,42 +30,24 @@ namespace {
 		size_t colonyIdx = 0;
 	};
 
-	DestinyResponseFromTurnTaker broadcastDestinyColor(Players& players, Player& turnTaker, Color colorDrawn, 
-		DestinyDrawChoice drawChoice) 
-	{
-		DestinyDrawInfo drawInfo;
-		drawInfo.drawnColor = colorDrawn;
-		
-		//send mandatory drawn color info to the turn-taker 
-		drawInfo.drawChoice = drawChoice;
-		broadcast(players, drawInfo);
-
-		DestinyResponseFromTurnTaker resp;
-		turnTaker.sock.read(resp);
-		
-		if (drawChoice == CanRedrawOrChoose) {
-			broadcast(nv::ExcludeIndices(players, turnTaker.index), resp);
-		}
-
-		return resp;
-	}
-
 	bool hasToKeepRedrawing(Player& turnTaker, GameState& gameState, Defense& defense) {
 		auto colorDrawn = gameState.destinyDeck.discardTop();
-
+		
 		//get the defensive player
 		defense.player = &(*std::ranges::find_if(gameState.players, [&](const auto& player) {
 			return player.color == turnTaker.color;
 		}));
 
 		if (colorDrawn != turnTaker.color) { //player does not have a choice to keep drawing if another color is drawn
-			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, MustChoose);
+			broadcast(gameState.players, SocketHeader::DESTINY_DRAW_INFO, DestinyDrawInfo{ DestinyDrawOptions::MustChoose, colorDrawn });
 			return false;// we are not redrawing a mandatory color
 		} else if (std::ranges::any_of(turnTaker.colonies, [](const auto& colony) { return colony.hasEnemyShips; })) {
-			auto resp = broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, CanRedrawOrChoose);
-			return resp == DecidedToKeepDrawing;
+			broadcast(gameState.players, SocketHeader::DESTINY_DRAW_INFO, DestinyDrawInfo{ DestinyDrawOptions::CanRedrawOrChoose, colorDrawn });
+			DestinyDrawChoice resp;
+			turnTaker.sock.read(SocketHeader::DESTINY_DRAW_CHOICE, resp);
+			return resp == DestinyDrawChoice::DecidedToKeepDrawing;
 		} else {
-			broadcastDestinyColor(gameState.players, turnTaker, colorDrawn, MustRedraw);
+			broadcast(gameState.players, SocketHeader::DESTINY_DRAW_INFO, DestinyDrawInfo{ DestinyDrawOptions::MustRedraw, colorDrawn });
 			return true; //turn-taker MUST redraw if own color is drawn but system doesn't have enemy ships
 		}
 	}
@@ -73,12 +57,12 @@ namespace {
 
 		while (hasToKeepRedrawing(turnTaker, gameState, defense)) {}
 
-		turnTaker.sock.send(turnTaker.colonies);
-		turnTaker.sock.read(defense.colonyIdx);
+		turnTaker.sock.send(SocketHeader::COLONY_INFORMATION, turnTaker.colonies);
+		turnTaker.sock.read(SocketHeader::CHOSEN_COLONY, defense.colonyIdx);
 
 		exit(-1); //this is where the game ends
 
-		broadcast(nv::ExcludeIndices(gameState.players, turnTaker.index), defense.colonyIdx);
+		broadcast(nv::ExcludeIndices(gameState.players, turnTaker.index), SocketHeader::CHOSEN_COLONY, defense.colonyIdx);
 
 		return defense;
 	}
@@ -112,10 +96,13 @@ namespace {
 
 			/*send the newly joined player his or her color and alien,
 			and the colors and aliens of each other player who has already joined*/
-			player.sock.send(pCount, pRenderDataV | views::take(i + 1));
+			for (const auto& pRenderData : pRenderDataV | views::take(i + 1)) {
+				std::println("Sending: {} {}", magic_enum::enum_name(pRenderData.alien), magic_enum::enum_name(pRenderData.color));
+			}
+			player.sock.send(SocketHeader::ALREADY_ARRIVED_PLAYERS, pCount, pRenderDataV | views::take(i + 1));
 
 			//send each other player the new color and alien
-			broadcast(players | views::take(i), pRenderDataV[i]);
+			broadcast(players | views::take(i), SocketHeader::NEWLY_JOINED_PLAYER, pRenderDataV[i]);
 		}
 
 		return players;
@@ -154,12 +141,12 @@ void host(size_t pCount, const tcp::endpoint& endpoint) {
 	std::cin.get();
 
 	//tell everyone the game is starting
-	broadcast(gameState.players, STARTING_GAME);
+	broadcast(gameState.players, SocketHeader::STARTING_GAME);
 
 	//send each player his 8 cards and the turn order
 	for (auto& player : gameState.players) {
-		gameState.deck.draw(player.hand, 8);
-		player.sock.send(player.hand, gameState.players | views::transform([](const auto& player) {
+		gameState.deck.draw(player.hand, 8); //draw 8 cards from the deck
+		player.sock.send(SocketHeader::CARDS_AND_TURN_ORDER, player.hand, gameState.players | views::transform([](const auto& player) {
 			return player.color;
 		}));
 	}

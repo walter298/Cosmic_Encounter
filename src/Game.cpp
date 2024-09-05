@@ -2,7 +2,7 @@
 
 Colonies makeStartingColonies(Color pColor) {
 	Colonies ret(5);
-	ranges::generate(ret, [&] {
+	std::ranges::generate(ret, [&] {
 		Colony colony;
 		colony.ships[pColor] = 4;
 		return colony;

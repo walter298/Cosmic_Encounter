@@ -37,8 +37,7 @@ void showGameOverview(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texM
 	std::vector<Card> cards;
 	std::vector<Color> turnOrder;
 
-	std::println("Reading cards and turn order");
-	sock.read(cards, turnOrder);
+	sock.read(SocketHeader::CARDS_AND_TURN_ORDER, cards, turnOrder);
 
 	showCards(mainUi, cards, gameRenderData.cardMap);
 

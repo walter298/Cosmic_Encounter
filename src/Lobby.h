@@ -6,8 +6,6 @@
 #include "NetworkUtil.h"
 #include "RenderData.h"
 
-constexpr inline int STARTING_GAME = 5000;
-
 //player color
 //player alien
 //other aliens and colors

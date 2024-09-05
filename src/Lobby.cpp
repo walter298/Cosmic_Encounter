@@ -65,15 +65,14 @@ namespace {
 		PlayerRenderData pRenderData;
 		size_t alienJoinCount = 0;
 		while (alienJoinCount < pCount) {
-			co_await sock.asyncRead(pRenderData);
+			co_await sock.asyncRead(SocketHeader::NEWLY_JOINED_PLAYER, pRenderData);
 			alienJoinCount++;
 
 			std::scoped_lock lock{ mutex };
 			pRenderDataV.push_back(pRenderData);
 		} 
 		
-		int starting = 0;
-		co_await sock.asyncRead(starting);
+		co_await sock.asyncRead(SocketHeader::STARTING_GAME);
 		gameStarting.store(true);
 	}
 
@@ -110,10 +109,13 @@ GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& te
 
 	nv::Scene lobby{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/lobby.nv_scene"), renderer, texMap, fontMap };
 
-	size_t pCount;
+	size_t pCount = 0;
 	std::vector<PlayerRenderData> pRenderInfoV;
 	pRenderInfoV.reserve(5);
-	sock.read(pCount, pRenderInfoV);
+	sock.read(SocketHeader::ALREADY_ARRIVED_PLAYERS, pCount, pRenderInfoV);
+
+	assert(!pRenderInfoV.empty());
+	assert(pCount != 0);
 
 	AlienPositionSetter alienPosSetter;
 	

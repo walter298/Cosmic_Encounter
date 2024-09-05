@@ -3,6 +3,7 @@
 #include <random>
 
 #include <boost/container/static_vector.hpp>
+#include <boost/unordered/unordered_flat_map.hpp>
 
 #include "novalis/data_util/File.h"
 

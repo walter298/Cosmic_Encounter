@@ -32,16 +32,16 @@ asio::awaitable<void> NonTurnTakingDestiny::asyncReadColorsFromServer() {
 	while (true) {
 		//get the color drawn 
 		DestinyDrawInfo destiny;
-		co_await m_sock.asyncRead(destiny);
+		co_await m_sock.asyncRead(SocketHeader::DESTINY_DRAW_INFO, destiny);
 
 		std::unique_lock lock{ m_mutex };
 		m_drawnColors.push_back(destiny.drawnColor);
 
-		if (destiny.drawChoice == CanRedrawOrChoose) {
+		if (destiny.drawChoice == DestinyDrawOptions::CanRedrawOrChoose) {
 			lock.unlock(); //IMPORTANT: unlock mutex so we don't block while waiting for turn-taker response
-			DestinyResponseFromTurnTaker turnTakerResp{};
-			co_await m_sock.asyncRead(turnTakerResp);
-			if (turnTakerResp == AcceptedColor) {
+			DestinyDrawOptions turnTakerResp{};
+			co_await m_sock.asyncRead(SocketHeader::DESTINY_DRAW_CHOICE, turnTakerResp);
+			if (turnTakerResp == DestinyDrawOptions::MustChoose) {
 				lock.lock();
 				m_wasFinalColorSent = true;
 				break;
@@ -79,21 +79,21 @@ void NonTurnTakingDestiny::operator()() {
 void TurnTakingDestiny::readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acceptButtonText, nv::Rect& keepDrawingButtonRect,
 	nv::Text& keepDrawingButtonText, const ColorMap& colorMap) {
 	DestinyDrawInfo destinyResult;
-	m_sock.read(destinyResult);
+	m_sock.read(SocketHeader::DESTINY_DRAW_INFO, destinyResult);
 
 	m_scene.addEvent(getColorRectMover(m_scene, destinyResult.drawnColor, colorMap));
 	m_currColor = destinyResult.drawnColor;
 
 	switch (destinyResult.drawChoice) {
-	case MustRedraw:
+	case DestinyDrawOptions::MustRedraw:
 		toggleButton(acceptButtonRect, acceptButtonText, false);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
 		break;
-	case MustChoose:
+	case DestinyDrawOptions::MustChoose:
 		toggleButton(acceptButtonRect, acceptButtonText, true);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, false);
 		break;
-	case CanRedrawOrChoose:
+	case DestinyDrawOptions::CanRedrawOrChoose:
 		toggleButton(acceptButtonRect, acceptButtonText, true);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
 		break;
@@ -127,7 +127,10 @@ TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::T
 	m_scene.addEvent(nv::Button{
 		nv::usingExternalRect,
 		acceptButtonRect,
-		[this] { m_sock.send(AcceptedColor); m_scene.running = false; },
+		[this] { 
+			m_sock.send(SocketHeader::DESTINY_DRAW_CHOICE, DestinyDrawChoice::AcceptedColor); 
+			m_scene.running = false; 
+		},
 		[&] { acceptButtonRect.setRenderColor(34, 139, 34, 255); },
 		[&] { acceptButtonRect.setRenderColor(34, 139, 34, 255); }
 	});
@@ -140,7 +143,10 @@ TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::T
 	m_scene.addEvent(nv::Button{
 		nv::usingExternalRect,
 		keepDrawingButtonRect,
-		[this] { m_sock.send(DecidedToKeepDrawing); m_wasColorDrawn = false; },
+		[this] { 
+			m_sock.send(SocketHeader::DESTINY_DRAW_CHOICE, DestinyDrawChoice::DecidedToKeepDrawing); 
+			m_wasColorDrawn = false; 
+		},
 		[&] { keepDrawingButtonRect.setRenderColor(34, 139, 34, 255); },
 		[&] { keepDrawingButtonRect.setRenderColor(255, 255, 255,255); }
 	});

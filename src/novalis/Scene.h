@@ -27,6 +27,7 @@ namespace nv {
 		struct TypeErasedBase {
 			virtual void render() const noexcept = 0;
 			virtual const std::string& getName() const noexcept = 0;
+			virtual ~TypeErasedBase() noexcept {}
 		};
 		using TypeErasedBasePtr = std::unique_ptr<TypeErasedBase>;
 
@@ -52,6 +53,8 @@ namespace nv {
 			void render() const noexcept override {
 				unrefwrap(obj).render();
 			}
+
+			~TypeErasedDerived() noexcept override {}
 		};
 
 		template<typename T>
@@ -64,6 +67,8 @@ namespace nv {
 			void move(SDL_Point p) noexcept override {
 				unrefwrap(this->obj).move(p);
 			}
+
+			~TypeErasedMoveableDerived() noexcept override = default;
 		};
 		using TypeErasedMoveableBasePtr = std::unique_ptr<TypeErasedMoveableBase>;
 

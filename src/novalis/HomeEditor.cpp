@@ -1,5 +1,7 @@
 #include "HomeEditor.h"
 
+#include "data_util/DataStructures.h" //ScopeExit
+
 nv::editor::EditorDest nv::editor::HomeEditor::imguiRender() noexcept {
 	static constexpr ImVec2 winPos{ NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2 };
 	static constexpr ImVec2 btnSize{ 183.0f, 80.0f };

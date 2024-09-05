@@ -79,4 +79,20 @@ namespace nv {
 		std::cmp_less(std::declval<typename T::key_type>(), std::declval<typename T::key_type>());
 		t.emplace(std::declval<typename T::key_type>(), std::declval<typename T::value_type>());
 	};
+
+	template<typename T>
+	concept Container = requires(T t) {
+		t.begin();
+		t.end();
+		t.cbegin();
+		t.cend();
+		typename std::remove_cvref_t<T>::value_type;
+		typename std::remove_cvref_t<T>::iterator;
+		typename std::remove_cvref_t<T>::const_iterator;
+		typename std::remove_cvref_t<T>::difference_type;
+		typename std::remove_cvref_t<T>::size_type;
+	};
+
+	template<typename Range>
+	concept NonContainerRange = ranges::viewable_range<Range> && !Container<Range>;
 }

@@ -5,8 +5,10 @@
 
 #include "Game.h"
 
-using CardMap  = std::unordered_map<Card, nv::Texture, nv::HashAggregate, nv::CompareAggregates>;
-using ColorMap = std::unordered_map<Color, std::pair<nv::Texture, nv::Rect>>;
+#include <boost/unordered/unordered_flat_map.hpp>
+
+using CardMap  = boost::unordered_flat_map<Card, nv::Texture, nv::HashAggregate, nv::CompareAggregates>;
+using ColorMap = boost::unordered_flat_map<Color, std::pair<nv::Texture, nv::Rect>>;
 
 struct GameRenderData {
 	std::vector<nv::Texture> pCards;

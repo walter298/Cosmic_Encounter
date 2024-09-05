@@ -1,90 +1,80 @@
 #include "NetworkUtil.h"
 
-std::string_view dataSubstr(StringIt& begin, StringIt end, char dataBreak) {
-	auto dataBreakIt = ranges::find(begin, end, dataBreak);
-	std::string_view ret{ begin, dataBreakIt };
-	begin = std::next(dataBreakIt);
-	return ret;
+#include <functional>
+
+asio::awaitable<std::optional<Socket::Error>> Socket::asyncConnect(const tcp::endpoint& endpoint) noexcept {
+	sys::error_code ec;
+	co_await m_sock.async_connect(endpoint, asio::redirect_error(asio::use_awaitable, ec));
+	co_return checkError(ec, std::source_location::current());
 }
 
-Socket::Socket(tcp::socket&& sock)
-	: m_sock{ std::move(sock) }, m_inbox{ m_sock }
+Socket::Socket(tcp::socket&& sock) noexcept : m_sock{ std::move(sock) }
 {
 }
 
-asio::any_io_executor Socket::getExecutor() {
+asio::any_io_executor Socket::getExecutor() noexcept {
 	return m_sock.get_executor();
 }
 
-bool Socket::connect(const tcp::endpoint& endpoint, sys::error_code& ec) {
-	tcp::resolver res{ m_sock.get_executor() };
-	auto result = res.resolve(endpoint, ec);
-	if (ec) { return false; }
-	asio::connect(m_sock, result, ec);
-	if (ec) { 
-		return true; 
-	} else {
-		return false;
-	}
+std::optional<Socket::Error> Socket::connect(const tcp::endpoint& endpoint) noexcept {
+	sys::error_code ec;
+	m_sock.connect(endpoint, ec);
+	return checkError(ec, std::source_location::current());
 }
 
-asio::awaitable<void> Socket::asyncConnect(const tcp::endpoint& endpoint, sys::error_code& ec) {
-	co_await m_sock.async_connect(endpoint, asio::redirect_error(asio::use_awaitable, ec));
+std::optional<Socket::Error> Socket::checkError(sys::error_code error, std::source_location current) noexcept {
+	if (error) {
+		std::println("Socket Error: {} on line {} in {}", error.message(), current.line(), current.file_name());
+		assert(false);
+		return Error{ error, current };
+	}
+	return std::nullopt;
 }
 
-void Socket::disconnect() {
-	m_sock.close();
+std::optional<Socket::Error> Socket::checkError(zpp::bits::errc error, std::source_location current) noexcept {
+	if (zpp::bits::failure(error)) {
+		Error ret{ std::make_error_code(error), current };
+		std::println("Socket Error: {} in {}", ret.ec.message(), current.function_name());
+		assert(false);
+		return ret;
+	}
+	return std::nullopt;
 }
 
-InputBuffer::InputBuffer(tcp::socket& sock)
-	: m_sock{ sock }
-{
+void Socket::writePayload(size_t payload) noexcept {
+	assert(payload < MAX_MESSAGE_SIZE - MAX_PAYLOAD_DIGITS);
+
+	std::span payloadHeader{ m_outputBuff.begin(), MAX_PAYLOAD_DIGITS };
+
+	//write the payload digits into the buffer
+	auto [ptr, ec] = std::to_chars(payloadHeader.data(), payloadHeader.data() + MAX_PAYLOAD_DIGITS, payload);
+	if (ec != std::errc{}) {
+		std::println("{}", std::make_error_code(ec).message());
+		std::abort();
+	}
+
+	//fill in empty digits with an 'x'
+	int digitCount = 0;
+	while (payload > 0) {
+		payload /= 10;
+		digitCount++;
+	}
+	std::ranges::fill(payloadHeader.begin() + digitCount, payloadHeader.begin() + MAX_PAYLOAD_DIGITS, 'x');
 }
 
-std::string_view InputBuffer::read() {
-	//if all messages have been parsed, then listen for incoming data
-	if (m_begin == m_data.end()) {  
-		m_data.clear();
-		asio::read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM);
-		m_begin = m_data.begin();
+size_t Socket::getPayload() {
+	size_t end = 0;
+	while (std::isdigit(m_inputBuff[end]) && end < 3) {
+		end++;
 	}
+	assert(end > 0);
 
-	auto poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM);
-
-	//if not an entire message was sent, read for more bytes until one is
-	if (poundIt == m_data.end()) {
-		asio::read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM);
-		poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM); //re-search for '#'
+	assert(!m_inputBuff.empty());
+	size_t payload = 0;
+	auto [ptr, ec] = std::from_chars(m_inputBuff.data(), m_inputBuff.data() + end, payload);
+	if (ec != std::errc{}) {
+		std::println("Error parsing payload: {}", std::make_error_code(ec).message());
+		std::abort();
 	}
-
-
-	std::string_view str{ m_begin, poundIt };
-
-	m_begin = poundIt + 1; //update data begin to the first char of the next message
-	
-	std::println("{}", str);
-
-	return str;
-}
-
-asio::awaitable<std::string_view> InputBuffer::asyncRead() {
-	//if all messages have been parsed, then listen for incoming data
-	if (m_begin == m_data.end()) {
-		m_data.clear();
-		co_await asio::async_read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM, asio::use_awaitable);
-		m_begin = m_data.begin();
-	}
-	auto poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM);
-
-	//if not an entire message was sent, read for more bytes until one is
-	if (poundIt == m_data.end()) {
-		co_await asio::async_read_until(m_sock.get(), asio::dynamic_buffer(m_data), MSG_END_DELIM, asio::use_awaitable);
-		poundIt = ranges::find(ranges::subrange(m_begin, m_data.end()), MSG_END_DELIM); //re-search for '#'
-	}
-
-	std::string_view str{ m_begin, poundIt };
-
-	m_begin = poundIt + 1; //update data begin to the first char of the next message
-
-	co_return str;
+	return payload;
 }

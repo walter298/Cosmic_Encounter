@@ -52,16 +52,16 @@ void play() {
 	//get the cards and the turn order
 	std::vector<Card> cards;
 	std::vector<Color> turnOrder;
-	sock.read(cards, turnOrder);
+	sock.read(SocketHeader::CARDS_AND_TURN_ORDER, cards, turnOrder);
 
 	size_t colorIdx = 0;
 	while (true) {
 		if (gameRenderData.pColor == turnOrder[colorIdx]) {
 			auto color = turnTakingDestiny();
 			Colonies colonies;
-			sock.read(colonies);
+			sock.read(SocketHeader::COLONY_INFORMATION, colonies);
 			auto colonyIdx = planetSelector(color, colonies, gameRenderData.colorMap);
-			sock.send(colonyIdx);
+			sock.send(SocketHeader::CHOSEN_COLONY, colonyIdx);
 		} else {
 			nonTurnTakingDestiny();
 		}

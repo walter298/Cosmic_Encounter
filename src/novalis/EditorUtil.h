@@ -29,18 +29,6 @@ namespace nv {
 			Home
 		};
 
-		template<typename Func>
-		struct ScopeExit {
-		private:
-			Func m_f;
-		public:
-			ScopeExit(const Func& f) noexcept(std::is_nothrow_copy_constructible_v<Func>) : m_f{ f } {}
-			ScopeExit(Func&& f) noexcept(std::is_nothrow_move_constructible_v<Func>) : m_f{ std::move(f) } {}
-			~ScopeExit() noexcept(std::is_nothrow_invocable_v<Func>) {
-				m_f();
-			}
-		};
-
 		template<typename T>
 		concept Editor = requires(T t) { 
 			{ t.imguiRender() } -> std::same_as<EditorDest>;
