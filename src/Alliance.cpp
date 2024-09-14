@@ -23,8 +23,8 @@ Alliance::Alliance(GameRenderData& gameRenderData)
 		gameRenderData.fontMap
 	},
 	m_colorMap{ gameRenderData.colorMap },
-	m_acceptText{ m_scene.find<nv::Text>(BUTTON_TEXT_LAYER, "accept_text").get() },
-	m_rejectText{ m_scene.find<nv::Text>(BUTTON_TEXT_LAYER, "reject_text").get() },
+	m_joinOffenseText{ m_scene.find<nv::Text>(BUTTON_TEXT_LAYER, "offense_button_text").get() },
+	m_joinDefenseText{ m_scene.find<nv::Text>(BUTTON_TEXT_LAYER, "defense_button_text").get() },
 	m_acceptOffenseTextPos{ m_scene.getSpecialPoint("offense_text_position") },
 	m_offenseButtonRect{ m_scene.find<nv::Rect>(BUTTON_RECT_LAYER, "offense_rect").get() },
 	m_acceptDefenseTextPos{ m_scene.getSpecialPoint("defense_text_position") },
@@ -52,7 +52,7 @@ Alliance::Choice Alliance::operator()(Color offense, Color defense, bool invited
 
 	//important that we copy buttonText and buttonRect in case they need to be duplicated
 	auto makeTempButton = [this](SDL_Point textPos, nv::Rect rect, Choice choice) {
-		auto textCopy = m_acceptText;
+		auto textCopy = m_joinOffenseText;
 
 		textCopy.setPos(textPos);
 		

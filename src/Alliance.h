@@ -21,8 +21,8 @@ private:
 	
 	ColorMap& m_colorMap;
 
-	nv::Text& m_acceptText;
-	nv::Text& m_rejectText;
+	nv::Text& m_joinOffenseText;
+	nv::Text& m_joinDefenseText;
 
 	SDL_Point m_acceptOffenseTextPos;
 	nv::Rect& m_offenseButtonRect;
