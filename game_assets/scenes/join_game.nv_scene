@@ -214,7 +214,7 @@
         {
           "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
           "font_size": 45,
-          "name": "name",
+          "name": "join_button_text",
           "ren": {
             "color": [
               255,
@@ -237,5 +237,6 @@
       "layer": 2,
       "struct nv::Rect": []
     }
-  ]
+  ],
+  "special_points": []
 }

@@ -60,6 +60,7 @@ namespace {
 		turnTaker.sock.send(SocketHeader::COLONY_INFORMATION, turnTaker.colonies);
 		turnTaker.sock.read(SocketHeader::CHOSEN_COLONY, defense.colonyIdx);
 
+		std::cin.get();
 		exit(-1); //this is where the game ends
 
 		broadcast(nv::ExcludeIndices(gameState.players, turnTaker.index), SocketHeader::CHOSEN_COLONY, defense.colonyIdx);

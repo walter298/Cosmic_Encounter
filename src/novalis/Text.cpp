@@ -1,5 +1,6 @@
 #include "Text.h"
 
+#include "data_util/DataStructures.h"
 #include "data_util/File.h"
 
 #include <print>
@@ -10,7 +11,10 @@ nv::FontRAII nv::loadFont(std::string_view fontPath, int fontSize) {
 
 void nv::Text::changeText(std::string_view newText) noexcept {
 	m_str = newText;
+
 	auto surface = TTF_RenderText_Solid(m_font, m_str.data(), { 0, 0, 0, 255 });
+	ScopeExit freeSurface{ [&] { SDL_FreeSurface(surface); } };
+
 	if (surface == nullptr) {
 		ren.setSize(0, 0);
 		return;
@@ -18,12 +22,8 @@ void nv::Text::changeText(std::string_view newText) noexcept {
 	auto w = surface->w;
 	auto h = surface->h;
 
-	if (m_tex != nullptr) {
-		m_tex.release();
-	}
-	m_tex.reset(SDL_CreateTextureFromSurface(m_renderer, surface));
+	m_tex.reset(SDL_CreateTextureFromSurface(m_renderer, surface), SDL_DestroyTexture);
 	ren.setSize(w, h);
-	SDL_FreeSurface(surface);
 }
 
 nv::Text::Text(SDL_Renderer* renderer, std::string_view str, std::string_view fontPath, int fontSize, TTF_Font* font)

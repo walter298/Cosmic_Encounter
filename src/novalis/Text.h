@@ -24,7 +24,7 @@ namespace nv {
 	private:
 		SDL_Renderer* m_renderer;
 		TTF_Font* m_font;
-		TextureRAII m_tex{ nullptr, SDL_DestroyTexture };
+		SharedTexture m_tex = nullptr; //points to the pointer in the variant
 		std::string m_str;
 		std::string m_fontPath;
 		int m_fontSize = 0;

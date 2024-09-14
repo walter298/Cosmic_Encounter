@@ -23,6 +23,11 @@ namespace nv {
 		{
 		}
 
+		auto operator->(this auto&& self) {
+			assert(!self.m_erased);
+			return &(*self.m_it);
+		}
+
 		decltype(auto) get(this auto&& self) {
 			assert(!self.m_erased);
 			return unrefwrap(*self.m_it);

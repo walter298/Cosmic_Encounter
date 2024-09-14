@@ -64,6 +64,11 @@ namespace nv {
 
 				auto dest = editor.imguiRender();
 
+				const auto now = std::chrono::system_clock::now();
+				if (now < endTime) {
+					std::this_thread::sleep_for(endTime - now);
+				}
+
 				ImGui::Render();
 				SDL_RenderSetScale(renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
 				SDL_SetRenderDrawColor(renderer,

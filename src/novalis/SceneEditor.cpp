@@ -1,5 +1,8 @@
 #include "SceneEditor.h"
 
+#include <SDL2/SDL2_gfxPrimitives.h>
+
+#include "data_util/BasicJsonSerialization.h"
 #include "data_util/File.h"
 
 using nv::editor::SceneEditor;
@@ -53,6 +56,54 @@ void SceneEditor::reduceOpacityOfOtherLayers() {
 	auto afterVisibleLayer = ranges::subrange(std::next(visibleLayerIt), m_objectLayers.end());
 	reduceOpacityImpl(beforeVisibleLayer);
 	reduceOpacityImpl(afterVisibleLayer);
+}
+
+void nv::editor::SceneEditor::selectSpecialPoint() noexcept {
+	if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+		auto mouse = convertPair<SDL_Point>(ImGui::GetMousePos());
+		auto selectedPointIt = ranges::find_if(m_specialPoints, [&](const auto& point) {
+			return point.containsCoord(mouse);
+		});
+		if (selectedPointIt != m_specialPoints.end()) {
+			m_draggingObject = true;
+			m_selectedSpecialPoint = &(*selectedPointIt);
+			m_selectedObjType = SelectedObjectType::SpecialPoint;
+		}
+	}
+}
+
+void nv::editor::SceneEditor::editSelectedSpecialPoint() {
+	assert(m_selectedSpecialPoint != nullptr);
+	
+	ScopeExit exit{ [] { ImGui::End(); } };
+
+	ImGui::SetNextWindowSize({ 250, 120 });
+	ImGui::SetNextWindowPos({ 0, 480 });
+
+	ImGui::Begin("Special Point");
+	ImGui::InputText("name", &m_selectedSpecialPoint->name);
+	if (ImGui::Button("Delete")) {
+		auto pointIt = ranges::find_if(m_specialPoints, [this](const auto& point) {
+			return point.name == m_selectedSpecialPoint->name;
+		});
+		m_specialPoints.erase(pointIt);
+		m_selectedSpecialPoint = nullptr;
+		m_selectedObjType      = SelectedObjectType::None;
+		return;
+	}
+	auto mouseDelta = convertPair<SDL_Point>(ImGui::GetMouseDragDelta());
+	if (ImGui::IsMouseDragging(ImGuiMouseButton_Left) && m_draggingObject) {
+		m_selectedSpecialPoint->point.x += mouseDelta.x;
+		m_selectedSpecialPoint->point.y += mouseDelta.y;
+	}
+
+	ImGui::ResetMouseDragDelta();
+}
+
+void nv::editor::SceneEditor::createSpecialPoint() {
+	auto mouse = convertPair<SDL_Point>(ImGui::GetMousePos());
+	m_selectedSpecialPoint = &m_specialPoints.emplace_back(mouse, "special_point");
+	m_selectedObjType = SelectedObjectType::SpecialPoint;
 }
 
 void SceneEditor::showFontOptions() {
@@ -131,7 +182,7 @@ void SceneEditor::createTextures() noexcept {
 
 void SceneEditor::showRightClickOptions() noexcept {
 	static constexpr ImVec2 btnSize{ 210.0f, 60.0f };
-	static constexpr auto winSize = buttonList(btnSize, 4);
+	static constexpr auto winSize = buttonList(btnSize, 5);
 
 	ImGui::SetNextWindowPos(m_rightClickWinPos);
 	ImGui::SetNextWindowSize(winSize);
@@ -151,6 +202,11 @@ void SceneEditor::showRightClickOptions() noexcept {
 	}
 	if (ImGui::Button("Create Rect", btnSize)) {
 		createRect();
+		m_showingRightClickOptions = false;
+	}
+	if (ImGui::Button("Create Special Point", btnSize)) {
+		createSpecialPoint();
+		m_showingRightClickOptions = false;
 	}
 	ImGui::End();
 }
@@ -183,6 +239,15 @@ void nv::editor::SceneEditor::save() const noexcept {
 		}, objs);
 	}
 
+	//write special points
+	auto& specialPointsJson = root["special_points"];
+	specialPointsJson = json::array();
+	for (auto point : m_specialPoints) {
+		auto& pointJson = specialPointsJson.emplace_back();
+		pointJson["name"]  = point.name;
+		pointJson["point"] = point.point;
+	}
+
 	//write json to the file
 	std::ofstream file{ *filename };
 	file << root.dump(2);
@@ -195,7 +260,8 @@ void nv::editor::SceneEditor::showSceneOptions() noexcept {
 	ImGui::Begin("Scene");
 	if (ImGui::InputInt("Layer", &m_currLayer)) {
 		//make sure that there are no pointers to previous objects in other layers in selected object data
-		auto tiedSelectedObjs = std::tie(m_selectedSpriteData, m_selectedTextureData, m_selectedTextData, m_selectedRectData);
+		auto tiedSelectedObjs = std::tie(m_selectedSpriteData, m_selectedTextureData, m_selectedTextData, 
+			m_selectedRectData);
 		forEachDataMember([this](auto& selectedObj) {
 			selectedObj.reset();
 			return STAY_IN_LOOP;
@@ -211,10 +277,10 @@ void nv::editor::SceneEditor::showSceneOptions() noexcept {
 }
 
 void nv::editor::SceneEditor::editLayers() {
-	ImGui::SetNextWindowSize({ 300, 220 });
-	ImGui::SetNextWindowPos({ 0, 160 });
-
 	auto editImpl = [this](std::string_view name, auto& objData) {
+		ImGui::SetNextWindowSize({ 300, 220 });
+		ImGui::SetNextWindowPos({ 0, 160 });
+
 		ImGui::Begin(name.data());
 		edit(objData);
 		ImGui::End();
@@ -236,22 +302,38 @@ void nv::editor::SceneEditor::editLayers() {
 	case SelectedObjectType::Rect:
 		editImpl("Rect", m_selectedRectData);
 		break;
+	case SelectedObjectType::SpecialPoint:
+		editSelectedSpecialPoint();
+		break;
 	}
 
+	//select objects
+	if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
+		m_draggingObject = false;
+		return;
+	} else if (m_draggingObject) {
+		return;
+	}
 	auto tiedObjData = std::tie(m_selectedSpriteData, m_selectedTextureData, m_selectedTextData, m_selectedRectData);
 	forEachDataMember([&, this](auto& objs, auto& selectedObjData) {
-		selectImpl(objs, selectedObjData);
-		return STAY_IN_LOOP;
+		if (selectImpl(objs, selectedObjData)) {
+			m_draggingObject = true;
+			return BREAK_FROM_LOOP;
+		} else {
+			return STAY_IN_LOOP;
+		}
 	}, m_objectLayers[m_currLayer], tiedObjData);
+	selectSpecialPoint();
 }
 
 SceneEditor::SceneEditor(SDL_Renderer* renderer)
 	: m_renderer{ renderer }
 { 
-	m_selectedObjMap.get<Sprite>()  = SelectedObjectType::Sprite;
-	m_selectedObjMap.get<Texture>() = SelectedObjectType::Texture;
-	m_selectedObjMap.get<Text>()    = SelectedObjectType::Text;
-	m_selectedObjMap.get<Rect>()    = SelectedObjectType::Rect;
+	m_selectedObjMap.get<Sprite>()       = SelectedObjectType::Sprite;
+	m_selectedObjMap.get<Texture>()      = SelectedObjectType::Texture;
+	m_selectedObjMap.get<Text>()         = SelectedObjectType::Text;
+	m_selectedObjMap.get<Rect>()         = SelectedObjectType::Rect;
+	m_selectedObjMap.get<SpecialPoint>() = SelectedObjectType::SpecialPoint;
 }
 
 nv::editor::EditorDest SceneEditor::imguiRender() {
@@ -291,4 +373,23 @@ void nv::editor::SceneEditor::sdlRender() const noexcept {
 			return STAY_IN_LOOP;
 		}, objLayer);
 	}
+	for (const auto& point : m_specialPoints) {
+		point.render(m_renderer);
+	}
+}
+
+bool nv::editor::SceneEditor::SpecialPoint::containsCoord(SDL_Point mouse) const noexcept {
+	auto mx = static_cast<double>(mouse.x);
+	auto my = static_cast<double>(mouse.y);
+
+	//center points
+	auto cx = static_cast<double>(point.x);
+	auto cy = static_cast<double>(point.y);
+
+	auto distFromCenter = sqrt(std::pow(mx - cx, 2.0) + std::pow(my - cy, 2.0));
+	return distFromCenter < static_cast<double>(RADIUS);
+}
+
+void nv::editor::SceneEditor::SpecialPoint::render(SDL_Renderer* renderer) const noexcept {
+	filledCircleColor(renderer, static_cast<Sint16>(point.x), static_cast<Sint16>(point.y), RADIUS, (255u << 24) | (255u << 16));
 }

@@ -83,19 +83,23 @@ void TurnTakingDestiny::readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acc
 
 	m_scene.addEvent(getColorRectMover(m_scene, destinyResult.drawnColor, colorMap));
 	m_currColor = destinyResult.drawnColor;
+	m_canChooseColor = true;
 
 	switch (destinyResult.drawChoice) {
 	case DestinyDrawOptions::MustRedraw:
 		toggleButton(acceptButtonRect, acceptButtonText, false);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
+		m_canChooseColor = false;
 		break;
 	case DestinyDrawOptions::MustChoose:
 		toggleButton(acceptButtonRect, acceptButtonText, true);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, false);
+		m_canChooseColor = false;
 		break;
 	case DestinyDrawOptions::CanRedrawOrChoose:
 		toggleButton(acceptButtonRect, acceptButtonText, true);
 		toggleButton(keepDrawingButtonRect, keepDrawingButtonText, true);
+		m_canChooseColor = true;
 		break;
 	}
 }
@@ -117,7 +121,11 @@ void TurnTakingDestiny::toggleButton(nv::Rect& rect, nv::Text& text, bool showin
 TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap,
 	nv::FontMap& fontMap, const ColorMap& colorMap)
 	: m_sock{ sock },
-	m_scene{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/turn_taking_destiny.nv_scene"), renderer, texMap, fontMap }
+	m_scene{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/turn_taking_destiny.nv_scene"), 
+			renderer, 
+			texMap, 
+			fontMap 
+	}
 {
 	//button to accept the color being drawn
 	auto& acceptButtonRect = m_scene.find<nv::Rect>(RECT_LAYER, "accept_button_rect").get();
@@ -125,10 +133,12 @@ TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::T
 
 	//map accept and reject buttons to their respective rects
 	m_scene.addEvent(nv::Button{
-		nv::usingExternalRect,
+		acceptButtonText,
 		acceptButtonRect,
 		[this] { 
-			m_sock.send(SocketHeader::DESTINY_DRAW_CHOICE, DestinyDrawChoice::AcceptedColor); 
+			if (m_canChooseColor) { //server doesn't need to read response if player has no choice
+				m_sock.send(SocketHeader::DESTINY_DRAW_CHOICE, DestinyDrawChoice::AcceptedColor);
+			}
 			m_scene.running = false; 
 		},
 		[&] { acceptButtonRect.setRenderColor(34, 139, 34, 255); },
@@ -141,10 +151,12 @@ TurnTakingDestiny::TurnTakingDestiny(Socket& sock, SDL_Renderer* renderer, nv::T
 	toggleButton(keepDrawingButtonRect, keepDrawingButtonText, false);
 
 	m_scene.addEvent(nv::Button{
-		nv::usingExternalRect,
+		keepDrawingButtonText,
 		keepDrawingButtonRect,
 		[this] { 
-			m_sock.send(SocketHeader::DESTINY_DRAW_CHOICE, DestinyDrawChoice::DecidedToKeepDrawing); 
+			if (m_canChooseColor) {
+				m_sock.send(SocketHeader::DESTINY_DRAW_CHOICE, DestinyDrawChoice::DecidedToKeepDrawing);
+			}
 			m_wasColorDrawn = false; 
 		},
 		[&] { keepDrawingButtonRect.setRenderColor(34, 139, 34, 255); },

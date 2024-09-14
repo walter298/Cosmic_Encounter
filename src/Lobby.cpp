@@ -105,7 +105,7 @@ namespace {
 }
 
 GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& texMap, nv::FontMap& fontMap) {
-	GameRenderData ret{ renderer, texMap };
+	GameRenderData gameRenderData{ renderer };
 
 	nv::Scene lobby{ nv::relativePath("Cosmic_Encounter/game_assets/scenes/lobby.nv_scene"), renderer, texMap, fontMap };
 
@@ -121,9 +121,9 @@ GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& te
 	
 	//load already joined aliens
 	for (const auto& pData : pRenderInfoV) {
-		loadColorData(alienPosSetter, lobby, pData, ret.colorMap);
+		loadColorData(alienPosSetter, lobby, pData, gameRenderData.colorMap);
 	}
-	ret.pColor = pRenderInfoV.back().color; //last sent player is THIS player
+	gameRenderData.pColor = pRenderInfoV.back().color; //last sent player is THIS player
 
 	pCount -= pRenderInfoV.size(); //subtract from pCount the # of players who have already joined
 	pRenderInfoV.clear(); 
@@ -139,11 +139,11 @@ GameRenderData runLobby(Socket& sock, SDL_Renderer* renderer, nv::TextureMap& te
 		if (gameStarting.load()) {
 			lobby.running = false;
 		} else {
-			checkForLobbyUpdate(lobby, alienPosSetter, pRenderInfoV, alienJoinCount, pCount, mutex, ret.colorMap);
+			checkForLobbyUpdate(lobby, alienPosSetter, pRenderInfoV, alienJoinCount, pCount, mutex, gameRenderData.colorMap);
 		}
 	});
 
 	lobby();
 	
-	return ret;
+	return gameRenderData;
 }

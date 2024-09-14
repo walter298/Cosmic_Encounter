@@ -234,6 +234,15 @@ namespace nv {
 		}
 	}
 
+	template<typename T>
+	constexpr auto& unptrwrap(T& t) {
+		if constexpr (IsClassTemplate<std::unique_ptr, T>::value) {
+			return *t;
+		} else {
+			return t;
+		}
+	}
+
 	template<template<typename... Ts> typename T, typename... Ts>
 	struct GetParameterizedTypeFromTuple {};
 

@@ -104,6 +104,8 @@ namespace nv {
 		
 		MouseData m_mouseData;
 
+		boost::unordered_flat_map<std::string, SDL_Point> m_specialPoints;
+
 		void executeEvents();
 	public:
 		SDL_Renderer* renderer;
@@ -131,10 +133,10 @@ namespace nv {
 			return StableRef{ objs, objIt };
 		}
 
+		SDL_Point getSpecialPoint(std::string_view name) const noexcept;
+
 		template<typename Object>
-		auto addObject(Object&& object, int layer) 
-			requires(RenderObject<std::unwrap_reference_t<Object&>>) 
-		{
+		auto addObject(Object&& object, int layer) {
 			decltype(auto) objects = std::get<plf::hive<std::remove_cvref_t<Object>>>(m_objectLayers[layer]);
 			return StableRef{ objects, objects.insert(std::forward<Object>(object)) };
 		}
@@ -176,7 +178,7 @@ namespace nv {
 				eraseImpl(id, eventData.events, getID);
 			}
 		}
-	
+
 		template<typename Func>
 		auto addEvent(Func&& func) {
 			using FuncInfo = FunctionTraits<std::decay_t<Func>>;

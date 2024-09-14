@@ -57,5 +57,6 @@
       "layer": 1,
       "struct nv::Rect": []
     }
-  ]
+  ],
+  "special_points": []
 }

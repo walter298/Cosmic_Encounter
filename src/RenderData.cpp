@@ -42,6 +42,7 @@ namespace {
 	}
 }
 
-GameRenderData::GameRenderData(SDL_Renderer* renderer, nv::TextureMap& texMap) 
+GameRenderData::GameRenderData(SDL_Renderer* renderer) noexcept
+	: renderer{ renderer }
 {
 }

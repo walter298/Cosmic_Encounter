@@ -1,6 +1,9 @@
 #include "Scene.h"
 
+#include <print>
 #include <thread> //sleep for framerate
+
+#include "data_util/BasicJsonSerialization.h"
 
 void nv::Scene::render() {
 	for (const auto& [layer, objLayer] : m_objectLayers) {
@@ -120,12 +123,12 @@ nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMa
 	std::ifstream sceneFile{ absFilePath.data() };
 	assert(sceneFile.is_open());
 
-	auto sceneJson = json::parse(sceneFile);
+	auto rootJson = json::parse(sceneFile);
 
 	auto loadObjectLayer = [&, this](const json& objsJson, auto& objs, auto&... args) {
 		objs.reserve(objsJson.size());
 		for (const auto& objJson : objsJson) {
-			objs.emplace(renderer, objJson, args...);
+			std::println("Loading {}", objs.emplace(renderer, objJson, args...)->getName());
 		}
 	};
 
@@ -141,13 +144,26 @@ nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMa
 		loadObjectLayer(objsJson.at(typeid(Rect).name()), rects);
 	};
 
-	auto& objectLayersJson = sceneJson["objects"];
+	//load in render objects
+	auto& objectLayersJson = rootJson["objects"];
 	for (auto& jsonLayer : objectLayersJson) {
 		int layer = jsonLayer["layer"].get<int>();
 		loadObjectLayers(jsonLayer, layer);
 	}
 
+	//load in special points
+	auto& pointsJson = rootJson["special_points"];
+	m_specialPoints.reserve(pointsJson.size());
+	for (const auto& pointJson : pointsJson) {
+		m_specialPoints.emplace(pointJson["name"].get<std::string>(), pointJson["point"].get<SDL_Point>());
+	}
 	sceneFile.close();
+}
+
+SDL_Point nv::Scene::getSpecialPoint(std::string_view name) const noexcept {
+	static std::string key;
+	key = name;
+	return m_specialPoints.at(key);
 }
 
 nv::ID<nv::TextInput> nv::Scene::addTextInput(nv::TextInput&& textInput) {
@@ -225,5 +241,20 @@ void nv::Scene::deoverlay() {
 }
 
 void nv::Scene::printElements() const {
-	
+	for (const auto& [layer, objects] : m_objectLayers) {
+		std::print("Layer {}: [", layer);
+		forEachDataMember([](auto& objs) {
+			std::print("{}", objs.size());
+			for (const auto& obj : objs) {
+				using Type = std::remove_cvref_t<decltype(obj)>;
+				if constexpr (IsClassTemplate<std::unique_ptr, Type>::value || std::is_pointer_v<Type>) {
+					std::print("{} ", obj->getName());
+				} else {
+					std::print("{} ", unrefwrap(obj).getName());
+				} 
+				return STAY_IN_LOOP;
+			}
+			std::println("]");
+		}, objects);
+	}
 }

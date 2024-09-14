@@ -1,0 +1,324 @@
+{
+  "objects": [
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [
+        {
+          "name": "venus",
+          "texture_object_data": [
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -63,
+                -494,
+                2700,
+                2700
+              ]
+            },
+            {
+              "color": [
+                255,
+                255,
+                255,
+                255
+              ],
+              "name": "",
+              "sdl_rect": [
+                -63,
+                -494,
+                2700,
+                2700
+              ]
+            },
+            [
+              0,
+              0
+            ],
+            0.0,
+            0
+          ],
+          "texture_path": "Cosmic_Encounter\\game_assets\\images\\space\\venus.png"
+        }
+      ],
+      "layer": 0,
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              0
+            ],
+            "name": "",
+            "sdl_rect": [
+              1584,
+              204,
+              169,
+              51
+            ]
+          },
+          "value": "Defense"
+        },
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              0
+            ],
+            "name": "",
+            "sdl_rect": [
+              618,
+              191,
+              158,
+              51
+            ]
+          },
+          "value": "Offense"
+        },
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              0
+            ],
+            "name": "",
+            "sdl_rect": [
+              1605,
+              954,
+              109,
+              51
+            ]
+          },
+          "value": "Allies"
+        },
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "name",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              0
+            ],
+            "name": "",
+            "sdl_rect": [
+              627,
+              946,
+              109,
+              51
+            ]
+          },
+          "value": "Allies"
+        }
+      ],
+      "class nv::Texture": [],
+      "layer": 1,
+      "struct nv::Rect": []
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [],
+      "layer": 2,
+      "struct nv::Rect": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            100
+          ],
+          "name": "defense_alien_rect",
+          "sdl_rect": [
+            1522,
+            275,
+            300,
+            500
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            100
+          ],
+          "name": "offense_alien_rect",
+          "sdl_rect": [
+            549,
+            256,
+            300,
+            500
+          ]
+        }
+      ]
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [],
+      "class nv::Texture": [],
+      "layer": 3,
+      "struct nv::Rect": [
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "defense_button_rect",
+          "sdl_rect": [
+            1480,
+            803,
+            370,
+            70
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "do_not_participate_button_rect",
+          "sdl_rect": [
+            1006,
+            801,
+            400,
+            70
+          ]
+        },
+        {
+          "color": [
+            255,
+            255,
+            255,
+            255
+          ],
+          "name": "offense_button_rect",
+          "sdl_rect": [
+            518,
+            798,
+            370,
+            70
+          ]
+        }
+      ]
+    },
+    {
+      "class nv::Sprite": [],
+      "class nv::Text": [
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "join_defense_text",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              0
+            ],
+            "name": "",
+            "sdl_rect": [
+              1533,
+              815,
+              265,
+              51
+            ]
+          },
+          "value": "Join Defense"
+        },
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "offense_button_text",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              0
+            ],
+            "name": "",
+            "sdl_rect": [
+              571,
+              809,
+              254,
+              51
+            ]
+          },
+          "value": "Join Offense"
+        },
+        {
+          "font_path": "Cosmic_Encounter/fonts/arial/ARIAL.TTF",
+          "font_size": 45,
+          "name": "do_not_participate_text",
+          "ren": {
+            "color": [
+              255,
+              255,
+              255,
+              0
+            ],
+            "name": "",
+            "sdl_rect": [
+              1028,
+              812,
+              361,
+              51
+            ]
+          },
+          "value": "Do not Participate"
+        }
+      ],
+      "class nv::Texture": [],
+      "layer": 4,
+      "struct nv::Rect": []
+    }
+  ],
+  "special_points": [
+    {
+      "name": "offensive_allies_position",
+      "point": [
+        505,
+        1010
+      ]
+    },
+    {
+      "name": "defensive_allies_position",
+      "point": [
+        1482,
+        1019
+      ]
+    }
+  ]
+}

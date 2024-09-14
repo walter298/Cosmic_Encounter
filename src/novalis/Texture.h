@@ -30,7 +30,7 @@ namespace nv {
 
 	class Texture : public ObjectBase<Texture> {
 	private:
-		SDL_Renderer* m_renderer;
+		SDL_Renderer* m_renderer = nullptr;
 		std::variant<SharedTexture, SDL_Texture*> m_texVariant;
 		SDL_Texture* m_tex = nullptr;
 		std::shared_ptr<const std::string> m_texPath = nullptr;

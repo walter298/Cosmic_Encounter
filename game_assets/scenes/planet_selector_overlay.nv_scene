@@ -334,5 +334,6 @@
       "layer": 11,
       "struct nv::Rect": []
     }
-  ]
+  ],
+  "special_points": []
 }

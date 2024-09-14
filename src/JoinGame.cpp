@@ -56,8 +56,10 @@ void joinGame(SDL_Renderer* renderer, Socket& sock, nv::TextureMap& texMap, nv::
     auto& portInputText   = scene.find<nv::Text>(TEXT_LAYER, "port_input").get();
 
     //connection button
+    auto& joinButtonText = scene.find<nv::Text>(TEXT_LAYER, "join_button_text").get();
     auto& joinButtonRect = scene.find<nv::Rect>(RECT_LAYER, "join_button_rect").get();
     nv::Button joinButton{ 
+        joinButtonText,
         joinButtonRect,
         [&] {
             auto ec = connectToGame(ipAddrInputText, portInputText, sock);

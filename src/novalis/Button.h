@@ -11,8 +11,11 @@ namespace nv {
 
 	class Button {
 	private:
-		Rect m_rect;
-		std::reference_wrapper<const Rect> m_rectRef;
+		std::reference_wrapper<nv::Text> m_text;
+		std::reference_wrapper<nv::Rect> m_rect;
+
+		SDL_Point m_originalTextPos{};
+		SDL_Point m_originalRectPos{};
 
 		Event<void> m_onClicked;
 		Event<void> m_onHovered;
@@ -27,8 +30,9 @@ namespace nv {
 		bool m_rightReleased = false;
 		bool m_middleReleased = false;
 	public:
-		Button(const Rect& rect, Event<void>&& onClicked, Event<void>&& onHovered, Event<void>&& onUnhovered) noexcept;
-		Button(ExternalRect, const Rect& rect, Event<void>&& onClicked, Event<void>&& onHovered, Event<void>&& onUnhovered) noexcept;
+		Button(nv::Text& text, Rect& rect, Event<void>&& onClicked, Event<void>&& onHovered, Event<void>&& onUnhovered) noexcept;
+		void toggleIn() noexcept;
+		void toggleOut() noexcept;
 
 		void operator()(MouseData mouseBtnData);
 	};

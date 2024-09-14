@@ -44,7 +44,8 @@ class TurnTakingDestiny {
 private:
 	Socket& m_sock;
 	nv::Scene m_scene;
-	bool m_wasColorDrawn = false;
+	bool m_wasColorDrawn  = false;
+	bool m_canChooseColor = false;
 	Color m_currColor{};
 
 	void readDrawnColor(nv::Rect& acceptButtonRect, nv::Text& acceptButtonText, nv::Rect& keepDrawingButtonRect, 
