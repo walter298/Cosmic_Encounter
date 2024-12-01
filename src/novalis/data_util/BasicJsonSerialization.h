@@ -6,6 +6,8 @@
 #include <boost/pfr.hpp>
 #include <boost/container/flat_map.hpp>
 
+#include <plf_hive.h>
+
 #include <nlohmann/json.hpp>
 
 #include <SDL2/SDL_rect.h>
@@ -42,6 +44,20 @@ namespace boost {
 				bmap.emplace(std::move(key), std::move(value));
 			}
 		}
+	}
+}
+
+namespace plf {
+	template<typename T>
+	void to_json(nlohmann::json& j, const hive<T>& hive) {
+		std::vector<T> vec;
+		vec.append_range(hive);
+		j = vec;
+	}
+	template<typename T>
+	void from_json(const nlohmann::json& j, hive<T>& hive) {
+		auto vec = j.get<std::vector<T>>();
+		hive.insert(vec.begin(), vec.end());
 	}
 }
 

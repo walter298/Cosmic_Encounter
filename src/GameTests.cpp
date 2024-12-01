@@ -24,7 +24,7 @@ namespace {
 		};
 
 		auto makeColorRect = [](Uint8 r, Uint8 g, Uint8 b) {
-			return nv::Rect{ nullptr, 0, 0, 0, 0, r, g, b };
+			return nv::Rect{ 0, 0, 0, 0, r, g, b };
 		};
 
 		ret.colorMap[Red] = std::pair{ 
@@ -57,7 +57,7 @@ void testPlanetSelector() {
 		ret.ships[Black] = 56;
 		return ret;
 	});
-	planetSelector(Black, std::ranges::subrange(colonies.begin(), colonies.end()), gameRenderData.colorMap);
+	planetSelector(instance.renderer, Black, std::ranges::subrange(colonies.begin(), colonies.end()), gameRenderData.colorMap);
 }
 
 void testAlliance() {

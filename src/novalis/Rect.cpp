@@ -11,19 +11,9 @@ bool nv::Rect::isInRegion(SDL_Point coord, int x, int y, int w, int h) noexcept 
 	return isInRegion(coord.x, coord.y, x, y, w, h);
 }
 
-nv::Rect::Rect(SDL_Renderer* renderer) noexcept
-	: renderer{ renderer }
+nv::Rect::Rect(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+	: rect{ x, y, w, h }, color{ r, g, b, a }
 {
-}
-
-nv::Rect::Rect(SDL_Renderer* renderer, int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-	: renderer{ renderer }, rect{ x, y, w, h }, color{ r, g, b, a }
-{
-}
-
-nv::Rect::Rect(SDL_Renderer* renderer, const json& json) {
-	*this = json.get<Rect>();
-	this->renderer = renderer;
 }
 
 bool nv::Rect::containsCoord(int mx, int my) const noexcept {
@@ -75,9 +65,7 @@ void nv::Rect::setOpacity(uint8_t a) {
 	color.a = a;
 }
 
-void nv::Rect::render() const noexcept {
-	assert(renderer != nullptr);
-
+void nv::Rect::render(SDL_Renderer* renderer) const noexcept {
 	if (color.a == 0) {
 		return;
 	}
@@ -108,13 +96,13 @@ void nv::Rect::save(json& json) const {
 void nv::to_json(json& j, const Rect& r) {
 	j["sdl_rect"] = r.rect;
 	j["color"]    = r.color;
-	j["name"] = r.getName();
+	j["name"] = r.name;
 }
 
 void nv::from_json(const json& j, Rect& r) {
 	r.rect = j.at("sdl_rect").get<SDL_Rect>();
 	r.color = j.at("color").get<SDL_Color>();
 	if (j.contains("name")) {
-		r.m_name = j.at("name").get<std::string>();
+		r.name = j.at("name").get<std::string>();
 	}
 }

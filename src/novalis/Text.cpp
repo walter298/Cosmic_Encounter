@@ -30,7 +30,6 @@ nv::Text::Text(SDL_Renderer* renderer, std::string_view str, std::string_view fo
 	: m_renderer{ renderer }, m_font{ font }, m_str{ str }, m_fontPath{ fontPath }, m_fontSize{ fontSize }
 {
 	changeText(str);
-	ren.renderer = renderer;
 	ren.setOpacity(0);
 }
 
@@ -57,9 +56,8 @@ nv::Text::Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap)
 	m_str = json["value"].get<std::string>();
 	changeText(m_str);
 	ren = json["ren"].get<Rect>();
-	ren.renderer = renderer;
 	ren.setOpacity(0);
-	m_name = json["name"].get<std::string>();
+	name = json["name"].get<std::string>();
 }
 
 void nv::Text::operator=(std::string_view str) noexcept {
@@ -110,8 +108,8 @@ void nv::Text::setOpacity(uint8_t a) noexcept {
 	color.a = a;
 }
 
-void nv::Text::render() const noexcept {
-	ren.render();
+void nv::Text::render(SDL_Renderer* renderer) const noexcept {
+	ren.render(renderer);
 	SDL_RenderCopy(m_renderer, m_tex.get(), nullptr, &ren.rect);
 }
 

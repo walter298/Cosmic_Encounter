@@ -20,7 +20,7 @@ namespace nv {
 
 	FontRAII loadFont(std::string_view fontPath, int fontSize);
 
-	class Text : public ObjectBase<Text> {
+	class Text : public detail::ObjectBase<Text> {
 	private:
 		SDL_Renderer* m_renderer;
 		TTF_Font* m_font;
@@ -33,9 +33,9 @@ namespace nv {
 		Rect ren;
 		SDL_Color color{ 0, 0, 0, 255 };
 
+		Text() = default;
 		Text(SDL_Renderer* renderer, std::string_view str, std::string_view fontPath, int fontSize, TTF_Font* font);
 		Text(SDL_Renderer* renderer, std::string_view str, int fontSize, TTF_Font* font);
-
 		Text(SDL_Renderer* renderer, const json& json, FontMap& fontMap);
 
 		void operator=(std::string_view str) noexcept;
@@ -52,7 +52,7 @@ namespace nv {
 		bool containsCoord(int x, int y) const noexcept;
 		bool containsCoord(SDL_Point p) const noexcept;
 		void setOpacity(uint8_t a) noexcept;
-		void render() const noexcept;
+		void render(SDL_Renderer* renderer) const noexcept;
 
 		void save(json& json) const;
 	};

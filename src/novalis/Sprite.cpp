@@ -6,8 +6,6 @@
 #include "data_util/File.h"
 
 nv::Sprite::Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap) {
-	m_name = json["name"].get<std::string>();
-
 	auto uniqueTexIndices = json["texture_object_layers"].get<JsonFormat>();
 	for (const auto& [layer, texObjs] : uniqueTexIndices) {
 		for (const auto& [texPath, texData] : texObjs) {
@@ -22,6 +20,7 @@ nv::Sprite::Sprite(SDL_Renderer* renderer, const json& json, TextureMap& texMap)
 			}
 		}
 	}
+	name = json["name"];
 }
 
 nv::TextureData& nv::Sprite::getTexData(size_t texIdx) {
@@ -51,8 +50,10 @@ void nv::Sprite::setPos(SDL_Point p) noexcept {
 }
 
 void nv::Sprite::move(int x, int y) noexcept {
-	for (auto& texData : m_texObjLayers.at(m_currLayer)) {
-		texData.move(x, y);
+	for (const auto& [layer, textures] : m_texObjLayers) {
+		for (auto& texData : m_texObjLayers.at(layer)) {
+			texData.move(x, y);
+		}
 	}
 }
 
@@ -60,9 +61,11 @@ void nv::Sprite::move(SDL_Point p) noexcept {
 	move(p.x, p.y);
 }
 
-void nv::Sprite::scale(int x, int y) noexcept {
-	for (auto& texData : m_texObjLayers.at(m_currLayer)) {
-		texData.scale(x, y);
+void nv::Sprite::scale(int dw, int dh) noexcept {
+	for (auto& [layer, texData] : m_texObjLayers) {
+		for (auto& texDatum : texData) {
+			texDatum.scale(dw, dh);
+		}
 	}
 }
 
@@ -75,20 +78,20 @@ void nv::Sprite::rotate(double angle, SDL_Point p) {}
 
 void nv::Sprite::setRotationCenter() noexcept {}
 
-std::optional<size_t> nv::Sprite::containsCoord(int x, int y) const noexcept {
+bool nv::Sprite::containsCoord(int x, int y) const noexcept {
 	for (const auto& [idx, tex] : views::enumerate(m_texObjLayers.at(m_currLayer))) {
 		if (tex.containsCoord(x, y)) {
-			return static_cast<size_t>(idx);
+			return true;
 		}
 	}
-	return std::nullopt;
+	return false;
 }
 
-std::optional<size_t> nv::Sprite::containsCoord(SDL_Point p) const noexcept {
+bool nv::Sprite::containsCoord(SDL_Point p) const noexcept {
 	return containsCoord(p.x, p.y);
 }
 
-void nv::Sprite::setOpacity(Uint8 opacity) {
+void nv::Sprite::setOpacity(Uint8 opacity) noexcept {
 	for (auto& [layer, texObjs] : m_texObjLayers) {
 		for (auto& texObj : texObjs) {
 			texObj.setOpacity(opacity);
@@ -96,9 +99,17 @@ void nv::Sprite::setOpacity(Uint8 opacity) {
 	}
 }
 
-void nv::Sprite::render() const noexcept {
+void nv::Sprite::flip(SDL_RendererFlip flip) noexcept {
+	for (auto& [layer, texObjs] : m_texObjLayers) {
+		for (auto& texObj : texObjs) {
+			texObj.texData.flip = flip;
+		}
+	}
+}
+
+void nv::Sprite::render(SDL_Renderer* renderer) const noexcept {
 	for (const auto& texData : m_texObjLayers.at(m_currLayer)) {
-		texData.render();
+		texData.render(renderer);
 	}
 }
 
@@ -110,4 +121,15 @@ void nv::Sprite::save(json& json) const {
 		}
 	}
 	json["texture_object_layers"] = std::move(jsonFormat);
+}
+
+void nv::Sprite::saveJson(const Sprite& sprite, json& json) {
+	Sprite::JsonFormat jsonFormat;
+	for (const auto& [layer, texObjs] : sprite.m_texObjLayers) {
+		for (const auto& texObj : texObjs) {
+			jsonFormat[layer].emplace_back(texObj.getTexPath(), texObj.texData);
+		}
+	}
+	json["texture_object_layers"] = std::move(jsonFormat);
+	json["name"] = sprite.name;
 }

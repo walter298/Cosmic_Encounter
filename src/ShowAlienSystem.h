@@ -10,7 +10,7 @@ struct ShowAlienSystem {
 	static constexpr int PLANET_LAYER = 1;
 	static constexpr int SHIP_COUNT_LAYER = 4;
 
-	class ShipCountShower : public nv::ObjectBase<ShipCountShower> {
+	class ShipCountShower {
 	private:
 		SDL_Renderer* m_renderer;
 		TTF_Font* m_font;
@@ -24,10 +24,11 @@ struct ShowAlienSystem {
 
 		boost::unordered_flat_map<int, nv::Text> m_loadedText;
 	public:
-		void push(int shipCount, SDL_Color color, ShipCounts& shipCounts);
-		void set(const nv::Subrange<Colonies>& colonies, const std::vector<nv::Texture>& planets, const ColorMap& colorMap);
-		void render() const noexcept;
-		ShipCountShower(SDL_Renderer* renderer, TTF_Font* font) noexcept;
+		const std::string name = "ship_count_shower";
+		void push(SDL_Renderer* renderer, int shipCount, SDL_Color color, ShipCounts& shipCounts);
+		void set(SDL_Renderer* renderer, const nv::Subrange<Colonies>& colonies, const std::vector<nv::Texture>& planets, const ColorMap& colorMap);
+		void render(SDL_Renderer* renderer) const noexcept;
+		ShipCountShower(TTF_Font* font) noexcept;
 	};
 
 	nv::Scene scene;
@@ -50,5 +51,5 @@ private:
 public:
 	PlanetSelector(ShowAlienSystem& showAlienSystem);
 
-	size_t operator()(Color color, const nv::Subrange<Colonies>& colonies, const ColorMap& colorMap);
+	size_t operator()(SDL_Renderer* renderer, Color color, const nv::Subrange<Colonies>& colonies, const ColorMap& colorMap);
 };

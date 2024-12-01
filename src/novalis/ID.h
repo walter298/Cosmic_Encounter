@@ -1,6 +1,9 @@
 #pragma once
 
+#include <concepts>
 #include <string>
+
+#include <boost/functional/hash.hpp>
 
 namespace nv {
 	template<typename Object>
@@ -19,17 +22,32 @@ namespace nv {
 		}
 	};
 
+	class Sprite;
+	class Texture;
+
+	namespace detail {
+		class WorldCoordinates {
+		private:
+			static inline int x = 0;
+			static inline int y = 0;
+		public:
+			friend class Sprite;
+			friend class Texture;
+		};
+
+		template<typename T>
+		struct ObjectBase {
+			ID<T> m_ID;
+			std::string name;
+		};
+	}
+}
+
+namespace boost {
 	template<typename T>
-	struct ObjectBase {
-	protected:
-		ID<T> m_ID;
-		std::string m_name;
-	public:
-		ID<T> getID() const noexcept {
-			return m_ID;
-		}
-		const std::string& getName() const noexcept {
-			return m_name;
+	struct hash<nv::ID<T>> {
+		size_t operator()(nv::ID<T> id) const {
+			return boost::hash<int>()(id.operator int());
 		}
 	};
 }

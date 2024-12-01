@@ -60,13 +60,13 @@ void play() {
 			auto color = turnTakingDestiny();
 			Colonies colonies;
 			sock.read(SocketHeader::COLONY_INFORMATION, colonies);
-			auto colonyIdx = planetSelector(color, colonies, gameRenderData.colorMap);
+			auto colonyIdx = planetSelector(gameRenderData.renderer, color, colonies, gameRenderData.colorMap);
 			sock.send(SocketHeader::CHOSEN_COLONY, colonyIdx);
 		} else {
 			nonTurnTakingDestiny();
 		}
 		exit(5555);
-		colorIdx = (colorIdx + 1) % turnOrder.size();
+		//colorIdx = (colorIdx + 1) % turnOrder.size();
 	}
 
 	//show the game 

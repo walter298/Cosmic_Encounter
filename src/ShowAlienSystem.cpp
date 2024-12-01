@@ -1,17 +1,17 @@
 #include "ShowAlienSystem.h"
 
-ShowAlienSystem::ShipCountShower::ShipCountShower(SDL_Renderer* renderer, TTF_Font* shipCountFont) noexcept
-	: m_renderer{ renderer }, m_font{ shipCountFont }
+ShowAlienSystem::ShipCountShower::ShipCountShower(TTF_Font* shipCountFont) noexcept
+	: m_font{ shipCountFont }
 {
 }
 
-void ShowAlienSystem::ShipCountShower::push(int shipCount, SDL_Color color, ShipCounts& shipCounts) {
+void ShowAlienSystem::ShipCountShower::push(SDL_Renderer* renderer, int shipCount, SDL_Color color, ShipCounts& shipCounts) {
 	static std::string lastParsedInt;
 
 	auto textIt = m_loadedText.find(shipCount);
 	if (textIt == m_loadedText.end()) {
 		lastParsedInt = std::to_string(shipCount);
-		auto it = m_loadedText.emplace(std::piecewise_construct, std::forward_as_tuple(shipCount), std::forward_as_tuple(m_renderer, lastParsedInt, 20, m_font));
+		auto it = m_loadedText.emplace(std::piecewise_construct, std::forward_as_tuple(shipCount), std::forward_as_tuple(renderer, lastParsedInt, 20, m_font));
 		auto& text = it.first->second;
 		shipCounts.emplace_back(color, &text);
 	} else {
@@ -19,24 +19,24 @@ void ShowAlienSystem::ShipCountShower::push(int shipCount, SDL_Color color, Ship
 	}
 }
 
-void ShowAlienSystem::ShipCountShower::set(const nv::Subrange<Colonies>& colonies, const std::vector<nv::Texture>& planets, const ColorMap& colorMap) {
+void ShowAlienSystem::ShipCountShower::set(SDL_Renderer* renderer, const nv::Subrange<Colonies>& colonies, const std::vector<nv::Texture>& planets, const ColorMap& colorMap) {
 	m_shipCounts.clear();
 	for (const auto [colony, planet] : std::views::zip(colonies, planets)) {
 		auto& renderedShipCounts = m_shipCounts[planet.getPos()];
 		for (const auto& [color, shipCount] : colony.ships) {
-			push(shipCount, colorMap.at(color).second.color, renderedShipCounts);
+			push(renderer, shipCount, colorMap.at(color).second.color, renderedShipCounts);
 		}
 	}
 }
 
-void ShowAlienSystem::ShipCountShower::render() const noexcept {
+void ShowAlienSystem::ShipCountShower::render(SDL_Renderer* renderer) const noexcept {
 	assert(!m_shipCounts.empty());
 	for (auto& [pos, shipCounts] : m_shipCounts) {
 		SDL_Point currPos = pos;
 		for (auto& [color, text] : shipCounts) {
 			text->ren.setPos(currPos);
 			text->ren.color = color;
-			text->render();
+			text->render(renderer);
 			currPos.y += text->ren.rect.h;
 		}
 	}
@@ -50,7 +50,7 @@ ShowAlienSystem::ShowAlienSystem(SDL_Renderer* renderer, nv::TextureMap& texMap,
 		fontMap
 	},
 	planets{ scene.find<nv::Sprite>(PLANET_LAYER, "planets").get() },
-	shipCountShower{ renderer, fontMap.begin()->second.get() }
+	shipCountShower{ fontMap.begin()->second.get() }
 {
 	scene.addCustomObject(std::ref(shipCountShower), SHIP_COUNT_LAYER);
 }
@@ -72,20 +72,20 @@ PlanetSelector::PlanetSelector(ShowAlienSystem& showAlienSystem)
 		if (hoveredTexIdx) {
 			m_ufoCursor.setOpacity(255);
 			m_ufoCursor.setPos(mouse.x - 30, mouse.y - 30);
-			if (mouse.left == nv::MouseButtonState::Down) {
+			/*if (mouse.left == nv::MouseButtonState::Down) {
 				m_colonyIdx = *hoveredTexIdx;
 				m_scene.running = false;
-			}
+			}*/
 		} else {
 			m_ufoCursor.setOpacity(0);
 		}
 	});
 }
 
-size_t PlanetSelector::operator()(Color color, const nv::Subrange<Colonies>& colonies, const ColorMap& colorMap) {
+size_t PlanetSelector::operator()(SDL_Renderer* renderer, Color color, const nv::Subrange<Colonies>& colonies, const ColorMap& colorMap) {
 	m_planets.setTextureLayer(static_cast<int>(color));
 	m_ufoCursor.setTextureLayer(static_cast<int>(color));
-	m_shipCountShower.set(colonies, m_planets.getTextures(), colorMap);
+	m_shipCountShower.set(renderer, colonies, m_planets.getTextures(), colorMap);
 
 	m_scene();
 	return m_colonyIdx;

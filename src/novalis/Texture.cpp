@@ -14,20 +14,24 @@ nv::SharedTexture nv::loadSharedTexture(SDL_Renderer* renderer, std::string_view
 }
 
 nv::Texture::Texture(SDL_Renderer* renderer, std::string_view texPath, SharedTexture texPtr, TextureData texData) 
-	: m_renderer{ renderer }, m_texPath { std::make_shared<std::string>(convertFullToRegularPath(texPath)) },
-	m_texVariant{ std::move(texPtr) }, texData{ std::move(texData) }
+	: m_texPath{ std::make_shared<std::string>(convertFullToRegularPath(texPath)) }, m_texVariant{ std::move(texPtr) }, texData{ std::move(texData) }
 {
 	m_tex = std::get<SharedTexture>(m_texVariant).get();
 }
 
 nv::Texture::Texture(SDL_Renderer* renderer, std::string_view texPath, SDL_Texture* rawTex, TextureData texData)
-	: m_renderer{ renderer }, m_texPath{ std::make_shared<std::string>(convertFullToRegularPath(texPath)) }, m_texVariant{ std::move(rawTex) }, texData{ std::move(texData) }
+	: m_texPath{ std::make_shared<std::string>(convertFullToRegularPath(texPath)) }, m_texVariant{ std::move(rawTex) }, texData{ std::move(texData) }
+{
+	m_tex = rawTex;
+}
+
+nv::Texture::Texture(SDL_Renderer* renderer, SDL_Texture* rawTex, TextureData texData)
+	: m_texVariant{ rawTex }, texData{ texData }
 {
 	m_tex = rawTex;
 }
 
 nv::Texture::Texture(SDL_Renderer* renderer, const json& json, TextureMap& texMap) 
-	: m_renderer{ renderer } 
 {
 	auto texPath = relativePath(json["texture_path"].get<std::string>());
 	auto texPathIt = texMap.find(texPath);
@@ -39,10 +43,8 @@ nv::Texture::Texture(SDL_Renderer* renderer, const json& json, TextureMap& texMa
 	}
 	texData = json["texture_object_data"].get<TextureData>();
 	if (json.contains("name")) {
-		m_name = json["name"].get<std::string>();
+		name = json["name"].get<std::string>();
 	}
-
-	std::println("{}", SDL_GetError());
 }
 
 const std::string& nv::Texture::getTexPath() const noexcept {
@@ -55,7 +57,7 @@ void nv::Texture::setOpacity(Uint8 opacity) noexcept {
 
 void nv::Texture::setPos(int x, int y) noexcept {
 	texData.ren.setPos(x, y);
-	texData.world.setPos(x, y);
+	texData.world.setPos(detail::WorldCoordinates::x + x, detail::WorldCoordinates::y + y);
 }
 
 void nv::Texture::setPos(SDL_Point pos) noexcept {
@@ -102,8 +104,8 @@ void nv::Texture::rotate(double angle, SDL_Point rotationPoint) noexcept {
 	texData.rotationPoint = rotationPoint;
 }
 
-void nv::Texture::render() const noexcept {
-	SDL_RenderCopyEx(m_renderer, m_tex, nullptr, &texData.ren.rect, texData.angle, &texData.rotationPoint, texData.flip);
+void nv::Texture::render(SDL_Renderer* renderer) const noexcept {
+	SDL_RenderCopyEx(renderer, m_tex, nullptr, &texData.ren.rect, texData.angle, &texData.rotationPoint, texData.flip);
 }
 
 void nv::Texture::save(json& json) const {

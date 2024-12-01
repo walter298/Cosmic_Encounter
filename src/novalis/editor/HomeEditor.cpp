@@ -1,9 +1,14 @@
 #include "HomeEditor.h"
 
-#include "data_util/DataStructures.h" //ScopeExit
+#include "../data_util/DataStructures.h" //ScopeExit
+
+nv::editor::HomeEditor::HomeEditor(Instance& instance) 
+	: m_screenWidth{ instance.getScreenWidth() }, m_screenHeight{ instance.getScreenHeight() }
+{
+}
 
 nv::editor::EditorDest nv::editor::HomeEditor::imguiRender() noexcept {
-	static constexpr ImVec2 winPos{ NV_SCREEN_WIDTH / 2, NV_SCREEN_HEIGHT / 2 };
+	static const ImVec2 winPos{ static_cast<float>(m_screenWidth) / 2, static_cast<float>(m_screenHeight) / 2 };
 	static constexpr ImVec2 btnSize{ 183.0f, 80.0f };
 	static constexpr ImVec2 winSize = buttonList(btnSize, 2);
 

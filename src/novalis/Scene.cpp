@@ -6,19 +6,15 @@
 #include "data_util/BasicJsonSerialization.h"
 
 void nv::Scene::render() {
-	for (const auto& [layer, objLayer] : m_objectLayers) {
-		forEachDataMember([](const auto& objs) {
-			for (const auto& obj : objs) {
-				using Type = std::remove_cvref_t<decltype(obj)>;
-				if constexpr (IsClassTemplate<std::unique_ptr, Type>::value || std::is_pointer_v<Type>) {
-					obj->render();
-				} else {
-					unrefwrap(obj).render();
-				}
-			}
-			return STAY_IN_LOOP;
-		}, objLayer);
-	}
+	m_objectLayers.forEach([this](int layer, const auto& obj) {
+		using Type = std::remove_cvref_t<decltype(obj)>;
+		if constexpr (IsClassTemplate<std::unique_ptr, Type>::value || std::is_pointer_v<Type>) {
+			obj->render(renderer);
+		} else {
+			unrefwrap(obj).render(renderer);
+		}
+		return STAY_IN_LOOP;
+	});
 }
 
 void nv::Scene::selectTextInput() {
@@ -97,6 +93,7 @@ void nv::Scene::executeEvents() {
 	m_mouseData.deltaX = deltaX;
 	m_mouseData.deltaY = deltaY;
 	runEvents(std::get<EventData<MouseData>>(m_eventData), m_mouseData);
+	runEvents(std::get<EventData<const Uint8*>>(m_eventData), m_keystate);
 
 	//text editing
 	if (m_currEditedTextInput == nullptr) {
@@ -125,23 +122,23 @@ nv::Scene::Scene(std::string_view absFilePath, SDL_Renderer* renderer, TextureMa
 
 	auto rootJson = json::parse(sceneFile);
 
-	auto loadObjectLayer = [&, this](const json& objsJson, auto& objs, auto&... args) {
+	auto loadRenderObjectLayer = [&, this](const json& objsJson, auto& objs, auto&... args) {
 		objs.reserve(objsJson.size());
 		for (const auto& objJson : objsJson) {
-			std::println("Loading {}", objs.emplace(renderer, objJson, args...)->getName());
+			objs.emplace(renderer, objJson, args...);
 		}
 	};
 
 	auto loadObjectLayers = [&, this](const json& objsJson, int layer) {
-		auto& sprites  = std::get<0>(m_objectLayers[layer]);
-		auto& textures = std::get<1>(m_objectLayers[layer]);
-		auto& text     = std::get<2>(m_objectLayers[layer]);
-		auto& rects    = std::get<3>(m_objectLayers[layer]);
+		auto& sprites  = std::get<0>(m_objectLayers.layers[layer]);
+		auto& textures = std::get<1>(m_objectLayers.layers[layer]);
+		auto& text     = std::get<2>(m_objectLayers.layers[layer]);
+		auto& rects    = std::get<3>(m_objectLayers.layers[layer]);
 
-		loadObjectLayer(objsJson.at(typeid(Sprite).name()), sprites, texMap);
-		loadObjectLayer(objsJson.at(typeid(Texture).name()), textures, texMap);
-		loadObjectLayer(objsJson.at(typeid(Text).name()), text, fontMap);
-		loadObjectLayer(objsJson.at(typeid(Rect).name()), rects);
+		loadRenderObjectLayer(objsJson.at(typeid(Sprite).name()), sprites, texMap);
+		loadRenderObjectLayer(objsJson.at(typeid(Texture).name()), textures, texMap);
+		loadRenderObjectLayer(objsJson.at(typeid(Text).name()), text, fontMap);
+		rects = objsJson.at(objsJson.at(typeid(Text).name())).get<plf::hive<Rect>>();
 	};
 
 	//load in render objects
@@ -175,8 +172,7 @@ nv::ID<nv::TextInput> nv::Scene::addTextInput(nv::TextInput&& textInput) {
 void nv::Scene::operator()() {
 	running = true;
 
-	constexpr auto FPS = 180;
-	constexpr auto waitTime = 1000ms / FPS;
+	const auto waitTime = 1000ms / FPS;
 
 	while (running) {
 		auto endTime = std::chrono::system_clock::now() + waitTime;
@@ -219,10 +215,9 @@ void nv::Scene::overlay(Scene& scene) {
 		}
 	};
 
-	for (auto& [layer, otherObjectLayers] : scene.m_objectLayers) {
-		std::println("Overlaying layer[{}]", layer);
-		auto& thisObjectLayers = m_objectLayers[layer];
-		auto& currLayer = m_objectLayers[layer];
+	for (auto& [layer, otherObjectLayers] : scene.m_objectLayers.layers) {
+		auto& thisObjectLayers = m_objectLayers.layers[layer];
+		auto& currLayer = m_objectLayers.layers[layer];
 		forEachDataMember([&](auto& otherObjectLayer) {
 			overlayImpl(currLayer, otherObjectLayer);
 			return STAY_IN_LOOP;
@@ -231,8 +226,8 @@ void nv::Scene::overlay(Scene& scene) {
 }
 
 void nv::Scene::deoverlay() {
-	for (auto& [layer, objLayer] : m_objectLayers) {
-		auto objRefs = filterDataMembers<IsReferenceLayer>(m_objectLayers[layer]);
+	for (auto& [layer, objLayer] : m_objectLayers.layers) {
+		auto objRefs = filterDataMembers<IsReferenceLayer>(m_objectLayers.layers[layer]);
 		forEachDataMember([](auto& objs) {
 			objs.clear();
 			return STAY_IN_LOOP;
@@ -241,20 +236,20 @@ void nv::Scene::deoverlay() {
 }
 
 void nv::Scene::printElements() const {
-	for (const auto& [layer, objects] : m_objectLayers) {
-		std::print("Layer {}: [", layer);
+	for (const auto& [layer, objects] : m_objectLayers.layers) {
+		std::println("Layer {}", layer);
 		forEachDataMember([](auto& objs) {
-			std::print("{}", objs.size());
+			std::print("[");
 			for (const auto& obj : objs) {
 				using Type = std::remove_cvref_t<decltype(obj)>;
 				if constexpr (IsClassTemplate<std::unique_ptr, Type>::value || std::is_pointer_v<Type>) {
 					std::print("{} ", obj->getName());
 				} else {
-					std::print("{} ", unrefwrap(obj).getName());
+					std::print("{} ", unrefwrap(obj).name);
 				} 
-				return STAY_IN_LOOP;
 			}
 			std::println("]");
+			return STAY_IN_LOOP;
 		}, objects);
 	}
 }

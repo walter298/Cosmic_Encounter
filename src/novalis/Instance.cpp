@@ -47,9 +47,7 @@ nv::Instance::Instance(std::string_view windowTitle) noexcept {
 		exitWithError();
 	}
 
-	constexpr int WIDTH_ANCHOR = 2560;
-	constexpr int HEIGHT_ANCHOR = 1440;
-	SDL_RenderSetLogicalSize(renderer, WIDTH_ANCHOR, HEIGHT_ANCHOR);
+	SDL_RenderSetLogicalSize(renderer, m_screenWidth, m_screenHeight);
 
 	workingDirectory(); //initialize local static inside workingDirectory
 }

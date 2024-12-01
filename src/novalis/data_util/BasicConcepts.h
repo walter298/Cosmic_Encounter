@@ -11,17 +11,16 @@
 #include <nlohmann/json.hpp>
 
 #include <SDL2/SDL_rect.h> //SDL_Point
+#include <SDL2/SDL_render.h>
 
 namespace nv {
 	template<typename Object>
 	concept RenderObject = requires(Object & obj) {
 		obj.move(1, -1);
 		obj.move(SDL_Point{});
-		obj.scale(1, -1);
-		obj.scale(SDL_Point{});
 		obj.containsCoord(1, -1);
 		obj.containsCoord(SDL_Point{});
-		obj.render();
+		obj.render(std::declval<SDL_Renderer*>());
 	};
 
 	template<typename Object>
@@ -29,6 +28,13 @@ namespace nv {
 		{ obj } -> RenderObject;
 		obj.rotate(0.0, SDL_Point{});
 		obj.setRotationCenter();
+	};
+
+	template<typename Object>
+	concept ScaleableObject = requires(Object obj) {
+		{ obj } -> RenderObject;
+		obj.scale(0, 0);
+		obj.scale(SDL_Point{});
 	};
 
 	template<typename Object>
@@ -53,9 +59,6 @@ namespace nv {
 
 	template<typename Range>
 	concept RenderObjectRange = ranges::viewable_range<Range> && RenderObject<typename Range::value_type>;
-
-	template<typename... Ts>
-	using ObjectLayers = boost_con::flat_map<int, std::tuple<plf::hive<Ts>...>>;
 
 	template<typename T>
 	concept Aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;

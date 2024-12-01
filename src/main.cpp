@@ -1,7 +1,7 @@
 #include "Client.h"
 #include "Server.h"
 
-#include "novalis/EditorApp.h"
+#include "novalis/editor/EditorApp.h"
 #include "novalis/Instance.h"
 
 #include "JoinGame.h"
@@ -22,9 +22,9 @@ int main(int argc, char** argv) {
 	} catch (nlohmann::json::exception& e) {
 		std::println("{}", e.what());
 	}*/
-	//nv::editor::runEditors();
+	nv::editor::runEditors();
 
-	testAlliance();
+	//testAlliance();
 
 	/*tcp::endpoint ep{ ip::make_address_v4("192.168.7.250"), 5555 };
 	std::jthread serverThread{ host, 2, std::ref(ep) };

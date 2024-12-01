@@ -12,9 +12,7 @@
 #include "ID.h"
 
 namespace nv {
-	struct Rect : public ObjectBase<Rect> {
-		SDL_Renderer* renderer = nullptr;
-	
+	struct Rect : public detail::ObjectBase<Rect> {
 		static bool isInRegion(int mx, int my, int x, int y, int w, int h) noexcept;
 		static bool isInRegion(SDL_Point coord, int x, int y, int w, int h) noexcept;
 
@@ -23,10 +21,8 @@ namespace nv {
 		int borderThickness = 20;
 
 		Rect() = default;
-		Rect(SDL_Renderer* renderer) noexcept;
-		Rect(SDL_Renderer* renderer, int x, int y, int w, int h, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255, uint8_t a = 255);
-		Rect(SDL_Renderer* renderer, const json& json);
-
+		Rect(int x, int y, int w, int h, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255, uint8_t a = 255);
+		
 		bool containsCoord(int mX, int mY) const noexcept;
 		bool containsCoord(SDL_Point p) const noexcept;
 		void move(int dx, int dy) noexcept;
@@ -40,7 +36,7 @@ namespace nv {
 		void setSize(SDL_Point p) noexcept;
 		SDL_Point getSize() const noexcept;
 		void setOpacity(uint8_t a);
-		void render() const noexcept;
+		void render(SDL_Renderer* renderer) const noexcept;
 		void setRenderColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) noexcept;
 		void save(json& json) const;
 

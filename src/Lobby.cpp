@@ -34,24 +34,24 @@ namespace {
 		std::abort();
 	}
 
-	nv::Rect getColorRect(SDL_Renderer* renderer, Color color) {
+	nv::Rect getColorRect(Color color) {
 		constexpr int CARD_WIDTH = 200;
 		constexpr int CARD_HEIGHT = 200;
 		switch (color) {
 		case Blue:
-			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 0, 255 };
+			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 0, 255 };
 			break;
 		case Black:
-			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT };
+			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT };
 			break;
 		case Green:
-			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 178, 0 };
+			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 0, 178, 0 };
 			break;
 		case Purple:
-			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 138, 43, 226 };
+			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 138, 43, 226 };
 			break;
 		case Red:
-			return nv::Rect{ renderer, 0, 0, CARD_WIDTH, CARD_HEIGHT, 255, 0, 0 };
+			return nv::Rect{ 0, 0, CARD_WIDTH, CARD_HEIGHT, 255, 0, 0 };
 			break;
 		}
 		assert(false); //invalid color
@@ -85,7 +85,7 @@ namespace {
 			lobby.texMap
 		};
 		alienPosSetter.setPos(alien);
-		colorMap[pRenderInfo.color] = { alien, getColorRect(lobby.renderer, pRenderInfo.color) };
+		colorMap[pRenderInfo.color] = { alien, getColorRect(pRenderInfo.color) };
 		lobby.addObject(std::move(alien), 1);
 	}
 

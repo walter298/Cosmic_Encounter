@@ -2,10 +2,21 @@
 
 #include <algorithm>
 #include <cassert>
+#include <functional>
+#include <variant>
 
 #include "BasicConcepts.h"
 
 namespace nv {
+	template<typename Ignored = std::monostate, typename Callable, typename Variant>
+	void selectiveVisit(Callable callable, Variant& variant) {
+		std::visit([&callable](auto& visited) {
+			if constexpr (!std::same_as<std::monostate, std::remove_cvref_t<decltype(visited)>>) {
+				std::invoke(callable, visited);
+			}
+		}, variant);
+	}
+
 	template<ranges::viewable_range Range, typename Func>
 	void forEachEqualRange(Range& range, Func f) {
 		auto it = ranges::begin(range);
@@ -62,5 +73,13 @@ namespace nv {
 		ranges::move(std::next(iterators.back()), vec.end(), currEnd);
 		vec.erase(vec.begin() + (vec.size() - iterators.size()), vec.end());
 		iterators.clear();
+	}
+
+	template<ranges::viewable_range Range>
+	auto sumRange(const Range& range, auto initial) {
+		for (const auto& elem : range) {
+			initial += elem;
+		}
+		return initial;
 	}
 }

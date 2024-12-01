@@ -52,8 +52,6 @@ namespace nv {
 		int deltaY = 0;
 	};
 
-	using MouseEvent = Event<MouseData>;
-
-	using Keymap        = boost::unordered_flat_map<SDL_Scancode, bool>;
-	using KeyboardEvent = Event<const Keymap&>;
+	using MouseEvent    = Event<void, MouseData>;
+	using KeyboardEvent = Event<void, const Uint8*>;
 }

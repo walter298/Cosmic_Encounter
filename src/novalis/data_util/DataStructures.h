@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/container/flat_map.hpp>
+
 #include <plf_hive.h>
 
 #include "BasicConcepts.h"
@@ -83,6 +85,76 @@ namespace nv {
 		ScopeExit(Func&& f) noexcept(std::is_nothrow_move_constructible_v<Func>) : m_f{ std::move(f) } {}
 		~ScopeExit() noexcept(std::is_nothrow_invocable_v<Func>) {
 			m_f();
+		}
+	};
+
+	template<typename... Ts>
+	struct ObjectLayers {
+		boost::container::flat_map<int, std::tuple<plf::hive<Ts>...>> layers;
+
+		decltype(auto) operator[](this auto&& self, int n) {
+			return self.layers[n];
+		}
+		decltype(auto) at(this auto&& self, int n) {
+			return self.layers.at(n);
+		}
+		auto find(this auto&& self, int n) {
+			return self.layers.find(n);
+		}
+		auto begin(this auto&& self) {
+			return self.layers.begin();
+		}
+		auto end(this auto&& self) {
+			return self.layers.end();
+		}
+		void clear() {
+			layers.clear();
+		}
+		void reserve(size_t n) {
+			layers.reserve(n);
+		}
+		template<typename Callable>
+		void forEach(this auto&& self, Callable callable) {
+			for (auto& [layer, objHives] : self.layers) {
+				forEachDataMember([layer, &callable](auto& objHive) {
+					for (auto& obj : objHive) {
+						if (callable(layer, obj) == BREAK_FROM_LOOP) {
+							return BREAK_FROM_LOOP;
+						}
+					}
+					return STAY_IN_LOOP;
+				}, objHives);
+			}
+		}
+
+		template<typename Callable>
+		void forEach(this auto&& self, Callable callable, int layer) {
+			forEachDataMember([layer, &callable](auto& objHive) {
+				for (auto& obj : objHive) {
+					if (callable(layer, obj) == BREAK_FROM_LOOP) {
+						return BREAK_FROM_LOOP;
+					}
+				}
+				return STAY_IN_LOOP;
+			}, self.layers.at(layer));
+		}
+
+		template<typename Callable>
+		void forEachHive(this auto&& self, Callable callable) {
+			for (auto& [layer, objHives] : self.layers) {
+				forEachDataMember([layer, &callable](auto& objHive) {
+					if (callable(layer, objHive) == BREAK_FROM_LOOP) {
+						return BREAK_FROM_LOOP;
+					}
+				}, objHives);
+			}
+		}
+
+		template<typename Callable>
+		void forEachHive(this auto&& self, Callable callable, int layer) {
+			forEachDataMember([layer, &callable](auto& objHive) {
+				return callable(layer, objHive) == BREAK_FROM_LOOP;
+			}, self.layers[layer]);
 		}
 	};
 }

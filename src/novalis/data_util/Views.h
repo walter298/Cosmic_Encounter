@@ -52,6 +52,7 @@ namespace nv {
 				return this->operator++();
 			}
 
+
 			bool operator==(const Iterator& other) const {
 				return m_it == other.m_it;
 			}
